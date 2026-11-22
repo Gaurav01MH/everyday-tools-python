@@ -38,6 +38,11 @@ test("CSV export prefixes spreadsheet formula-like cells", () => {
   assert.deepEqual(outputRows, ["'=2+2", "'  @SUM(A1:A2)", "safe"]);
 });
 
+test("CSV export preserves negative numbers but escapes formula-like strings", () => {
+  const output = toCsv([["-42"], ["-cmd|' /C calc'!A0"], ["=1+1"]]).split("\r\n");
+  assert.deepEqual(output, ["-42", "'-cmd|' /C calc'!A0", "'=1+1"]);
+});
+
 test("temperature and length conversions are accurate", () => {
   assert.equal(convertUnit(0, "temperature", "C", "F"), 32);
   assert.equal(convertUnit(1, "length", "km", "m"), 1000);
@@ -49,7 +54,7 @@ test("temperature and length conversions are accurate", () => {
 test("text statistics handle empty input and Unicode text", () => {
   assert.deepEqual(textStatistics(""), { characters: 0, charactersWithoutSpaces: 0, words: 0, lines: 0 });
   assert.deepEqual(textStatistics("नमस्ते world\nagain"), {
-    characters: 17, charactersWithoutSpaces: 16, words: 3, lines: 2
+    characters: 18, charactersWithoutSpaces: 16, words: 3, lines: 2
   });
 });
 
