@@ -36,7 +36,7 @@ test("switches tool categories and transforms text", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Text & data" }).click();
   await page.getByLabel("Choose a task").selectOption("upper");
-  await page.getByLabel("Input").fill("Everyday tools");
+  await page.getByLabel("Input", { exact: true }).fill("Everyday tools");
   await page.getByRole("button", { name: "Process text" }).click();
   await expect(page.getByLabel("Processed output")).toHaveValue("EVERYDAY TOOLS");
   await expect(page.getByText("Your result is ready. Nothing was sent to a server.")).toBeVisible();
@@ -46,10 +46,10 @@ test("formats JSON and gives a useful error for malformed JSON", async ({ page }
   await page.goto("/");
   await page.getByRole("button", { name: "Text & data" }).click();
   await page.getByLabel("Choose a task").selectOption("json-format");
-  await page.getByLabel("Input").fill('{"ok":true}');
+  await page.getByLabel("Input", { exact: true }).fill('{"ok":true}');
   await page.getByRole("button", { name: "Process text" }).click();
   await expect(page.getByLabel("Processed output")).toHaveValue("{\n  \"ok\": true\n}");
-  await page.getByLabel("Input").fill("{");
+  await page.getByLabel("Input", { exact: true }).fill("{");
   await page.getByRole("button", { name: "Process text" }).click();
   await expect(page.getByRole("heading", { name: "Could not finish" })).toBeVisible();
 });
@@ -110,9 +110,13 @@ test("renders a PDF page to a PNG inside a downloadable ZIP", async ({ page }) =
   await page.goto("/");
   const source = await makePdf([[300, 400]]);
   await choosePdf(page, "render", "render-sample.pdf", source);
-  const downloadPromise = page.waitForEvent("download");
+  const downloadPromise = page.waitForEvent("download", { timeout: 20_000 }).catch(() => null);
   await page.getByRole("button", { name: "Run tool" }).click();
+  await expect(page.locator("#result-title")).toHaveText(/Done|Could not finish/, { timeout: 20_000 });
   const download = await downloadPromise;
+  if (!download) {
+    throw new Error("PDF render did not download a file: " + await page.locator("#result-message").innerText());
+  }
   expect(download.suggestedFilename()).toBe("render-sample-pages-png.zip");
   const zip = await JSZip.loadAsync(await readFile(await download.path()));
   const png = zip.file("page-001.png");
@@ -132,9 +136,13 @@ test("converts a browser image and downloads the chosen format", async ({ page }
     buffer: png
   });
   await page.getByLabel("Output format").selectOption("image/webp");
-  const downloadPromise = page.waitForEvent("download");
+  const downloadPromise = page.waitForEvent("download", { timeout: 20_000 }).catch(() => null);
   await page.getByRole("button", { name: "Run tool" }).click();
+  await expect(page.locator("#result-title")).toHaveText(/Done|Could not finish/, { timeout: 20_000 });
   const download = await downloadPromise;
+  if (!download) {
+    throw new Error("Image conversion did not download a file: " + await page.locator("#result-message").innerText());
+  }
   expect(download.suggestedFilename()).toBe("tiny.webp");
   const bytes = await readFile(await download.path());
   expect(bytes.subarray(0, 4).toString("ascii")).toBe("RIFF");
@@ -185,7 +193,7 @@ test("website contains no third-party upload targets or analytics calls", async 
   await page.goto("/");
   await page.getByRole("button", { name: "Text & data" }).click();
   await page.getByLabel("Choose a task").selectOption("upper");
-  await page.getByLabel("Input").fill("local only");
+  await page.getByLabel("Input", { exact: true }).fill("local only");
   await page.getByRole("button", { name: "Process text" }).click();
   await expect(page.getByLabel("Processed output")).toHaveValue("LOCAL ONLY");
   expect(externalRequests).toEqual([]);
