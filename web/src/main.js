@@ -226,7 +226,9 @@ function updateOperation() {
       );
       elements.options.append(row, createCheck("keep-aspect", "Keep original proportions", true));
     }
-    elements.options.append(createSelect("image-format", "Output format", [
+    elements.options.append(createSelect("image-format", "Output format", operation === "compress" ? [
+      ["image/jpeg", "JPG"], ["image/webp", "WEBP"]
+    ] : [
       ["image/jpeg", "JPG"], ["image/png", "PNG"], ["image/webp", "WEBP"]
     ], operation === "compress" ? "image/jpeg" : "image/png"));
     if (operation === "compress") {
