@@ -21,7 +21,11 @@ async function readPdf(file) {
   const bytes = await file.arrayBuffer();
   try {
     const document = await PDFDocument.load(bytes, { updateMetadata: false });
-    if (document.getPageCount() > MAX_PDF_PAGES) {
+    const pageCount = document.getPageCount();
+    if (pageCount < 1) {
+      throw new Error("This PDF does not contain any readable pages.");
+    }
+    if (pageCount > MAX_PDF_PAGES) {
       throw new Error(`"${file.name}" has more than ${MAX_PDF_PAGES} pages. This browser tool has a page limit.`);
     }
     return { document, bytes };
@@ -53,7 +57,7 @@ function savePdf(bytes, filename) {
 async function downloadZip(entries, filename, onProgress) {
   const outputBytes = entries.reduce((sum, entry) => sum + entry.bytes.byteLength, 0);
   if (outputBytes > MAX_TOTAL_OUTPUT_BYTES) {
-    throw new Error("The generated files would exceed the 200 MB download limit. Process fewer pages at a time.");
+    throw new Error("The generated files would exceed the 100 MB download limit. Process fewer pages at a time.");
   }
   const zip = new JSZip();
   for (const entry of entries) zip.file(entry.name, entry.bytes);
