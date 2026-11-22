@@ -1,5 +1,5 @@
 import {
-  convertCase, convertUnit, parseCsv, textStatistics, toCsv
+  convertCase, convertUnit, parseCsv, textStatistics, toCsv, MAX_TEXT_CHARACTERS
 } from "./core.js";
 
 function decodeBase64(text) {
@@ -12,8 +12,21 @@ function decodeBase64(text) {
   return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
 }
 
+function encodeBase64(text) {
+  const bytes = new TextEncoder().encode(text);
+  const chunks = [];
+  const chunkSize = 0x8000;
+  for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+    chunks.push(String.fromCharCode(...bytes.subarray(offset, offset + chunkSize)));
+  }
+  return btoa(chunks.join(""));
+}
+
 export function runTextTool(operation, input, extra, options = {}) {
   const value = String(input ?? "");
+  if (value.length > MAX_TEXT_CHARACTERS || String(extra ?? "").length > MAX_TEXT_CHARACTERS) {
+    throw new Error("Text input is too large. Keep each field under 2 million characters.");
+  }
   switch (operation) {
     case "upper":
     case "lower":
@@ -51,7 +64,7 @@ export function runTextTool(operation, input, extra, options = {}) {
       try { return decodeURIComponent(value); }
       catch { throw new Error("The text contains an invalid URL-encoded sequence."); }
     case "base64-encode":
-      return btoa(String.fromCharCode(...new TextEncoder().encode(value)));
+      return encodeBase64(value);
     case "base64-decode":
       return decodeBase64(value);
     case "percent-of": {
