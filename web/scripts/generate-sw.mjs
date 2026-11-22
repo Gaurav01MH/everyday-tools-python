@@ -1,7 +1,8 @@
 import { createHash } from "node:crypto";
-import { copyFile, cp, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
+import { readdir, readFile, writeFile } from "node:fs/promises";
 import { join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { copyPdfJsAssets } from "./copy-pdfjs-assets.mjs";
 
 const webRoot = resolve(fileURLToPath(new URL("../", import.meta.url)));
 const distRoot = join(webRoot, "dist");
@@ -17,18 +18,9 @@ async function walk(directory) {
   return files;
 }
 
-// Ship PDF.js support data locally. PDF character maps, standard fonts,
- // ICC profiles, and WASM decoders must be available offline and same-origin.
-const pdfjsSource = join(webRoot, "node_modules", "pdfjs-dist");
+// Include same-origin PDF.js resources in the static bundle and offline cache.
 const pdfjsDestination = join(distRoot, "pdfjs");
-await mkdir(pdfjsDestination, { recursive: true });
-for (const folder of ["cmaps", "iccs", "image_decoders", "standard_fonts", "wasm"]) {
-  await cp(join(pdfjsSource, folder), join(pdfjsDestination, folder), {
-    recursive: true,
-    force: true
-  });
-}
-await copyFile(join(pdfjsSource, "LICENSE"), join(pdfjsDestination, "LICENSE"));
+await copyPdfJsAssets(pdfjsDestination);
 
 const files = (await walk(distRoot)).sort();
 if (!files.some((path) => relative(distRoot, path) === "index.html")) {
