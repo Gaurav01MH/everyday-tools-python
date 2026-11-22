@@ -1,7 +1,8 @@
 export const MAX_FILES = 20;
-export const MAX_TOTAL_BYTES = 150 * 1024 * 1024;
-export const MAX_PDF_PAGES = 400;
-export const MAX_IMAGE_PIXELS = 40_000_000;
+export const MAX_TOTAL_BYTES = 100 * 1024 * 1024;
+export const MAX_PDF_PAGES = 250;
+export const MAX_IMAGE_PIXELS = 25_000_000;
+export const MAX_TEXT_CHARACTERS = 2_000_000;
 
 export function assertInputFiles(files, { min = 1, max = MAX_FILES, totalBytes = MAX_TOTAL_BYTES } = {}) {
   if (!Array.isArray(files) || files.length < min) {
@@ -12,7 +13,7 @@ export function assertInputFiles(files, { min = 1, max = MAX_FILES, totalBytes =
   }
   const bytes = files.reduce((sum, file) => sum + file.size, 0);
   if (bytes > totalBytes) {
-    throw new Error("The selected files are too large for safe browser processing. Keep the total under 150 MB.");
+    throw new Error("The selected files are too large for safe browser processing. Keep the total under 100 MB.");
   }
   for (const file of files) {
     if (!file || typeof file.arrayBuffer !== "function" || file.size <= 0) {
@@ -32,7 +33,7 @@ export function parsePageSelection(input, pageCount) {
   const pieces = value.split(",");
   for (const piece of pieces) {
     const token = piece.trim();
-    const match = /^(\d+)(?:\s*-\s*(\d+))?$/.exec(token);
+    const match = /^(\\d+)(?:\\s*-\\s*(\\d+))?$/.exec(token);
     if (!match) throw new Error(`Invalid page selection: "${token}". Use numbers and ranges such as 1, 3-5.`);
     const first = Number(match[1]);
     const last = match[2] ? Number(match[2]) : first;
@@ -50,9 +51,9 @@ export function parsePageSelection(input, pageCount) {
 }
 
 export function safeFilename(name, fallback = "everyday-tools") {
-  const last = String(name ?? "").split(/[\\/]/).pop() || fallback;
-  const stem = last.replace(/\.[^.]*$/, "").normalize("NFKC")
-    .replace(/[<>:"/\\|?*\u0000-\u001f]/g, "-")
+  const last = String(name ?? "").split(/[\\\\/]/).pop() || fallback;
+  const stem = last.replace(/\\.[^.]*$/, "").normalize("NFKC")
+    .replace(/[<>:"/\\\\|?*\\u0000-\\u001f]/g, "-")
     .replace(/[. ]+$/g, "").trim().slice(0, 90);
   return stem || fallback;
 }
@@ -70,7 +71,7 @@ export function parseCsv(text) {
   let cell = "";
   let inQuotes = false;
   let afterQuote = false;
-  const source = String(text ?? "").replace(/^\uFEFF/, "");
+  const source = String(text ?? "").replace(/^\\uFEFF/, "");
 
   for (let i = 0; i < source.length; i += 1) {
     const char = source[i];
@@ -89,17 +90,20 @@ export function parseCsv(text) {
       continue;
     }
 
-    if (afterQuote && char !== "," && char !== "\r" && char !== "\n" && !/\s/.test(char)) {
+    if (afterQuote && /\\s/.test(char)) continue;
+    if (afterQuote && char !== "," && char !== "\\r" && char !== "\\n") {
       throw new Error("Unexpected characters after a quoted CSV field.");
     }
     if (char === '"' && cell.length === 0 && !afterQuote) {
       inQuotes = true;
+    } else if (char === '"' && !afterQuote) {
+      throw new Error("A quote inside an unquoted CSV field must be escaped by quoting the whole field.");
     } else if (char === ",") {
       row.push(cell);
       cell = "";
       afterQuote = false;
-    } else if (char === "\n" || char === "\r") {
-      if (char === "\r" && source[i + 1] === "\n") i += 1;
+    } else if (char === "\\n" || char === "\\r") {
+      if (char === "\\r" && source[i + 1] === "\\n") i += 1;
       row.push(cell);
       rows.push(row);
       row = [];
@@ -121,9 +125,11 @@ export function parseCsv(text) {
 export function toCsv(rows) {
   if (!Array.isArray(rows)) throw new TypeError("Rows must be an array.");
   return rows.map((row) => row.map((value) => {
-    const text = String(value ?? "");
-    return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
-  }).join(",")).join("\r\n");
+    let text = String(value ?? "");
+    // Prefix spreadsheet-formula-like cells so opening exported CSVs is safer.
+    if (/^\\s*[=+@\\-\\t\\r]/.test(text)) text = "'" + text;
+    return /[",\\r\\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+  }).join(",")).join("\\r\\n");
 }
 
 export function convertUnit(value, category, from, to) {
@@ -147,9 +153,9 @@ export function convertUnit(value, category, from, to) {
       K: (n) => n + 273.15
     };
     if (!toC[from] || !fromC[to]) throw new Error("Choose valid temperature units.");
-    const result = fromC[to](toC[from](amount));
-    if (to === "K" && result < 0) throw new Error("Temperature cannot be below absolute zero.");
-    return result;
+    const celsius = toC[from](amount);
+    if (celsius < -273.15) throw new Error("Temperature cannot be below absolute zero.");
+    return fromC[to](celsius);
   }
 
   const table = units[category];
@@ -161,20 +167,20 @@ export function convertCase(text, mode) {
   const value = String(text ?? "");
   if (mode === "upper") return value.toLocaleUpperCase();
   if (mode === "lower") return value.toLocaleLowerCase();
-  if (mode === "title") return value.toLocaleLowerCase().replace(/(^|[\s([{])([\p{L}\p{N}])/gu, (_, prefix, letter) => prefix + letter.toLocaleUpperCase());
-  if (mode === "sentence") return value.toLocaleLowerCase().replace(/(^\s*[\p{L}]|[.!?]\s+[\p{L}])/gu, (part) => part.toLocaleUpperCase());
-  if (mode === "clean") return value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean).join("\n");
-  if (mode === "unique") return [...new Set(value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean))].join("\n");
+  if (mode === "title") return value.toLocaleLowerCase().replace(/(^|[\\s([{])([\\p{L}\\p{N}])/gu, (_, prefix, letter) => prefix + letter.toLocaleUpperCase());
+  if (mode === "sentence") return value.toLocaleLowerCase().replace(/(^\\s*[\\p{L}]|[.!?]\\s+[\\p{L}])/gu, (part) => part.toLocaleUpperCase());
+  if (mode === "clean") return value.split(/\\r?\\n/).map((line) => line.trim()).filter(Boolean).join("\\n");
+  if (mode === "unique") return [...new Set(value.split(/\\r?\\n/).map((line) => line.trim()).filter(Boolean))].join("\\n");
   throw new Error("Unknown text operation.");
 }
 
 export function textStatistics(text) {
   const value = String(text ?? "");
-  const words = value.trim() ? value.trim().split(/\s+/u).length : 0;
+  const words = value.trim() ? value.trim().split(/\\s+/u).length : 0;
   return {
     characters: value.length,
-    charactersWithoutSpaces: value.replace(/\s/gu, "").length,
+    charactersWithoutSpaces: value.replace(/\\s/gu, "").length,
     words,
-    lines: value.length ? value.split(/\r\n|\r|\n/).length : 0
+    lines: value.length ? value.split(/\\r\\n|\\r|\\n/).length : 0
   };
 }
