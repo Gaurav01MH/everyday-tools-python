@@ -3,16 +3,29 @@
 import csv
 import io
 import json
+import math
 from collections.abc import Mapping
+from typing import Any
 
 
 def _reject_json_constant(value: str) -> None:
     raise ValueError(f"Invalid JSON constant: {value}.")
 
 
-def load_json(source: str):
-    """Parse standard-compliant JSON, rejecting NaN and Infinity tokens."""
-    return json.loads(source, parse_constant=_reject_json_constant)
+def _parse_finite_float(value: str) -> float:
+    number = float(value)
+    if not math.isfinite(number):
+        raise ValueError(f"JSON number is outside the finite range: {value}.")
+    return number
+
+
+def load_json(source: str) -> Any:
+    """Parse standard-compliant JSON and reject non-finite numeric values."""
+    return json.loads(
+        source,
+        parse_constant=_reject_json_constant,
+        parse_float=_parse_finite_float,
+    )
 
 
 def format_json(source: str, indent: int = 2) -> str:

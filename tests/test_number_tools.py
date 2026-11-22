@@ -10,6 +10,9 @@ class NumberToolsTests(unittest.TestCase):
     def test_percent_of_large_amount_without_intermediate_overflow(self):
         self.assertEqual(percent_of(100, 1e308), 1e308)
 
+    def test_percent_of_tiny_amount_and_large_percentage(self):
+        self.assertAlmostEqual(percent_of(1e308, 5e-324), 4.940656458412465e-18)
+
     def test_unrepresentable_results_are_rejected(self):
         with self.assertRaises(ValueError):
             percent_of(1e308, 1e308)
@@ -53,6 +56,10 @@ class NumberToolsTests(unittest.TestCase):
     def test_large_fahrenheit_value_can_convert_to_celsius(self):
         converted = convert_unit("temperature", 1e308, "f", "c")
         self.assertAlmostEqual(converted / 1e308, 5 / 9)
+
+    def test_large_celsius_value_can_convert_to_fahrenheit(self):
+        converted = convert_unit("temperature", 3e307, "c", "f")
+        self.assertAlmostEqual(converted / 3e307, 9 / 5)
 
     def test_unknown_unit_is_rejected(self):
         with self.assertRaises(ValueError):

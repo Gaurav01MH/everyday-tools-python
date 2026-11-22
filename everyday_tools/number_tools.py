@@ -38,7 +38,12 @@ TIME_TO_SECONDS = {
 def percent_of(percent: float, amount: float) -> float:
     _require_finite(percent, "Percentage")
     _require_finite(amount, "Amount")
-    result = amount * (percent / 100)
+
+    # Divide the larger magnitude first to avoid avoidable overflow or underflow.
+    if abs(amount) >= abs(percent):
+        result = (amount / 100) * percent
+    else:
+        result = amount * (percent / 100)
     _require_finite(result, "Percentage result")
     return result
 
@@ -92,7 +97,7 @@ def _convert_temperature(value: float, from_unit: str, to_unit: str) -> float:
     }
     from_celsius = {
         "c": lambda temp: temp,
-        "f": lambda temp: temp * 9 / 5 + 32,
+        "f": lambda temp: temp * (9 / 5) + 32,
         "k": lambda temp: temp + 273.15,
     }
     if from_unit not in to_celsius or to_unit not in from_celsius:

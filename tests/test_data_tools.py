@@ -21,6 +21,13 @@ class DataToolsTests(unittest.TestCase):
             with self.subTest(constant=constant), self.assertRaises(ValueError):
                 json_to_csv(f'[{{"value": {constant}}}]')
 
+    def test_json_numbers_outside_float_range_are_rejected(self):
+        for number in ("1e999", "-1e999"):
+            with self.subTest(number=number), self.assertRaises(ValueError):
+                load_json(number)
+            with self.subTest(number=number), self.assertRaises(ValueError):
+                format_json(number)
+
     def test_csv_to_json(self):
         result = csv_to_json("name,age\nAsha,20\nRavi,21\n")
         self.assertEqual(json.loads(result), [{"name": "Asha", "age": "20"}, {"name": "Ravi", "age": "21"}])
