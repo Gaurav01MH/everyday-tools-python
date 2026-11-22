@@ -25,14 +25,22 @@ test("CSV parser handles commas, escaped quotes and newlines in cells", () => {
 
 test("CSV parser rejects unclosed quotes and exporter round-trips data", () => {
   assert.throws(() => parseCsv('a,"unfinished'), /no matching closing quote/);
+  assert.throws(() => parseCsv('a,b\nwrong"quote,x'), /quote inside an unquoted/);
+  assert.deepEqual(parseCsv('"value" ,next'), [["value", "next"]]);
   const rows = [["a", "b"], ["x,y", 'say "yes"'], ["line\none", ""]];
   assert.deepEqual(parseCsv(toCsv(rows)), rows);
+});
+
+
+test("CSV export prefixes spreadsheet formula-like cells", () => {
+  assert.equal(toCsv([["=2+2"], ["  @SUM(A1:A2)"], ["safe"]]), "'=2+2\\r\\n'  @SUM(A1:A2)\\r\\nsafe");
 });
 
 test("temperature and length conversions are accurate", () => {
   assert.equal(convertUnit(0, "temperature", "C", "F"), 32);
   assert.equal(convertUnit(1, "length", "km", "m"), 1000);
   assert.throws(() => convertUnit(-274, "temperature", "C", "K"), /absolute zero/);
+  assert.throws(() => convertUnit(-1, "temperature", "K", "C"), /absolute zero/);
 });
 
 test("text statistics handle empty input and Unicode text", () => {
@@ -48,7 +56,7 @@ test("filenames are reduced to safe download names", () => {
 
 test("file guard rejects batches above its byte cap", () => {
   const file = { size: MAX_TOTAL_BYTES + 1, arrayBuffer() {} };
-  assert.throws(() => assertInputFiles([file]), /150 MB/);
+  assert.throws(() => assertInputFiles([file]), /100 MB/);
 });
 
 test("text functions distinguish invalid JSON and JSON formatting", () => {
