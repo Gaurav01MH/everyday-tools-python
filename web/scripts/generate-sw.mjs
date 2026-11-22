@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { cp, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
+import { copyFile, cp, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -22,12 +22,13 @@ async function walk(directory) {
 const pdfjsSource = join(webRoot, "node_modules", "pdfjs-dist");
 const pdfjsDestination = join(distRoot, "pdfjs");
 await mkdir(pdfjsDestination, { recursive: true });
-for (const folder of ["cmaps", "iccs", "standard_fonts", "wasm"]) {
+for (const folder of ["cmaps", "iccs", "image_decoders", "standard_fonts", "wasm"]) {
   await cp(join(pdfjsSource, folder), join(pdfjsDestination, folder), {
     recursive: true,
     force: true
   });
 }
+await copyFile(join(pdfjsSource, "LICENSE"), join(pdfjsDestination, "LICENSE"));
 
 const files = (await walk(distRoot)).sort();
 if (!files.some((path) => relative(distRoot, path) === "index.html")) {
