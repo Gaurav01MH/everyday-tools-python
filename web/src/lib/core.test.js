@@ -33,7 +33,8 @@ test("CSV parser rejects unclosed quotes and exporter round-trips data", () => {
 
 
 test("CSV export prefixes spreadsheet formula-like cells", () => {
-  assert.equal(toCsv([["=2+2"], ["  @SUM(A1:A2)"], ["safe"]]), "'=2+2\\r\\n'  @SUM(A1:A2)\\r\\nsafe");
+  const outputRows = toCsv([["=2+2"], ["  @SUM(A1:A2)"], ["safe"]]).split("\\r\\n");
+  assert.deepEqual(outputRows, ["'=2+2", "'  @SUM(A1:A2)", "safe"]);
 });
 
 test("temperature and length conversions are accurate", () => {
