@@ -5,6 +5,7 @@ import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import { assertInputFiles, MAX_PDF_PAGES, MAX_IMAGE_PIXELS, MAX_SINGLE_PDF_BYTES, MAX_TOTAL_OUTPUT_BYTES, parsePageSelection, safeFilename } from "./core.js";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+const PDFJS_ASSET_BASE = new URL("pdfjs/", new URL(import.meta.env.BASE_URL, location.origin)).href;
 
 function report(onProgress, value, message) {
   if (typeof onProgress === "function") onProgress(Math.max(0, Math.min(100, value)), message);
@@ -205,7 +206,16 @@ export async function renderPdf(file, scale, onProgress) {
   const bytes = new Uint8Array(await file.arrayBuffer());
   let loadingTask;
   try {
-    loadingTask = pdfjsLib.getDocument({ data: bytes });
+    loadingTask = pdfjsLib.getDocument({
+      data: bytes,
+      cMapUrl: `${PDFJS_ASSET_BASE}cmaps/`,
+      cMapPacked: true,
+      iccUrl: `${PDFJS_ASSET_BASE}iccs/`,
+      standardFontDataUrl: `${PDFJS_ASSET_BASE}standard_fonts/`,
+      wasmUrl: `${PDFJS_ASSET_BASE}wasm/`,
+      useWorkerFetch: true,
+      maxImageSize: MAX_IMAGE_PIXELS
+    });
     const pdf = await loadingTask.promise;
     if (pdf.numPages > 100) throw new Error("This renderer is limited to 100 pages at a time.");
     const entries = [];
