@@ -110,7 +110,10 @@ export async function rotatePdf(file, selection, angle, onProgress) {
   const { document } = await readPdf(file);
   const indexes = parsePageSelection(selection, document.getPageCount());
   const pages = document.getPages();
-  for (const index of indexes) pages[index].setRotation(degrees(degreesValue));
+  for (const index of indexes) {
+    const current = pages[index].getRotation().angle;
+    pages[index].setRotation(degrees((current + degreesValue) % 360));
+  }
   const bytes = await document.save();
   saveBlob(new Blob([bytes], { type: "application/pdf" }), `${safeFilename(file.name)}-rotated.pdf`);
   report(onProgress, 100, `Rotated ${indexes.length} page(s).`);
@@ -118,8 +121,8 @@ export async function rotatePdf(file, selection, angle, onProgress) {
 }
 
 async function fileToJpeg(file) {
-  if (file.size > 30 * 1024 * 1024) throw new Error(`"${file.name}" is larger than 30 MB.`);
-  const supported = /\.(png|jpe?g|webp|bmp)$/i.test(file.name);
+  if (file.size > 20 * 1024 * 1024) throw new Error(`"${file.name}" is larger than 20 MB.`);
+  const supported = /\.(png|jpe?g|webp|bmp)$/i.test(file.name) || ["image/png", "image/jpeg", "image/webp", "image/bmp"].includes(file.type);
   if (!supported) throw new Error(`"${file.name}" is not a supported still image. Use PNG, JPG, WEBP, or BMP.`);
   let bitmap;
   try {
