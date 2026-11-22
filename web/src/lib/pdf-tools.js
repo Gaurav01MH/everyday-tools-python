@@ -2,7 +2,7 @@ import { PDFDocument, degrees } from "pdf-lib";
 import JSZip from "jszip";
 import * as pdfjsLib from "pdfjs-dist/build/pdf.mjs";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
-import { assertInputFiles, MAX_PDF_PAGES, MAX_IMAGE_PIXELS, parsePageSelection, safeFilename } from "./core.js";
+import { assertInputFiles, MAX_PDF_PAGES, MAX_IMAGE_PIXELS, MAX_SINGLE_PDF_BYTES, MAX_TOTAL_OUTPUT_BYTES, parsePageSelection, safeFilename } from "./core.js";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
@@ -11,6 +11,9 @@ function report(onProgress, value, message) {
 }
 
 async function readPdf(file) {
+  if (file.size > MAX_SINGLE_PDF_BYTES) {
+    throw new Error('"' + file.name + '" is larger than 50 MB. Reduce the file size before processing it in this browser.');
+  }
   if (!file.name.toLowerCase().endsWith(".pdf") && file.type !== "application/pdf") {
     throw new Error(`"${file.name}" is not a PDF file.`);
   }
@@ -40,6 +43,10 @@ function saveBlob(blob, filename) {
 }
 
 async function downloadZip(entries, filename, onProgress) {
+  const outputBytes = entries.reduce((sum, entry) => sum + entry.bytes.byteLength, 0);
+  if (outputBytes > MAX_TOTAL_OUTPUT_BYTES) {
+    throw new Error("The generated files would exceed the 200 MB download limit. Process fewer pages at a time.");
+  }
   const zip = new JSZip();
   for (const entry of entries) zip.file(entry.name, entry.bytes);
   const blob = await zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 1 } }, (meta) => {
@@ -185,6 +192,9 @@ export async function renderPdf(file, scale, onProgress) {
   if (!Number.isFinite(renderScale) || renderScale < 0.5 || renderScale > 2) {
     throw new Error("Choose a render scale between 0.5 and 2.");
   }
+  if (file.size > MAX_SINGLE_PDF_BYTES) {
+    throw new Error('"' + file.name + '" is larger than 50 MB. Reduce the file size before rendering it.');
+  }
   const bytes = new Uint8Array(await file.arrayBuffer());
   let loadingTask;
   try {
@@ -192,11 +202,16 @@ export async function renderPdf(file, scale, onProgress) {
     const pdf = await loadingTask.promise;
     if (pdf.numPages > 100) throw new Error("This renderer is limited to 100 pages at a time.");
     const entries = [];
+    let totalRenderedPixels = 0;
     for (let number = 1; number <= pdf.numPages; number += 1) {
       const page = await pdf.getPage(number);
       const viewport = page.getViewport({ scale: renderScale });
       const pixels = Math.ceil(viewport.width) * Math.ceil(viewport.height);
       if (pixels > 20_000_000) throw new Error(`Page ${number} is too large to render at this scale. Try a lower scale.`);
+      totalRenderedPixels += pixels;
+      if (totalRenderedPixels > 100_000_000) {
+        throw new Error("The PDF would use too much memory to render in one batch. Try a lower scale or split the PDF first.");
+      }
       const canvas = document.createElement("canvas");
       canvas.width = Math.ceil(viewport.width);
       canvas.height = Math.ceil(viewport.height);
