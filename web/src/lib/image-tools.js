@@ -1,5 +1,5 @@
 import JSZip from "jszip";
-import { assertInputFiles, MAX_IMAGE_PIXELS, safeFilename } from "./core.js";
+import { assertInputFiles, MAX_IMAGE_PIXELS, MAX_TOTAL_OUTPUT_BYTES, safeFilename } from "./core.js";
 
 const ACCEPTED_INPUT = /\.(png|jpe?g|webp|bmp)$/i;
 const ACCEPTED_MIME = new Set(["image/png", "image/jpeg", "image/webp", "image/bmp"]);
@@ -112,6 +112,10 @@ export async function processImages(files, operation, options, onProgress) {
   }
 
   if (!results.length) throw new Error(failures.join("\n") || "No image could be processed.");
+  const outputBytes = results.reduce((sum, result) => sum + result.blob.size, 0);
+  if (outputBytes > MAX_TOTAL_OUTPUT_BYTES) {
+    throw new Error("The converted images would exceed the 200 MB download limit. Process fewer images at a time or use smaller dimensions.");
+  }
   if (results.length === 1) {
     const result = results[0];
     const url = URL.createObjectURL(result.blob);
