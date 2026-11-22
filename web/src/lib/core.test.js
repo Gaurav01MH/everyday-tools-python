@@ -62,6 +62,31 @@ test("file guard rejects batches above its byte cap", () => {
   assert.throws(() => assertInputFiles([file]), /100 MB/);
 });
 
+test("CSV and JSON conversions preserve headers and object fields", () => {
+  assert.equal(
+    runTextTool("csv-json", "name,age\\nAsha,20\\nRavi,21"),
+    '[\\n  {\\n    "name": "Asha",\\n    "age": "20"\\n  },\\n  {\\n    "name": "Ravi",\\n    "age": "21"\\n  }\\n]'
+  );
+  assert.equal(
+    runTextTool("json-csv", '[{"name":"Asha","age":20},{"name":"Ravi","age":21}]'),
+    "name,age\\r\\nAsha,20\\r\\nRavi,21"
+  );
+  assert.throws(() => runTextTool("csv-json", "name,name\\nA,B"), /duplicate column names/);
+  assert.throws(() => runTextTool("json-csv", '[{"a":1},["not an object"]]'), /mixture/);
+});
+
+test("percentage change uses the signed starting value and rejects blanks", () => {
+  assert.equal(runTextTool("percent-change", "100", "120"), "20%");
+  assert.equal(runTextTool("percent-change", "-10", "-15"), "50%");
+  assert.throws(() => runTextTool("percent-of", "", "10"), /Enter a percentage/);
+  assert.throws(() => runTextTool("percent-change", "10", ""), /Enter both/);
+});
+
+test("Base64 conversion safely supports Unicode", () => {
+  const encoded = runTextTool("base64-encode", "नमस्ते 🌏");
+  assert.equal(runTextTool("base64-decode", encoded), "नमस्ते 🌏");
+});
+
 test("text functions distinguish invalid JSON and JSON formatting", () => {
   assert.equal(runTextTool("json-format", '{"a":1}'), '{\n  "a": 1\n}');
   assert.throws(() => runTextTool("json-format", "{"), /JSON/);
