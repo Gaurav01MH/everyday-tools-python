@@ -207,9 +207,9 @@ export async function renderPdf(file, scale, onProgress) {
       const page = await pdf.getPage(number);
       const viewport = page.getViewport({ scale: renderScale });
       const pixels = Math.ceil(viewport.width) * Math.ceil(viewport.height);
-      if (pixels > 20_000_000) throw new Error(`Page ${number} is too large to render at this scale. Try a lower scale.`);
+      if (pixels > 12_000_000) throw new Error(`Page ${number} is too large to render at this scale. Try a lower scale.`);
       totalRenderedPixels += pixels;
-      if (totalRenderedPixels > 100_000_000) {
+      if (totalRenderedPixels > 30_000_000) {
         throw new Error("The PDF would use too much memory to render in one batch. Try a lower scale or split the PDF first.");
       }
       const canvas = document.createElement("canvas");
