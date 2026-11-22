@@ -62,7 +62,7 @@ async function processOne(file, operation, options) {
         throw new Error("Enter image dimensions between 1 and 12,000 pixels.");
       }
       const scale = options.keepAspect
-        ? Math.min(maxWidth / width, maxHeight / height)
+        ? Math.min(1, maxWidth / width, maxHeight / height)
         : null;
       if (scale !== null) {
         width = Math.max(1, Math.round(width * scale));
