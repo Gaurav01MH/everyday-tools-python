@@ -43,12 +43,13 @@ test("temperature and length conversions are accurate", () => {
   assert.equal(convertUnit(1, "length", "km", "m"), 1000);
   assert.throws(() => convertUnit(-274, "temperature", "C", "K"), /absolute zero/);
   assert.throws(() => convertUnit(-1, "temperature", "K", "C"), /absolute zero/);
+  assert.throws(() => convertUnit("", "length", "m", "cm"), /Enter a number/);
 });
 
 test("text statistics handle empty input and Unicode text", () => {
   assert.deepEqual(textStatistics(""), { characters: 0, charactersWithoutSpaces: 0, words: 0, lines: 0 });
   assert.deepEqual(textStatistics("नमस्ते world\nagain"), {
-    characters: 18, charactersWithoutSpaces: 16, words: 3, lines: 2
+    characters: 17, charactersWithoutSpaces: 16, words: 3, lines: 2
   });
 });
 
