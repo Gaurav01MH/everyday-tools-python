@@ -128,8 +128,10 @@ export function toCsv(rows) {
   if (!Array.isArray(rows)) throw new TypeError("Rows must be an array.");
   return rows.map((row) => row.map((value) => {
     let text = String(value ?? "");
-    // Prefix spreadsheet-formula-like cells so opening exported CSVs is safer.
-    if (/^\s*[=+@\-]/.test(text)) text = "'" + text;
+    // Prefix formula-like cells without turning ordinary negative numbers into text.
+    const trimmed = text.trim();
+    const isNumeric = /^-?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(trimmed);
+    if (/^\s*[=+@]/.test(text) || (/^\s*-/.test(text) && !isNumeric)) text = "'" + text;
     return /[",\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
   }).join(",")).join("\r\n");
 }
