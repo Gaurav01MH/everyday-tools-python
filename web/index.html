@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f7f8fa" />
+    <meta name="description" content="Free PDF, image and text tools. Files are processed in your browser and are not uploaded." />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'" />
+    <meta name="referrer" content="no-referrer" />
+    <link rel="icon" type="image/svg+xml" href="/everyday-tools-python/favicon.svg" />
+    <link rel="manifest" href="/everyday-tools-python/manifest.webmanifest" />
+    <link rel="stylesheet" href="/src/styles.css" />
+    <title>Everyday Tools</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#home" aria-label="Everyday Tools home">
+        <span class="brand-mark" aria-hidden="true">ET</span>
+        <span>Everyday Tools</span>
+      </a>
+      <div class="header-right">
+        <span class="privacy-note"><span class="privacy-dot" aria-hidden="true"></span> Files stay on this device</span>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <section class="intro">
+        <div>
+          <p class="eyebrow">A small toolbox for everyday files</p>
+          <h1>Get your file work done.</h1>
+          <p class="intro-copy">PDF, image, and text tools. No account, no ads, no file uploads.</p>
+        </div>
+      </section>
+
+      <nav class="tool-nav" aria-label="Tool categories" role="tablist">
+        <button class="nav-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="workspace" data-mode="pdf">PDF tools</button>
+        <button class="nav-tab" type="button" role="tab" aria-selected="false" aria-controls="workspace" data-mode="images">Image tools</button>
+        <button class="nav-tab" type="button" role="tab" aria-selected="false" aria-controls="workspace" data-mode="text">Text &amp; data</button>
+      </nav>
+
+      <section id="workspace" class="workspace" role="tabpanel" aria-labelledby="active-tab">
+        <div class="workspace-heading">
+          <div>
+            <h2 id="workspace-title">PDF tools</h2>
+            <p id="workspace-description">Combine, split, rotate, extract, or render PDF pages.</p>
+          </div>
+          <span class="local-label">Runs in your browser</span>
+        </div>
+
+        <form id="tool-form" novalidate>
+          <div id="operation-row" class="field-row">
+            <label class="field-label" for="operation">Choose a task</label>
+            <select id="operation" name="operation"></select>
+          </div>
+
+          <section id="file-section" class="file-section" aria-labelledby="files-label">
+            <div class="field-heading">
+              <label id="files-label" class="field-label" for="file-input">Choose files</label>
+              <span id="file-hint" class="field-hint">PDF files · Up to 20 files</span>
+            </div>
+            <label id="drop-zone" class="drop-zone" for="file-input">
+              <span class="drop-title">Drop files here or <span class="text-link">browse</span></span>
+              <span class="drop-subtitle">Your files are read locally in this tab.</span>
+            </label>
+            <input id="file-input" class="visually-hidden" type="file" multiple />
+            <ul id="file-list" class="file-list" aria-label="Selected files"></ul>
+          </section>
+
+          <section id="options-section" class="options-section" aria-label="Task options"></section>
+
+          <section id="text-section" class="text-section" hidden>
+            <div class="field-row">
+              <label class="field-label" for="text-input">Input</label>
+              <textarea id="text-input" rows="8" spellcheck="false" placeholder="Paste or type your text here"></textarea>
+            </div>
+            <div class="field-row" id="text-extra-row" hidden>
+              <label class="field-label" for="text-extra-input">Additional input</label>
+              <textarea id="text-extra-input" rows="5" spellcheck="false" placeholder="Paste the second value here"></textarea>
+            </div>
+            <div class="field-row" id="unit-row" hidden>
+              <label class="field-label" for="unit-category">Conversion</label>
+              <div class="inline-fields">
+                <select id="unit-category" aria-label="Unit category">
+                  <option value="length">Length</option>
+                  <option value="weight">Weight</option>
+                  <option value="time">Time</option>
+                  <option value="temperature">Temperature</option>
+                </select>
+                <select id="unit-from" aria-label="Convert from"></select>
+                <span class="to-word">to</span>
+                <select id="unit-to" aria-label="Convert to"></select>
+              </div>
+            </div>
+          </section>
+
+          <div class="action-row">
+            <button id="run-button" class="primary-button" type="submit">Run tool</button>
+            <button id="clear-button" class="secondary-button" type="button">Clear</button>
+            <span id="busy-label" class="busy-label" hidden>Processing…</span>
+          </div>
+        </form>
+
+        <section id="result-section" class="result-section" aria-live="polite" aria-atomic="true" hidden>
+          <div class="result-heading">
+            <h3 id="result-title">Ready</h3>
+            <span id="result-status" class="result-status"></span>
+          </div>
+          <progress id="progress-bar" max="100" value="0" hidden></progress>
+          <p id="result-message" class="result-message"></p>
+          <div id="result-actions" class="result-actions"></div>
+        </section>
+      </section>
+
+      <footer class="site-footer">
+        <p>Free to use. No account or ads. Your selected files are processed in this browser; they are not sent to a server.</p>
+        <a href="#privacy" id="privacy-link">Privacy &amp; limits</a>
+      </footer>
+    </main>
+
+    <dialog id="privacy-dialog" class="privacy-dialog" aria-labelledby="privacy-title">
+      <div class="dialog-header">
+        <h2 id="privacy-title">Privacy and usage limits</h2>
+        <button id="close-dialog" class="icon-button" type="button" aria-label="Close">×</button>
+      </div>
+      <div class="dialog-body">
+        <p><strong>Your documents are not uploaded.</strong> The app reads files you select and processes them in your browser. It has no server-side file upload, account, analytics, ads, or AI service.</p>
+        <p>The website itself must be downloaded from GitHub Pages the first time. After it has loaded, its static app files can be cached for offline use. Your files are never placed in that cache.</p>
+        <p>To keep browser memory use reasonable, this version limits total selected input to 150 MB, a batch to 20 files, and PDF processing to 400 pages per document. Large or unusual documents may still exceed your browser's memory.</p>
+        <p>Encrypted PDFs, scanned OCR, PDF text editing, signatures, and form filling are not supported. Image conversion depends on formats your browser can decode; animated images are not supported.</p>
+        <p>Always keep an original copy of important files. Processing creates new downloads and does not overwrite your source files.</p>
+      </div>
+    </dialog>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
