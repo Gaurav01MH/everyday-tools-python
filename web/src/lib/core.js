@@ -1,10 +1,10 @@
 export const MAX_FILES = 20;
 export const MAX_TOTAL_BYTES = 100 * 1024 * 1024;
 export const MAX_PDF_PAGES = 250;
-export const MAX_IMAGE_PIXELS = 25_000_000;
+export const MAX_IMAGE_PIXELS = 16_000_000;
 export const MAX_TEXT_CHARACTERS = 2_000_000;
 export const MAX_SINGLE_PDF_BYTES = 50 * 1024 * 1024;
-export const MAX_TOTAL_OUTPUT_BYTES = 200 * 1024 * 1024;
+export const MAX_TOTAL_OUTPUT_BYTES = 100 * 1024 * 1024;
 
 export function assertInputFiles(files, { min = 1, max = MAX_FILES, totalBytes = MAX_TOTAL_BYTES } = {}) {
   if (!Array.isArray(files) || files.length < min) {
