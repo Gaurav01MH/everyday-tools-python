@@ -64,14 +64,14 @@ test("file guard rejects batches above its byte cap", () => {
 
 test("CSV and JSON conversions preserve headers and object fields", () => {
   assert.equal(
-    runTextTool("csv-json", "name,age\\nAsha,20\\nRavi,21"),
-    '[\\n  {\\n    "name": "Asha",\\n    "age": "20"\\n  },\\n  {\\n    "name": "Ravi",\\n    "age": "21"\\n  }\\n]'
+    runTextTool("csv-json", "name,age\nAsha,20\nRavi,21"),
+    '[\n  {\n    "name": "Asha",\n    "age": "20"\n  },\n  {\n    "name": "Ravi",\n    "age": "21"\n  }\n]'
   );
   assert.equal(
     runTextTool("json-csv", '[{"name":"Asha","age":20},{"name":"Ravi","age":21}]'),
-    "name,age\\r\\nAsha,20\\r\\nRavi,21"
+    "name,age\r\nAsha,20\r\nRavi,21"
   );
-  assert.throws(() => runTextTool("csv-json", "name,name\\nA,B"), /duplicate column names/);
+  assert.throws(() => runTextTool("csv-json", "name,name\nA,B"), /duplicate column names/);
   assert.throws(() => runTextTool("json-csv", '[{"a":1},["not an object"]]'), /mixture/);
 });
 
