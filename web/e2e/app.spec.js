@@ -48,9 +48,7 @@ test("formats JSON and gives a useful error for malformed JSON", async ({ page }
   await page.getByLabel("Choose a task").selectOption("json-format");
   await page.getByLabel("Input").fill('{"ok":true}');
   await page.getByRole("button", { name: "Process text" }).click();
-  await expect(page.getByLabel("Processed output")).toHaveValue('{
-  "ok": true
-}');
+  await expect(page.getByLabel("Processed output")).toHaveValue("{\n  \"ok\": true\n}");
   await page.getByLabel("Input").fill("{");
   await page.getByRole("button", { name: "Process text" }).click();
   await expect(page.getByRole("heading", { name: "Could not finish" })).toBeVisible();
