@@ -27,13 +27,14 @@ test("CSV parser rejects unclosed quotes and exporter round-trips data", () => {
   assert.throws(() => parseCsv('a,"unfinished'), /no matching closing quote/);
   assert.throws(() => parseCsv('a,b\nwrong"quote,x'), /quote inside an unquoted/);
   assert.deepEqual(parseCsv('"value" ,next'), [["value", "next"]]);
+  assert.deepEqual(parseCsv("\uFEFFa,b\r\n1,2"), [["a", "b"], ["1", "2"]]);
   const rows = [["a", "b"], ["x,y", 'say "yes"'], ["line\none", ""]];
   assert.deepEqual(parseCsv(toCsv(rows)), rows);
 });
 
 
 test("CSV export prefixes spreadsheet formula-like cells", () => {
-  const outputRows = toCsv([["=2+2"], ["  @SUM(A1:A2)"], ["safe"]]).split("\\r\\n");
+  const outputRows = toCsv([["=2+2"], ["  @SUM(A1:A2)"], ["safe"]]).split("\r\n");
   assert.deepEqual(outputRows, ["'=2+2", "'  @SUM(A1:A2)", "safe"]);
 });
 
