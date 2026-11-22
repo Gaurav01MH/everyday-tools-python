@@ -112,8 +112,9 @@ test("renders a PDF page to a PNG inside a downloadable ZIP", async ({ page }) =
   await page.goto("/");
   const source = await makePdf([[300, 400]]);
   await choosePdf(page, "render", "render-sample.pdf", source);
+  const downloadPromise = page.waitForEvent("download");
   await page.getByRole("button", { name: "Run tool" }).click();
-  const download = await page.waitForEvent("download");
+  const download = await downloadPromise;
   expect(download.suggestedFilename()).toBe("render-sample-pages-png.zip");
   const zip = await JSZip.loadAsync(await readFile(await download.path()));
   const png = zip.file("page-001.png");
