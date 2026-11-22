@@ -120,18 +120,25 @@ test("mobile layout has no horizontal page overflow", async ({ page }) => {
 });
 
 test("initial page passes the axe accessibility rules", async ({ page }) => {
-  await page.goto("/");
-  await page.addScriptTag({ content: axeSource });
-  const results = await page.evaluate(async () => window.axe.run(document, {
-    runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "best-practice"] }
-  }));
-  const violations = results.violations.map((item) => ({
-    id: item.id,
-    impact: item.impact,
-    description: item.help,
-    nodes: item.nodes.map((node) => node.target)
-  }));
-  expect(violations, JSON.stringify(violations, null, 2)).toEqual([]);
+  const browser = page.context().browser();
+  const auditContext = await browser.newContext({ bypassCSP: true });
+  const auditPage = await auditContext.newPage();
+  try {
+    await auditPage.goto("/");
+    await auditPage.addScriptTag({ content: axeSource });
+    const results = await auditPage.evaluate(async () => window.axe.run(document, {
+      runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "best-practice"] }
+    }));
+    const violations = results.violations.map((item) => ({
+      id: item.id,
+      impact: item.impact,
+      description: item.help,
+      nodes: item.nodes.map((node) => node.target)
+    }));
+    expect(violations, JSON.stringify(violations, null, 2)).toEqual([]);
+  } finally {
+    await auditContext.close();
+  }
 });
 
 test("website contains no third-party upload targets or analytics calls", async ({ page }) => {
