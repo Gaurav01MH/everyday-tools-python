@@ -2,6 +2,7 @@ import JSZip from "jszip";
 import { assertInputFiles, MAX_IMAGE_PIXELS, safeFilename } from "./core.js";
 
 const ACCEPTED_INPUT = /\.(png|jpe?g|webp|bmp)$/i;
+const ACCEPTED_MIME = new Set(["image/png", "image/jpeg", "image/webp", "image/bmp"]);
 const OUTPUT_FORMATS = new Set(["image/png", "image/jpeg", "image/webp"]);
 
 function outputName(file, extension) {
@@ -10,7 +11,7 @@ function outputName(file, extension) {
 
 async function decodeImage(file) {
   if (file.size > 30 * 1024 * 1024) throw new Error(`"${file.name}" is larger than 30 MB.`);
-  if (!ACCEPTED_INPUT.test(file.name)) {
+  if (!ACCEPTED_INPUT.test(file.name) && !ACCEPTED_MIME.has(file.type)) {
     throw new Error(`"${file.name}" is unsupported. Use still PNG, JPG, WEBP, or BMP images.`);
   }
   try {
@@ -42,6 +43,7 @@ function canvasFor(bitmap, width, height, format, quality) {
       canvas.width = 1;
       canvas.height = 1;
       if (!blob) reject(new Error("Image conversion failed. Try a smaller image."));
+      else if (blob.type !== format) reject(new Error(`This browser cannot create ${format.slice(6).toUpperCase()} images.`));
       else resolve(blob);
     }, format, quality);
   });
@@ -71,7 +73,7 @@ async function processOne(file, operation, options) {
       }
     }
 
-    const format = operation === "convert" ? options.format : options.format;
+    const format = options.format;
     if (!OUTPUT_FORMATS.has(format)) throw new Error("Choose PNG, JPG, or WEBP as the output format.");
     if (width * height > MAX_IMAGE_PIXELS) throw new Error("The requested output dimensions are too large.");
     const quality = Math.max(0.1, Math.min(0.95, Number(options.quality) / 100 || 0.82));
@@ -88,10 +90,20 @@ export async function processImages(files, operation, options, onProgress) {
   if (!["resize", "convert", "compress"].includes(operation)) throw new Error("Choose a valid image operation.");
   const results = [];
   const failures = [];
+  const usedNames = new Set();
 
   for (let i = 0; i < files.length; i += 1) {
     try {
-      results.push(await processOne(files[i], operation, options));
+      const result = await processOne(files[i], operation, options);
+      let name = result.name;
+      let suffix = 2;
+      while (usedNames.has(name.toLocaleLowerCase())) {
+        const dot = result.name.lastIndexOf(".");
+        name = `${result.name.slice(0, dot)}-${suffix}${result.name.slice(dot)}`;
+        suffix += 1;
+      }
+      usedNames.add(name.toLocaleLowerCase());
+      results.push({ ...result, name });
     } catch (error) {
       failures.push(`${files[i].name}: ${error.message}`);
     }
