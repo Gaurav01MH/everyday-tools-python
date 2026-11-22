@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  base: "/everyday-tools-python/",
+  base: process.env.GITHUB_PAGES === "true" ? "/everyday-tools-python/" : "/",
   publicDir: "public",
   build: {
     target: "es2022",
