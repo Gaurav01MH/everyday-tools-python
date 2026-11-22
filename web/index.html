@@ -7,9 +7,9 @@
     <meta name="description" content="Free PDF, image and text tools. Files are processed in your browser and are not uploaded." />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'" />
     <meta name="referrer" content="no-referrer" />
-    <link rel="icon" type="image/svg+xml" href="/everyday-tools-python/favicon.svg" />
-    <link rel="manifest" href="/everyday-tools-python/manifest.webmanifest" />
-    <link rel="stylesheet" href="/src/styles.css" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <link rel="manifest" href="%BASE_URL%manifest.webmanifest" />
+    <link rel="stylesheet" href="%BASE_URL%src/styles.css" />
     <title>Everyday Tools</title>
   </head>
   <body>
@@ -32,13 +32,13 @@
         </div>
       </section>
 
-      <nav class="tool-nav" aria-label="Tool categories" role="tablist">
-        <button class="nav-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="workspace" data-mode="pdf">PDF tools</button>
-        <button class="nav-tab" type="button" role="tab" aria-selected="false" aria-controls="workspace" data-mode="images">Image tools</button>
+      <nav class="tool-nav" aria-label="Tool categories">
+        <button class="nav-tab is-active" type="button" aria-pressed="true" data-mode="pdf">PDF tools</button>
+        <button class="nav-tab" type="button" aria-pressed="false" data-mode="images">Image tools</button>
         <button class="nav-tab" type="button" role="tab" aria-selected="false" aria-controls="workspace" data-mode="text">Text &amp; data</button>
       </nav>
 
-      <section id="workspace" class="workspace" role="tabpanel" aria-labelledby="active-tab">
+      <section id="workspace" class="workspace">
         <div class="workspace-heading">
           <div>
             <h2 id="workspace-title">PDF tools</h2>
@@ -55,7 +55,7 @@
 
           <section id="file-section" class="file-section" aria-labelledby="files-label">
             <div class="field-heading">
-              <label id="files-label" class="field-label" for="file-input">Choose files</label>
+              <span id="files-label" class="field-label">Choose files</span>
               <span id="file-hint" class="field-hint">PDF files · Up to 20 files</span>
             </div>
             <label id="drop-zone" class="drop-zone" for="file-input">
@@ -125,12 +125,12 @@
       <div class="dialog-body">
         <p><strong>Your documents are not uploaded.</strong> The app reads files you select and processes them in your browser. It has no server-side file upload, account, analytics, ads, or AI service.</p>
         <p>The website itself must be downloaded from GitHub Pages the first time. After it has loaded, its static app files can be cached for offline use. Your files are never placed in that cache.</p>
-        <p>To keep browser memory use reasonable, this version limits total selected input to 150 MB, a batch to 20 files, and PDF processing to 400 pages per document. Large or unusual documents may still exceed your browser's memory.</p>
+        <p>To keep browser memory use reasonable, this version limits total selected input to 100 MB, a batch to 20 files, and PDF processing to 400 pages per document. Large or unusual documents may still exceed your browser's memory.</p>
         <p>Encrypted PDFs, scanned OCR, PDF text editing, signatures, and form filling are not supported. Image conversion depends on formats your browser can decode; animated images are not supported.</p>
         <p>Always keep an original copy of important files. Processing creates new downloads and does not overwrite your source files.</p>
       </div>
     </dialog>
 
-    <script type="module" src="/src/main.js"></script>
+    <script type="module" src="%BASE_URL%src/main.js"></script>
   </body>
 </html>
