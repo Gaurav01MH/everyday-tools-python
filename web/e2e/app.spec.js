@@ -129,7 +129,22 @@ test("converts a browser image and downloads the chosen format", async ({ page }
   await page.goto("/");
   await page.getByRole("button", { name: "Image tools" }).click();
   await page.getByLabel("Choose a task").selectOption("convert");
-  const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/8ioAAAAASUVORK5CYII=", "base64");
+  const pngDataUrl = await page.evaluate(async () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 2;
+    canvas.height = 2;
+    const context = canvas.getContext("2d");
+    context.fillStyle = "#c44";
+    context.fillRect(0, 0, 2, 2);
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    let binary = "";
+    for (let offset = 0; offset < bytes.length; offset += 0x8000) {
+      binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
+    }
+    return "data:image/png;base64," + btoa(binary);
+  });
+  const png = Buffer.from(pngDataUrl.split(",")[1], "base64");
   await page.locator("#file-input").setInputFiles({
     name: "tiny.png",
     mimeType: "image/png",
