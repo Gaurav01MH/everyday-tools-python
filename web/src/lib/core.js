@@ -135,6 +135,7 @@ export function toCsv(rows) {
 }
 
 export function convertUnit(value, category, from, to) {
+  if (String(value ?? "").trim() === "") throw new Error("Enter a number.");
   const amount = Number(value);
   if (!Number.isFinite(amount)) throw new Error("Enter a valid number.");
 
@@ -180,8 +181,8 @@ export function textStatistics(text) {
   const value = String(text ?? "");
   const words = value.trim() ? value.trim().split(/\s+/u).length : 0;
   return {
-    characters: value.length,
-    charactersWithoutSpaces: value.replace(/\s/gu, "").length,
+    characters: Array.from(value).length,
+    charactersWithoutSpaces: Array.from(value.replace(/\s/gu, "")).length,
     words,
     lines: value.length ? value.split(/\r\n|\r|\n/).length : 0
   };
