@@ -10,7 +10,7 @@ function outputName(file, extension) {
 }
 
 async function decodeImage(file) {
-  if (file.size > 30 * 1024 * 1024) throw new Error(`"${file.name}" is larger than 30 MB.`);
+  if (file.size > 20 * 1024 * 1024) throw new Error(`"${file.name}" is larger than 20 MB.`);
   if (!ACCEPTED_INPUT.test(file.name) && !ACCEPTED_MIME.has(file.type)) {
     throw new Error(`"${file.name}" is unsupported. Use still PNG, JPG, WEBP, or BMP images.`);
   }
