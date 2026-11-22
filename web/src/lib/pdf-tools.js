@@ -249,7 +249,8 @@ export async function renderPdf(file, scale, onProgress) {
       report(onProgress, Math.round(number / pdf.numPages * 85), `Rendered page ${number} of ${pdf.numPages}`);
       await new Promise((resolve) => setTimeout(resolve, 0));
     }
-    await pdf.destroy();
+    await loadingTask.destroy();
+    loadingTask = null;
     const count = await downloadZip(entries, `${safeFilename(file.name)}-pages-png.zip`, onProgress);
     report(onProgress, 100, "Page images downloaded.");
     return count;
