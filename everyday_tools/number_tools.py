@@ -50,7 +50,12 @@ def percent_change(old_value: float, new_value: float) -> float:
         raise ValueError("The starting value cannot be zero for percentage change.")
 
     scale = abs(old_value)
-    result = (new_value / scale - old_value / scale) * 100
+    difference = new_value - old_value
+    if math.isfinite(difference):
+        result = difference / scale * 100
+    else:
+        # Scale first only when subtraction overflows for opposite large values.
+        result = (new_value / scale - old_value / scale) * 100
     _require_finite(result, "Percentage change")
     return result
 
@@ -82,7 +87,7 @@ def convert_unit(category: str, value: float, from_unit: str, to_unit: str) -> f
 def _convert_temperature(value: float, from_unit: str, to_unit: str) -> float:
     to_celsius = {
         "c": lambda temp: temp,
-        "f": lambda temp: (temp - 32) * 5 / 9,
+        "f": lambda temp: (temp - 32) * (5 / 9),
         "k": lambda temp: temp - 273.15,
     }
     from_celsius = {

@@ -50,6 +50,10 @@ class NumberToolsTests(unittest.TestCase):
         self.assertAlmostEqual(convert_unit("temperature", 100, "c", "f"), 212)
         self.assertAlmostEqual(convert_unit("temperature", 32, "f", "c"), 0)
 
+    def test_large_fahrenheit_value_can_convert_to_celsius(self):
+        converted = convert_unit("temperature", 1e308, "f", "c")
+        self.assertAlmostEqual(converted / 1e308, 5 / 9)
+
     def test_unknown_unit_is_rejected(self):
         with self.assertRaises(ValueError):
             convert_unit("length", 10, "km", "parsec")
