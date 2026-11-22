@@ -1,0 +1,18 @@
+{
+  "name": "Everyday Tools",
+  "short_name": "Everyday Tools",
+  "description": "Local PDF, image and text tools",
+  "start_url": "/everyday-tools-python/",
+  "scope": "/everyday-tools-python/",
+  "display": "standalone",
+  "background_color": "#f7f8fa",
+  "theme_color": "#f7f8fa",
+  "icons": [
+    {
+      "src": "/everyday-tools-python/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
