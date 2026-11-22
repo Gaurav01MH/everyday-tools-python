@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { readdir, readFile, writeFile } from "node:fs/promises";
+import { cp, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -15,6 +15,18 @@ async function walk(directory) {
     else if (entry.isFile() && entry.name !== "sw.js") files.push(path);
   }
   return files;
+}
+
+// Ship PDF.js support data locally. PDF character maps, standard fonts,
+ // ICC profiles, and WASM decoders must be available offline and same-origin.
+const pdfjsSource = join(webRoot, "node_modules", "pdfjs-dist");
+const pdfjsDestination = join(distRoot, "pdfjs");
+await mkdir(pdfjsDestination, { recursive: true });
+for (const folder of ["cmaps", "iccs", "standard_fonts", "wasm"]) {
+  await cp(join(pdfjsSource, folder), join(pdfjsDestination, folder), {
+    recursive: true,
+    force: true
+  });
 }
 
 const files = (await walk(distRoot)).sort();
