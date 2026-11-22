@@ -1,4 +1,4 @@
-import { assertInputFiles, formatBytes, convertUnit } from "./lib/core.js";
+import { assertInputFiles, formatBytes, MAX_TOTAL_BYTES } from "./lib/core.js";
 import { mergePdfs, splitPdf, extractPdfPages, rotatePdf, imagesToPdf, renderPdf } from "./lib/pdf-tools.js";
 import { processImages } from "./lib/image-tools.js";
 import { runTextTool } from "./lib/text-tools.js";
@@ -96,7 +96,6 @@ const units = {
 let mode = "pdf";
 let selectedFiles = [];
 let busy = false;
-let lastOutput = "";
 
 function makeOption(value, text) {
   const option = document.createElement("option");
@@ -111,9 +110,7 @@ function setMode(nextMode) {
   for (const tab of elements.tabs) {
     const active = tab.dataset.mode === mode;
     tab.classList.toggle("is-active", active);
-    tab.setAttribute("aria-selected", String(active));
-    if (active) tab.id = "active-tab";
-    else tab.removeAttribute("id");
+    tab.setAttribute("aria-pressed", String(active));
   }
   elements.workspaceTitle.textContent = definitions[mode].title;
   elements.workspaceDescription.textContent = definitions[mode].description;
@@ -191,7 +188,7 @@ function updateOperation() {
   elements.textSection.hidden = !isText;
   elements.fileSection.hidden = !isFile;
   elements.operation.closest(".field-row").hidden = false;
-  elements.fileInput.multiple = ["merge", "images-pdf"].includes(operation) || mode === "images" || operation === "render";
+  elements.fileInput.multiple = ["merge", "images-pdf"].includes(operation) || mode === "images";
   elements.fileInput.accept = mode === "pdf"
     ? operation === "images-pdf" ? "image/png,image/jpeg,image/webp,image/bmp,.png,.jpg,.jpeg,.webp,.bmp" : ".pdf,application/pdf"
     : "image/png,image/jpeg,image/webp,image/bmp,.png,.jpg,.jpeg,.webp,.bmp";
@@ -247,6 +244,9 @@ function updateOperation() {
     const needsExtra = operation === "percent-of" || operation === "percent-change";
     elements.textExtraRow.hidden = !needsExtra;
     elements.unitRow.hidden = operation !== "unit-convert";
+    const inputLabel = elements.textSection.querySelector('label[for="text-input"]');
+    inputLabel.textContent = operation === "percent-of" ? "Percentage" : operation === "percent-change" ? "Starting value" : operation === "unit-convert" ? "Value" : operation === "stats" ? "Text to analyse" : "Input";
+    if (operation === "unit-convert") elements.textInput.placeholder = "Enter a number";
     if (needsExtra) {
       elements.textExtraRow.querySelector("label").textContent = operation === "percent-of" ? "Value" : "New value";
       elements.textInput.placeholder = operation === "percent-of" ? "Percentage" : "Starting value";
@@ -353,9 +353,9 @@ function addFiles(files) {
     showMessage("Choose no more than 20 files at a time.", "error");
   }
   const total = selectedFiles.reduce((sum, file) => sum + file.size, 0);
-  if (total > 150 * 1024 * 1024) {
+  if (total > MAX_TOTAL_BYTES) {
     selectedFiles = [];
-    showMessage("The selected files exceed the 150 MB total limit.", "error");
+    showMessage("The selected files exceed the 100 MB total limit.", "error");
   } else {
     clearResult();
   }
@@ -370,7 +370,6 @@ function clearResult() {
   elements.resultActions.replaceChildren();
   elements.progress.hidden = true;
   elements.progress.value = 0;
-  lastOutput = "";
 }
 
 function showMessage(message, status = "success") {
@@ -485,7 +484,6 @@ async function runText(operation) {
     to: elements.unitTo.value
   };
   const result = runTextTool(operation, elements.textInput.value, elements.textExtraInput.value, options);
-  lastOutput = result;
   showTextResult(result);
   showMessage("Your result is ready. Nothing was sent to a server.", "success");
 }
@@ -510,16 +508,7 @@ async function handleSubmit(event) {
   try {
     if (mode === "pdf") await runPdf(currentOperation());
     else await runImage(currentOperation());
-    if (elements.resultTitle.textContent !== "Done") {
-      showMessage("Your download is ready. Source files were not changed.", "success");
-    } else if (elements.resultTitle.textContent === "Working") {
-      showMessage("Your download is ready. Source files were not changed.", "success");
-    } else {
-      elements.resultTitle.textContent = "Done";
-      elements.resultStatus.textContent = "Completed";
-      elements.resultStatus.className = "result-status status-success";
-      elements.progress.hidden = true;
-    }
+    showMessage("Your download is ready. Source files were not changed.", "success");
   } catch (error) {
     showMessage(error.message || "The file could not be processed.", "error");
   } finally {
@@ -575,7 +564,9 @@ setMode("pdf");
 
 if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/everyday-tools-python/sw.js", { scope: "/everyday-tools-python/" })
+    const baseUrl = new URL(import.meta.env.BASE_URL, location.origin);
+    const workerUrl = new URL("sw.js", baseUrl).toString();
+    navigator.serviceWorker.register(workerUrl, { scope: baseUrl.pathname })
       .catch(() => {
         const note = document.querySelector(".privacy-note");
         if (note) note.title = "Offline caching is unavailable in this browser session.";
