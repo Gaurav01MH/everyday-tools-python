@@ -276,6 +276,16 @@ function updateTextControls() {
   const needsExtra = operation === "percent-of" || operation === "percent-change";
   elements.textExtraRow.hidden = !needsExtra;
   elements.unitRow.hidden = operation !== "unit-convert";
+  const inputLabel = elements.textSection.querySelector('label[for="text-input"]');
+  inputLabel.textContent = operation === "percent-of" ? "Percentage" :
+    operation === "percent-change" ? "Starting value" :
+    operation === "unit-convert" ? "Value" :
+    operation === "stats" ? "Text to analyse" : "Input";
+  elements.textInput.placeholder = operation === "unit-convert" ? "Enter a number" :
+    operation === "percent-of" ? "Enter a percentage" :
+    operation === "percent-change" ? "Enter the starting value" :
+    operation.startsWith("json") ? "Paste JSON here" :
+    operation === "csv-json" ? "Paste CSV here" : "Paste or type your text here";
   if (operation === "unit-convert") updateUnitOptions();
 }
 
