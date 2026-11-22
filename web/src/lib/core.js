@@ -90,7 +90,7 @@ export function parseCsv(text) {
       continue;
     }
 
-    if (afterQuote && /\\s/.test(char)) continue;
+    if (afterQuote && (char === " " || char === "\\t")) continue;
     if (afterQuote && char !== "," && char !== "\\r" && char !== "\\n") {
       throw new Error("Unexpected characters after a quoted CSV field.");
     }
