@@ -1,0 +1,53 @@
+name: Browser app checks
+
+on:
+  push:
+    branches:
+      - app/browser-tools-website
+      - main
+  pull_request:
+    paths:
+      - "web/**"
+      - ".github/workflows/web-tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  web-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install pinned dependencies
+        working-directory: web
+        run: npm install --no-audit --no-fund
+      - name: Run utility unit tests
+        working-directory: web
+        run: npm test
+      - name: Check production dependencies for high and critical advisories
+        working-directory: web
+        run: npm audit --omit=dev --audit-level=high
+      - name: Build GitHub Pages version
+        working-directory: web
+        env:
+          GITHUB_PAGES: "true"
+        run: npm run build
+      - name: Verify output has expected app files
+        working-directory: web
+        run: |
+          test -s dist/index.html
+          test -s dist/sw.js
+          test -s dist/manifest.webmanifest
+          grep -q "/everyday-tools-python/" dist/index.html
+      - name: Install Chromium for browser checks
+        working-directory: web
+        run: npx playwright install --with-deps chromium
+      - name: Run browser, PDF, mobile and accessibility checks
+        working-directory: web
+        run: npm run test:e2e
