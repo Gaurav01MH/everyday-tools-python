@@ -114,7 +114,7 @@ export async function processImages(files, operation, options, onProgress) {
   if (!results.length) throw new Error(failures.join("\n") || "No image could be processed.");
   const outputBytes = results.reduce((sum, result) => sum + result.blob.size, 0);
   if (outputBytes > MAX_TOTAL_OUTPUT_BYTES) {
-    throw new Error("The converted images would exceed the 200 MB download limit. Process fewer images at a time or use smaller dimensions.");
+    throw new Error("The converted images would exceed the 100 MB download limit. Process fewer images at a time or use smaller dimensions.");
   }
   if (results.length === 1) {
     const result = results[0];
