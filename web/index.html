@@ -35,7 +35,7 @@
       <nav class="tool-nav" aria-label="Tool categories">
         <button class="nav-tab is-active" type="button" aria-pressed="true" data-mode="pdf">PDF tools</button>
         <button class="nav-tab" type="button" aria-pressed="false" data-mode="images">Image tools</button>
-        <button class="nav-tab" type="button" role="tab" aria-selected="false" aria-controls="workspace" data-mode="text">Text &amp; data</button>
+        <button class="nav-tab" type="button" aria-pressed="false" data-mode="text">Text &amp; data</button>
       </nav>
 
       <section id="workspace" class="workspace">
@@ -125,8 +125,8 @@
       <div class="dialog-body">
         <p><strong>Your documents are not uploaded.</strong> The app reads files you select and processes them in your browser. It has no server-side file upload, account, analytics, ads, or AI service.</p>
         <p>The website itself must be downloaded from GitHub Pages the first time. GitHub receives standard hosting request metadata (including visitor IP addresses) for security; the selected documents are not uploaded. After it has loaded, its static app files can be cached for offline use. Your files are never placed in that cache.</p>
-        <p>To keep browser memory use reasonable, this version limits total selected input to 100 MB, a batch to 20 files, and PDF processing to 400 pages per document. Large or unusual documents may still exceed your browser's memory.</p>
-        <p>Encrypted PDFs, scanned OCR, PDF text editing, signatures, and form filling are not supported. Image conversion depends on formats your browser can decode; animated images are not supported.</p>
+        <p>To keep browser memory use reasonable, this version limits total selected input to 100 MB, each PDF to 50 MB, each image to 20 MB and 16 megapixels, a batch to 20 files, and PDF processing to 250 pages per document (100 pages for PNG rendering). Generated PDF and ZIP downloads are limited to 100 MB. Large or unusual documents may still exceed your browser's memory.</p>
+        <p>Encrypted PDFs, OCR, PDF text editing, signatures, and form filling are not supported. PDF page-copy operations can discard document-level items such as bookmarks, attachments, form fields, and annotations; saving a changed PDF also invalidates existing digital signatures. Image conversion depends on formats your browser can decode; animated images are not supported.</p>
         <p>Always keep an original copy of important files. Processing creates new downloads and does not overwrite your source files.</p>
       </div>
     </dialog>
