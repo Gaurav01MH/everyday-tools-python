@@ -1,85 +1,102 @@
-# Everyday Tools (Python)
+# Everyday Tools
 
-A small, beginner-friendly collection of everyday utilities. The first version uses **only Python's standard library**. It does not upload files, need an account, or require a third-party package.
+A simple, free, local-first browser toolbox for everyday PDF, image, text and data tasks.
 
-## Requirements
+The website is a static app. It has no account, ads, AI API, analytics, backend, or file-upload service. The selected files are processed on the visitor's own device in the browser.
 
-- Python 3.11 or newer (tested with Python 3.13.5)
+## Current website features
 
-## Run it
+### PDF
+- Merge PDF files in the selected order.
+- Split a PDF into individual pages.
+- Extract selected pages and ranges.
+- Rotate selected pages.
+- Convert still images into a PDF.
+- Render PDF pages as PNG images.
 
-Open this folder in VS Code, choose **Terminal → New Terminal**, and run:
+### Images
+- Resize images with optional aspect-ratio preservation.
+- Convert between PNG, JPG and WEBP.
+- Compress JPG and WEBP output with a quality setting.
+- Process multiple images in one batch.
 
-```bash
-python --version
-python -m everyday_tools --help
+### Text and data
+- Character, word and line statistics.
+- Uppercase, lowercase, title case and sentence case.
+- Remove blank lines and duplicate lines.
+- Format and validate JSON.
+- CSV to JSON and JSON to CSV.
+- URL and Base64 encode/decode.
+- Percentage calculations.
+- Length, weight, time and temperature conversion.
+
+## Run the website locally
+
+Requirements: Node.js 22.12 or newer.
+
+```powershell
+cd web
+npm install
+npm run dev
 ```
 
-On Windows, `py` can be used instead of `python` if that is how Python is installed. No `pip install` is needed. Run commands from this folder, where the `everyday_tools` directory is visible.
+Open the local URL printed by Vite.
 
-## Commands
+## Tests and production build
 
-| Task | Example |
-|---|---|
-| Count text | `python -m everyday_tools text-count --text "Hello from Pune"` |
-| Count a file | `python -m everyday_tools text-count --file notes.txt` |
-| Change case | `python -m everyday_tools case --mode upper --text "hello world"` |
-| Clean lines | `python -m everyday_tools clean-lines --file names.txt --sort` |
-| Format JSON | `python -m everyday_tools json-format data.json --output formatted.json` |
-| Validate JSON | `python -m everyday_tools json-check data.json` |
-| CSV to JSON | `python -m everyday_tools csv-to-json examples/people.csv --output people.json` |
-| JSON to CSV | `python -m everyday_tools json-to-csv examples/people.json --output people.csv` |
-| URL encode | `python -m everyday_tools url-encode --text "hello world & Pune"` |
-| URL decode | `python -m everyday_tools url-decode --text "hello%20world"` |
-| Base64 encode text | `python -m everyday_tools base64-encode --text "hello"` |
-| Base64 decode text | `python -m everyday_tools base64-decode --text "aGVsbG8="` |
-| Percentage of amount | `python -m everyday_tools percent-of 18 1200` |
-| Percentage change | `python -m everyday_tools percent-change 80 100` |
-| Unit conversion | `python -m everyday_tools convert length 5 km m` |
+Run the unit tests:
 
-Text commands accept exactly one of `--text` or `--file`. Commands that transform text can use `--output result.txt` to save instead of printing to the terminal. JSON and CSV commands take a file path directly. The CSV-to-JSON conversion keeps CSV values as strings; it does not guess data types.
-
-### Supported units
-
-- Length: `mm`, `cm`, `m`, `km`, `in`, `ft`, `yd`, `mi`
-- Weight: `mg`, `g`, `kg`, `tonne`, `oz`, `lb`
-- Time: `ms`, `s`, `min`, `h`, `day`
-- Temperature: `c`, `f`, `k`
-
-Base64 commands handle **UTF-8 text only**, not binary files. Text word counts split on whitespace; they are simple counts, not linguistic analysis. Character counts use Python Unicode code points, not visual grapheme clusters.
-
-## Run the tests
-
-```bash
-python -m unittest discover -s tests -v
+```powershell
+cd web
+npm test
 ```
 
-The tests use `unittest`, which is included with Python.
+Run the production build:
 
-## Project structure
-
-```text
-everyday-tools-python/
-├── everyday_tools/       # Reusable utility functions and command-line interface
-├── tests/                # Automated tests (unittest)
-├── examples/             # Small CSV and JSON examples
-├── .github/workflows/    # Run tests on GitHub pushes and pull requests
-├── .gitignore
-├── LICENSE
-└── README.md
+```powershell
+$env:GITHUB_PAGES = "true"
+npm run build
 ```
 
-The utility functions are separated from the command-line interface. A future website or API can import the functions without needing to imitate terminal commands.
+Run browser, PDF, mobile-layout and accessibility checks:
 
-## Roadmap
+```powershell
+npm run test:e2e
+```
 
-1. **v0.1 — Core Python:** text, JSON/CSV, URL/Base64 text, percentages, and common unit conversions.
-2. **v0.2 — File utilities:** add carefully tested PDF and image operations behind optional dependencies.
-3. **v0.3 — API layer:** expose stable core functions through a small Python API when the main app is ready.
-4. **Web app:** build only after the Python features and their tests are dependable.
+The automated workflows run unit tests, production dependency security audit, a GitHub Pages build, Playwright browser tests and axe accessibility checks.
 
-New utilities should be added only when the feature has a clear use, a simple interface, and tests. Avoid dependencies until a feature actually needs them.
+## Hosting
 
-## Scope of this version
+The website is configured for GitHub Pages on the public repository. The intended address is:
 
-This is a Python command-line foundation, not the future website. It intentionally does not include PDF, image, QR, GUI, account, network-upload, or binary-file processing yet. Those features will be considered only after their Python libraries and privacy implications are tested.
+`https://gaurav01mh.github.io/everyday-tools-python/`
+
+To enable publishing, open **Repository Settings → Pages → Build and deployment → Source** and select **GitHub Actions**. After that, the Pages workflow builds and deploys the site when the website branch is updated. The site must pass its workflow before its link should be treated as live.
+
+GitHub Pages is static hosting; there is no paid application server or usage-credit runtime. GitHub's own hosting and Actions terms/limits still apply.
+
+## Privacy and security
+
+- Source documents are read as local browser files; the application does not send them to a server.
+- The app code has no analytics, ad network, account, or AI service.
+- Dependencies are pinned and bundled with the site; there are no runtime CDNs.
+- A restrictive Content Security Policy is included.
+- A service worker caches the site files after the first successful visit. It does not cache selected documents.
+- Downloads are new files; the app does not edit the originals in place.
+
+GitHub Pages still receives normal website request metadata, such as visitor IP addresses, for hosting and security.
+
+See [web/README.md](web/README.md) and [web/public/THIRD_PARTY_NOTICES.md](web/public/THIRD_PARTY_NOTICES.md) for implementation and license details.
+
+## Browser limits and unsupported work
+
+The browser app deliberately uses conservative limits: 100 MB total selected input, 50 MB per PDF, 20 MB per image, 16 megapixels per image, 20 files per batch, 250 pages per PDF, and 100 MB per generated PDF/ZIP. PDF rendering has additional page and pixel limits. Browser/device memory can still be lower than these ceilings.
+
+Encrypted PDFs, OCR, PDF text editing, signatures and form filling are not supported. PDF page-copy operations may not preserve document-level objects such as bookmarks, attachments, forms and annotations. Saving a modified PDF invalidates existing digital signatures. Animated images are not accepted.
+
+Keep original copies of important documents and verify results before sharing them.
+
+## Project status
+
+Website development is on the separate `app/browser-tools-website` branch. The default `main` branch has not been changed. The website should not be considered released until the CI checks pass and GitHub Pages reports a successful deployment.
