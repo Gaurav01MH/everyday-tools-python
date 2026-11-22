@@ -193,7 +193,7 @@ function updateOperation() {
     ? operation === "images-pdf" ? "image/png,image/jpeg,image/webp,image/bmp,.png,.jpg,.jpeg,.webp,.bmp" : ".pdf,application/pdf"
     : "image/png,image/jpeg,image/webp,image/bmp,.png,.jpg,.jpeg,.webp,.bmp";
   elements.fileHint.textContent = mode === "pdf"
-    ? operation === "images-pdf" ? "PNG, JPG, WEBP or BMP · Up to 20 images" : "PDF files · Up to 20 files"
+    ? operation === "images-pdf" ? "PNG, JPG, WEBP or BMP · Up to 20 images" : operation === "merge" ? "PDF files · Up to 12 files" : "PDF files · One file at a time"
     : "PNG, JPG, WEBP or BMP · Up to 20 images";
   elements.fileInput.required = isFile;
   elements.options.replaceChildren();
@@ -385,8 +385,8 @@ function clearResult() {
 function showMessage(message, status = "success") {
   elements.result.hidden = false;
   elements.resultTitle.textContent = status === "error" ? "Could not finish" : "Done";
-  elements.resultStatus.textContent = status === "error" ? "Check input" : "Completed";
-  elements.resultStatus.className = `result-status ${status === "error" ? "status-error" : "status-success"}`;
+  elements.resultStatus.textContent = status === "error" ? "Check input" : status === "warning" ? "Partial result" : "Completed";
+  elements.resultStatus.className = `result-status ${status === "error" ? "status-error" : status === "warning" ? "status-warning" : "status-success"}`;
   elements.resultMessage.textContent = message;
   elements.progress.hidden = true;
 }
@@ -483,8 +483,9 @@ async function runImage(operation) {
     quality
   }, updateProgress);
   if (result.failures.length) {
-    throw new Error(`Downloaded ${result.succeeded} image(s), but ${result.failures.length} failed:\n${result.failures.join("\n")}`);
+    return `Downloaded ${result.succeeded} image(s). ${result.failures.length} could not be processed:\n${result.failures.join("\n")}`;
   }
+  return "";
 }
 
 async function runText(operation) {
@@ -516,9 +517,10 @@ async function handleSubmit(event) {
   elements.progress.hidden = false;
   elements.progress.value = 0;
   try {
+    let warning = "";
     if (mode === "pdf") await runPdf(currentOperation());
-    else await runImage(currentOperation());
-    showMessage("Your download is ready. Source files were not changed.", "success");
+    else warning = await runImage(currentOperation());
+    showMessage(warning || "Your download is ready. Source files were not changed.", warning ? "warning" : "success");
   } catch (error) {
     showMessage(error.message || "The file could not be processed.", "error");
   } finally {
