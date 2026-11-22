@@ -6,10 +6,19 @@ import json
 from collections.abc import Mapping
 
 
+def _reject_json_constant(value: str) -> None:
+    raise ValueError(f"Invalid JSON constant: {value}.")
+
+
+def load_json(source: str):
+    """Parse standard-compliant JSON, rejecting NaN and Infinity tokens."""
+    return json.loads(source, parse_constant=_reject_json_constant)
+
+
 def format_json(source: str, indent: int = 2) -> str:
     """Validate JSON and return a consistently formatted representation."""
-    value = json.loads(source)
-    return json.dumps(value, ensure_ascii=False, indent=indent)
+    value = load_json(source)
+    return json.dumps(value, ensure_ascii=False, indent=indent, allow_nan=False)
 
 
 def csv_to_json(source: str) -> str:
@@ -25,12 +34,12 @@ def csv_to_json(source: str) -> str:
     rows = list(reader)
     if any(None in row for row in rows):
         raise ValueError("A CSV row contains more values than the header.")
-    return json.dumps(rows, ensure_ascii=False, indent=2)
+    return json.dumps(rows, ensure_ascii=False, indent=2, allow_nan=False)
 
 
 def json_to_csv(source: str) -> str:
     """Convert a JSON array of objects into CSV text."""
-    rows = json.loads(source)
+    rows = load_json(source)
     if not isinstance(rows, list):
         raise ValueError("JSON input must be an array of objects.")
     if not rows:
@@ -51,7 +60,9 @@ def json_to_csv(source: str) -> str:
     writer.writeheader()
     for row in rows:
         normalized = {
-            key: json.dumps(value, ensure_ascii=False) if isinstance(value, (dict, list)) else value
+            key: json.dumps(value, ensure_ascii=False, allow_nan=False)
+            if isinstance(value, (dict, list))
+            else value
             for key, value in row.items()
         }
         writer.writerow(normalized)

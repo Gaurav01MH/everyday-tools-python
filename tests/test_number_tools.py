@@ -7,6 +7,17 @@ class NumberToolsTests(unittest.TestCase):
     def test_percent_of(self):
         self.assertEqual(percent_of(18, 1200), 216)
 
+    def test_percent_of_large_amount_without_intermediate_overflow(self):
+        self.assertEqual(percent_of(100, 1e308), 1e308)
+
+    def test_unrepresentable_results_are_rejected(self):
+        with self.assertRaises(ValueError):
+            percent_of(1e308, 1e308)
+        with self.assertRaises(ValueError):
+            percent_change(1e-308, 1e308)
+        with self.assertRaises(ValueError):
+            convert_unit("temperature", 1e308, "c", "f")
+
     def test_non_finite_numbers_are_rejected(self):
         for value in (float("nan"), float("inf"), float("-inf")):
             with self.subTest(value=value), self.assertRaises(ValueError):
@@ -18,6 +29,9 @@ class NumberToolsTests(unittest.TestCase):
         self.assertEqual(percent_change(80, 100), 25)
         self.assertEqual(percent_change(100, 80), -20)
 
+    def test_percent_change_avoids_intermediate_overflow(self):
+        self.assertEqual(percent_change(-1e308, 1e308), 200)
+
     def test_percent_change_from_zero_is_rejected(self):
         with self.assertRaises(ValueError):
             percent_change(0, 5)
@@ -27,6 +41,7 @@ class NumberToolsTests(unittest.TestCase):
 
     def test_weight_conversion(self):
         self.assertAlmostEqual(convert_unit("weight", 1, "kg", "g"), 1000)
+        self.assertEqual(convert_unit("weight", 1e308, "kg", "tonne"), 1e305)
 
     def test_time_conversion(self):
         self.assertAlmostEqual(convert_unit("time", 2, "h", "min"), 120)

@@ -1,12 +1,11 @@
 """Command-line interface for Everyday Tools."""
 
 import argparse
-import json
 import sys
 from pathlib import Path
 
 from . import __version__
-from .data_tools import csv_to_json, format_json, json_to_csv
+from .data_tools import csv_to_json, format_json, json_to_csv, load_json
 from .number_tools import convert_unit, percent_change, percent_of
 from .text_tools import change_case, clean_lines, text_statistics
 from .web_tools import base64_decode_text, base64_encode_text, url_decode, url_encode
@@ -105,7 +104,7 @@ def run(args: argparse.Namespace) -> None:
     elif command == "json-format":
         _write_result(format_json(args.file.read_text(encoding="utf-8")), args.output)
     elif command == "json-check":
-        json.loads(args.file.read_text(encoding="utf-8"))
+        load_json(args.file.read_text(encoding="utf-8"))
         print("Valid JSON.")
     elif command == "csv-to-json":
         result = csv_to_json(args.file.read_text(encoding="utf-8"))
@@ -136,6 +135,6 @@ def main() -> None:
     args = parser.parse_args()
     try:
         run(args)
-    except (OSError, UnicodeError, ValueError, json.JSONDecodeError) as exc:
+    except (OSError, UnicodeError, ValueError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         raise SystemExit(1) from None

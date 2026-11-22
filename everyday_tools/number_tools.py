@@ -38,7 +38,9 @@ TIME_TO_SECONDS = {
 def percent_of(percent: float, amount: float) -> float:
     _require_finite(percent, "Percentage")
     _require_finite(amount, "Amount")
-    return amount * percent / 100
+    result = amount * (percent / 100)
+    _require_finite(result, "Percentage result")
+    return result
 
 
 def percent_change(old_value: float, new_value: float) -> float:
@@ -46,7 +48,11 @@ def percent_change(old_value: float, new_value: float) -> float:
     _require_finite(new_value, "New value")
     if old_value == 0:
         raise ValueError("The starting value cannot be zero for percentage change.")
-    return (new_value - old_value) / abs(old_value) * 100
+
+    scale = abs(old_value)
+    result = (new_value / scale - old_value / scale) * 100
+    _require_finite(result, "Percentage change")
+    return result
 
 
 def convert_unit(category: str, value: float, from_unit: str, to_unit: str) -> float:
@@ -66,7 +72,11 @@ def convert_unit(category: str, value: float, from_unit: str, to_unit: str) -> f
     if from_unit not in units or to_unit not in units:
         choices = ", ".join(units)
         raise ValueError(f"Unknown {category} unit. Available units: {choices}.")
-    return value * units[from_unit] / units[to_unit]
+
+    conversion_factor = units[from_unit] / units[to_unit]
+    result = value * conversion_factor
+    _require_finite(result, "Converted value")
+    return result
 
 
 def _convert_temperature(value: float, from_unit: str, to_unit: str) -> float:
@@ -82,10 +92,12 @@ def _convert_temperature(value: float, from_unit: str, to_unit: str) -> float:
     }
     if from_unit not in to_celsius or to_unit not in from_celsius:
         raise ValueError("Temperature units must be c, f, or k.")
+
     celsius = to_celsius[from_unit](value)
+    _require_finite(celsius, "Converted temperature")
     if celsius < -273.15:
         raise ValueError("Temperature cannot be below absolute zero.")
+
     result = from_celsius[to_unit](celsius)
-    if to_unit == "k" and result < 0:
-        raise ValueError("Temperature cannot be below absolute zero.")
+    _require_finite(result, "Converted temperature")
     return result

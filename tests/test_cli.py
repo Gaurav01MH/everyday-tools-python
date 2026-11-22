@@ -46,6 +46,14 @@ class CommandLineTests(unittest.TestCase):
             self.assertEqual(result.returncode, 1)
             self.assertIn("Error:", result.stderr)
 
+    def test_json_check_rejects_non_standard_constants(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "non-standard.json"
+            source.write_text('{"value": NaN}', encoding="utf-8")
+            result = self.run_cli("json-check", str(source))
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("Invalid JSON constant: NaN.", result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()
