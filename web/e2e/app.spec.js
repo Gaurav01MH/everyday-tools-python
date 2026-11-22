@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { PDFDocument, degrees } from "pdf-lib";
+import JSZip from "jszip";
 import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 
@@ -105,6 +106,40 @@ test("PDF rotation adds to the existing page rotation", async ({ page }) => {
   const download = await downloadPromise;
   const output = await PDFDocument.load(await readFile(await download.path()));
   expect(output.getPage(0).getRotation().angle).toBe(180);
+});
+
+test("renders a PDF page to a PNG inside a downloadable ZIP", async ({ page }) => {
+  await page.goto("/");
+  const source = await makePdf([[300, 400]]);
+  await choosePdf(page, "render", "render-sample.pdf", source);
+  await page.getByRole("button", { name: "Run tool" }).click();
+  const download = await page.waitForEvent("download");
+  expect(download.suggestedFilename()).toBe("render-sample-pages-png.zip");
+  const zip = await JSZip.loadAsync(await readFile(await download.path()));
+  const png = zip.file("page-001.png");
+  expect(png).not.toBeNull();
+  const bytes = await png.async("uint8array");
+  expect([...bytes.slice(0, 8)]).toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
+});
+
+test("converts a browser image and downloads the chosen format", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Image tools" }).click();
+  await page.getByLabel("Choose a task").selectOption("convert");
+  const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/8ioAAAAASUVORK5CYII=", "base64");
+  await page.locator("#file-input").setInputFiles({
+    name: "tiny.png",
+    mimeType: "image/png",
+    buffer: png
+  });
+  await page.getByLabel("Output format").selectOption("image/webp");
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Run tool" }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe("tiny.webp");
+  const bytes = await readFile(await download.path());
+  expect(bytes.subarray(0, 4).toString("ascii")).toBe("RIFF");
+  expect(bytes.subarray(8, 12).toString("ascii")).toBe("WEBP");
 });
 
 test("mobile layout has no horizontal page overflow", async ({ page }) => {
