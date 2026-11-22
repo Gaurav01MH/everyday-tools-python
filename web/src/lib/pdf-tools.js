@@ -42,6 +42,13 @@ function saveBlob(blob, filename) {
   window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
 
+function savePdf(bytes, filename) {
+  if (bytes.byteLength > MAX_TOTAL_OUTPUT_BYTES) {
+    throw new Error("The generated PDF exceeds the 100 MB download limit. Process fewer pages or smaller images.");
+  }
+  saveBlob(new Blob([bytes], { type: "application/pdf" }), filename);
+}
+
 async function downloadZip(entries, filename, onProgress) {
   const outputBytes = entries.reduce((sum, entry) => sum + entry.bytes.byteLength, 0);
   if (outputBytes > MAX_TOTAL_OUTPUT_BYTES) {
@@ -74,7 +81,7 @@ export async function mergePdfs(files, onProgress) {
   }
 
   const bytes = await output.save();
-  saveBlob(new Blob([bytes], { type: "application/pdf" }), "merged.pdf");
+  savePdf(bytes, "merged.pdf");
   report(onProgress, 100, "Merged PDF downloaded.");
   return pagesDone;
 }
@@ -105,7 +112,7 @@ export async function extractPdfPages(file, selection, onProgress) {
   const copied = await output.copyPages(document, indexes);
   copied.forEach((page) => output.addPage(page));
   const bytes = await output.save();
-  saveBlob(new Blob([bytes], { type: "application/pdf" }), `${safeFilename(file.name)}-selected-pages.pdf`);
+  savePdf(bytes, `${safeFilename(file.name)}-selected-pages.pdf`);
   report(onProgress, 100, `Downloaded ${indexes.length} selected page(s).`);
   return indexes.length;
 }
@@ -122,7 +129,7 @@ export async function rotatePdf(file, selection, angle, onProgress) {
     pages[index].setRotation(degrees((current + degreesValue) % 360));
   }
   const bytes = await document.save();
-  saveBlob(new Blob([bytes], { type: "application/pdf" }), `${safeFilename(file.name)}-rotated.pdf`);
+  savePdf(bytes, `${safeFilename(file.name)}-rotated.pdf`);
   report(onProgress, 100, `Rotated ${indexes.length} page(s).`);
   return indexes.length;
 }
@@ -181,7 +188,7 @@ export async function imagesToPdf(files, onProgress) {
   }
 
   const bytes = await output.save();
-  saveBlob(new Blob([bytes], { type: "application/pdf" }), "images.pdf");
+  savePdf(bytes, "images.pdf");
   report(onProgress, 100, "PDF downloaded.");
   return files.length;
 }
