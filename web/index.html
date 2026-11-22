@@ -13,7 +13,7 @@
     <title>Everyday Tools</title>
   </head>
   <body>
-    <header class="site-header">
+    <header class="site-header" id="home">
       <a class="brand" href="#home" aria-label="Everyday Tools home">
         <span class="brand-mark" aria-hidden="true">ET</span>
         <span>Everyday Tools</span>
@@ -105,7 +105,7 @@
             <h3 id="result-title">Ready</h3>
             <span id="result-status" class="result-status"></span>
           </div>
-          <progress id="progress-bar" max="100" value="0" hidden></progress>
+          <progress id="progress-bar" max="100" value="0" aria-label="Processing progress" hidden></progress>
           <p id="result-message" class="result-message"></p>
           <div id="result-actions" class="result-actions"></div>
         </section>
@@ -113,7 +113,7 @@
 
       <footer class="site-footer">
         <p>Free to use. No account or ads. Your selected files are processed in this browser; they are not sent to a server.</p>
-        <a href="#privacy" id="privacy-link">Privacy &amp; limits</a>
+        <a href="#privacy-dialog" id="privacy-link">Privacy &amp; limits</a>
       </footer>
     </main>
 
