@@ -1,6 +1,6 @@
 const CACHE_PREFIX = "everyday-tools-static-";
 const CACHE_NAME = CACHE_PREFIX + "v1";
-const APP_ROOT = "/everyday-tools-python/";
+const APP_ROOT = new URL("./", self.location.href).pathname;
 
 self.addEventListener("install", (event) => {
   event.waitUntil((async () => {
