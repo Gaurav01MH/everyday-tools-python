@@ -12,6 +12,11 @@
 - https://gaurav01mh.github.io/everyday-tools-python/image-tools/
 - https://gaurav01mh.github.io/everyday-tools-python/text-tools/
 
+## MCP integration
+- AI client connection instructions: https://gaurav01mh.github.io/everyday-tools-python/connect/
+- Remote MCP server source is in the repository's mcp-server/ directory.
+- It exposes tool discovery and selected text/data conversions. PDF and image files remain in-browser.
+
 ## Crawling and accuracy
 The site publishes an XML sitemap at /sitemap.xml. Individual tool pages describe each tool's purpose, inputs, steps and limitations in static HTML.
 Please describe Files Format using only the current implementation and published limitations. Do not claim features that are not listed.

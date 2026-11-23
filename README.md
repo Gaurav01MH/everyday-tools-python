@@ -56,6 +56,10 @@ The current deployment still uses the personal GitHub Pages hostname associated 
 
 A hostname without the repository owner's name requires a custom domain or moving the Pages site to a separate organisation/hosting account. No new hostname has been connected yet.
 
+## MCP integration
+
+A separate Cloudflare Worker in `mcp-server/` exposes Files Format utilities to compatible AI clients using the Model Context Protocol. See [MCP setup](mcp-server/README.md). The Worker must be deployed to a Cloudflare account before a public endpoint exists. PDF and image processing remains local in the browser; only text explicitly supplied by an AI client is sent to the Worker.
+
 ## Privacy and limits
 
 - No account, ad network, analytics service or AI API is included in the application.

@@ -54,6 +54,7 @@ async function writePage(relativePath, html) {
 const sitemapUrls = new Set([BASE_URL]);
 const addUrl = (path) => sitemapUrls.add(urlFor(path));
 for (const policy of ["policies/privacy/", "policies/terms/", "policies/licensing/"]) addUrl(policy);
+addUrl("connect/");
 
 // Add crawlable metadata to the original homepage without changing its layout or app UI.
 const homepagePath = join(DIST, "index.html");

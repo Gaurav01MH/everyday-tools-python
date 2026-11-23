@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Connect AI tools — Files Format</title>
+  <meta name="description" content="Connect Files Format to compatible AI clients using its remote Model Context Protocol server.">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://gaurav01mh.github.io/everyday-tools-python/connect/">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/site-pages.css">
+</head>
+<body>
+<main class="document-page">
+  <a class="back-link" href="../">← Files Format home</a>
+  <p class="eyebrow">AI integration</p>
+  <h1>Connect Files Format to AI tools</h1>
+  <p class="summary">Files Format includes a remote MCP server for AI clients that support the Model Context Protocol (MCP). This is a modern MCP integration, not the old-style plugin store.</p>
+
+  <h2>What the connector exposes</h2>
+  <ul>
+    <li>Search and list all 27 Files Format utilities.</li>
+    <li>Read tool descriptions and return direct links that open the matching utility in the website.</li>
+    <li>Run 18 text and data operations, including JSON, CSV, case conversion, URL/Base64, percentage calculations and unit conversion.</li>
+  </ul>
+  <p>PDF and image operations remain in your browser. The MCP service does not accept PDF or image uploads.</p>
+
+  <h2>Free MCP address</h2>
+  <p>The connector is designed for Cloudflare Workers Free and uses the account's included <code>workers.dev</code> subdomain. No purchased domain is needed for the MCP endpoint. Cloudflare assigns your account subdomain; the final address will look like this:</p>
+  <p><code>https://files-format-mcp.YOUR-SUBDOMAIN.workers.dev/mcp</code></p>
+  <p>This is a separate free subdomain. It cannot be placed under this GitHub Pages hostname without moving the website behind a host that can route both the website and the Worker.</p>
+
+  <h2>Deploy the MCP server</h2>
+  <p>The source is stored in this repository under <code>mcp-server/</code>. A Cloudflare account is needed to create the free <code>workers.dev</code> address and deploy the Worker.</p>
+  <ol>
+    <li>Open <a href="https://dash.cloudflare.com/">Cloudflare Dashboard</a> and create or sign in to an account.</li>
+    <li>Open <strong>Workers &amp; Pages</strong> and connect this GitHub repository, or deploy through Wrangler from a terminal.</li>
+    <li>For Git integration, set the project root directory to <code>mcp-server</code>. Keep the Worker name as <code>files-format-mcp</code>.</li>
+    <li>Use <code>npm install</code> and <code>npm run deploy</code> as the install and deploy commands, or follow the CLI steps in the repository's <code>mcp-server/README.md</code>.</li>
+    <li>After deployment, Cloudflare will show the final <code>workers.dev</code> hostname. Add <code>/mcp</code> to it for the MCP URL.</li>
+  </ol>
+
+  <h2>Test it</h2>
+  <p>Open the deployed Worker's <code>/health</code> address. It should return a JSON response showing <code>status: ok</code>, five MCP actions and 27 catalogue tools. The connection URL to enter in an MCP client is the same hostname followed by <code>/mcp</code>.</p>
+
+  <h2>Connect an AI client</h2>
+  <p>In an MCP-compatible client, add a remote Streamable HTTP server using the public HTTPS <code>/mcp</code> address. The endpoint does not exist until the Worker is deployed in a Cloudflare account.</p>
+
+  <h2>ChatGPT compatibility</h2>
+  <p>OpenAI currently documents custom MCP connections for ChatGPT Business and Enterprise/Edu workspaces. Pro users can connect custom MCP servers with read/fetch permissions only. The current OpenAI requirements do not include the Free plan, so this connector cannot currently be added to a Free ChatGPT account. Other compatible AI clients may connect to the same endpoint.</p>
+  <p><a href="https://help.openai.com/en/articles/12584461-connecting-custom-mcp-servers-in-chatgpt">OpenAI's current MCP connection requirements</a> · <a href="https://developers.cloudflare.com/agents/model-context-protocol/guides/remote-mcp-server/">Cloudflare MCP guide</a></p>
+
+  <h2>Privacy and limits</h2>
+  <p>Tool discovery requests contain only search terms and tool slugs. When an AI client calls a text transformation, the text supplied by that client is sent to Cloudflare for processing. The Worker does not store the input in a database or file store, but Cloudflare processes the network request under its service terms. Do not send confidential information unless you are comfortable with that transfer.</p>
+  <p>Text input is limited to 32,000 characters per field. The connector does not expose file upload, account access, storage, delete or other write actions.</p>
+  <p><a href="../tools/">Browse all 27 tools</a>.</p>
+</main>
+</body>
+</html>

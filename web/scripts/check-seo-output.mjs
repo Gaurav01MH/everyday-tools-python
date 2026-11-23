@@ -32,7 +32,8 @@ const requiredPages = [
   "text-tools/",
   "policies/privacy/",
   "policies/terms/",
-  "policies/licensing/"
+  "policies/licensing/",
+  "connect/"
 ];
 
 for (const page of requiredPages) {

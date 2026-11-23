@@ -11,6 +11,10 @@ From this directory run `npm install`, `npm run dev`, `npm test`, `npm run build
 
 The production build creates the Vite app, copies PDF.js support resources, generates static HTML pages for each tool and category, creates the sitemap and llms.txt, and builds an offline service worker that caches static site assets only.
 
+## MCP integration
+
+The public `/connect/` page explains the separate remote MCP Worker. The website remains static and browser-only for file operations; the MCP server source is kept in the repository's `mcp-server/` directory.
+
 ## Search engine and AI discovery
 
 - Each tool has an individual static HTML page under `/tools/`.

@@ -1,0 +1,42 @@
+name: MCP server checks
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "mcp-server/**"
+      - "web/src/lib/tool-catalog.js"
+      - ".github/workflows/mcp-tests.yml"
+  pull_request:
+    paths:
+      - "mcp-server/**"
+      - "web/src/lib/tool-catalog.js"
+      - ".github/workflows/mcp-tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mcp-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Install MCP dependencies
+        working-directory: mcp-server
+        run: npm install --no-audit --no-fund
+      - name: Audit MCP dependencies
+        working-directory: mcp-server
+        run: npm audit --audit-level=high
+      - name: Run MCP unit tests
+        working-directory: mcp-server
+        run: npm test
+      - name: Validate Cloudflare Worker bundle
+        working-directory: mcp-server
+        run: npx wrangler deploy --dry-run
