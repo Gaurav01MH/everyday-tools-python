@@ -40,6 +40,7 @@ jobs:
         working-directory: web
         env:
           PUBLIC_BASE_PATH: "/"
+          PUBLIC_SITE_ORIGIN: "https://too-broke-for-a-custom-domain.pages.dev"
         run: node scripts/check-seo-output.mjs
       - name: Install MCP dependencies
         working-directory: mcp-server
