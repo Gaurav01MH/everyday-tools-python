@@ -21,8 +21,8 @@ assert.match(home, /logo\.svg/);
 // Verify the branded free GitHub Pages alias is an exact copy of the homepage.
 assert.equal(brandedAlias, home, "Branded GitHub Pages alias should match the homepage");
 assert.match(robots, /User-agent: \*/);
-assert.match(robots, /User-agent: OAI-SearchBot\s+Allow: \//);
-assert.match(robots, /User-agent: GPTBot\s+Disallow: \//);
+assert.match(robots, /User-agent: \*\s+Allow: \//);
+assert.doesNotMatch(robots, /OAI-SearchBot|GPTBot|OpenAI|ChatGPT/i);
 assert.ok(robots.includes("Sitemap: " + baseUrl + "sitemap.xml"));
 assert.ok(llms.includes("Files Format"));
 assert.ok(llms.includes("Individual tools"));
