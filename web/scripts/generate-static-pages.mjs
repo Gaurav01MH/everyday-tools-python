@@ -30,12 +30,12 @@ function shell({title,description,canonical,body,schema,keywords=[]}) {
 <meta name="keywords" content="${esc(keywords.join(", "))}"><meta name="robots" content="index,follow,max-image-preview:large">
 <link rel="canonical" href="${esc(canonical)}"><link rel="icon" href="${FAVICON}" type="image/svg+xml">
 <link rel="stylesheet" href="${ASSET_CSS}">
-<meta property="og:type" content="website"><meta property="og:site_name" content="DocuMosaic">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Files Format">
 <meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(description)}">
 <meta property="og:url" content="${esc(canonical)}"><meta property="og:image" content="${LOGO}">
 <meta name="twitter:card" content="summary"><meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(description)}">
 ${graph}</head><body><main class="document-page">
-<div class="brand-row"><a href="${BASE_URL}" aria-label="DocuMosaic home"><img src="${LOGO}" alt="DocuMosaic — PDF, Image and File Tools"></a></div>
+<div class="brand-row"><a href="${BASE_URL}" aria-label="Files Format home"><img src="${LOGO}" alt="Files Format — PDF, Image and File Tools"></a></div>
 ${body}
 <footer class="site-footer"><a href="${BASE_URL}">Home</a><a href="${urlFor("tools/")}">All tools</a><a href="${urlFor("about/")}">About</a><a href="${urlFor("policies/privacy/")}">Privacy</a><a href="${urlFor("policies/terms/")}">Terms</a><a href="${urlFor("policies/licensing/")}">Licensing</a></footer>
 </main></body></html>`;
@@ -55,10 +55,42 @@ const sitemapUrls = new Set([BASE_URL]);
 const addUrl = (path) => sitemapUrls.add(urlFor(path));
 for (const policy of ["policies/privacy/", "policies/terms/", "policies/licensing/"]) addUrl(policy);
 
-// Keep the homepage and policy canonicals aligned with the configured public URL.
+// Add crawlable metadata to the original homepage without changing its layout or app UI.
 const homepagePath = join(DIST, "index.html");
 let homepageHtml = await (await import("node:fs/promises")).readFile(homepagePath, "utf8");
-homepageHtml = homepageHtml.replaceAll("https://gaurav01mh.github.io/everyday-tools-python/", BASE_URL);
+const homeDescription = "Files Format provides free browser-based PDF, image, text and data utilities. Merge, split, extract and rotate PDFs; resize, convert and compress images; format JSON, convert CSV and process text.";
+const homeSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    { "@type": "WebSite", "name": "Files Format", "url": BASE_URL, "description": homeDescription },
+    {
+      "@type": "WebApplication",
+      "name": "Files Format — PDF, Image and File Tools",
+      "url": BASE_URL,
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Any modern web browser",
+      "browserRequirements": "Requires a modern browser with JavaScript enabled.",
+      "description": homeDescription,
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+    }
+  ]
+};
+const homepageMetadata = [
+  '<meta name="application-name" content="Files Format">',
+  '<meta name="robots" content="index,follow,max-image-preview:large">',
+  '<link rel="canonical" href="' + BASE_URL + '">',
+  '<meta property="og:type" content="website">',
+  '<meta property="og:site_name" content="Files Format">',
+  '<meta property="og:title" content="Files Format — Free PDF, Image &amp; File Tools">',
+  '<meta property="og:description" content="' + esc(homeDescription) + '">',
+  '<meta property="og:url" content="' + BASE_URL + '">',
+  '<meta property="og:image" content="' + LOGO + '">',
+  '<meta name="twitter:card" content="summary">',
+  '<meta name="twitter:title" content="Files Format — PDF, Image &amp; File Tools">',
+  '<meta name="twitter:description" content="' + esc(homeDescription) + '">',
+  '<script type="application/ld+json">' + json(homeSchema) + '</script>'
+].join("\n");
+homepageHtml = homepageHtml.replace("</head>", homepageMetadata + "\n</head>");
 await writeFile(homepagePath, homepageHtml, "utf8");
 
 for (const policy of ["privacy", "terms", "licensing"]) {
@@ -94,15 +126,15 @@ for (const tool of tools) {
 <div class="actions"><a class="button" href="${urlFor("?tool=" + tool.slug + "#workspace")}">Open ${esc(tool.name)}</a><a class="button secondary" href="${urlFor(categoryPath(tool.mode))}">More ${esc(categoryFor(tool.mode).toLowerCase())}</a></div>
 <h2>How to use ${esc(tool.name)}</h2><ol>${tool.steps.map((step) => `<li>${esc(step)}</li>`).join("")}</ol>
 <h2>Input requirements</h2><p>${esc(tool.inputs)}</p>
-<h2>Privacy and processing</h2><p>DocuMosaic processes the input in your browser. The selected source file is not uploaded to a DocuMosaic processing server. The browser downloads the result when the job finishes.</p>
+<h2>Privacy and processing</h2><p>Files Format processes the input in your browser. The selected source file is not uploaded to a Files Format processing server. The browser downloads the result when the job finishes.</p>
 <h2>Limits and known limitations</h2><div class="notice"><p>${esc(tool.limitation)}</p><p>General browser safety limits also apply: 100 MB total selected input, 50 MB per PDF, 20 MB and 16 megapixels per image, and 100 MB for generated PDF or ZIP output. Your device's available memory may impose a lower practical limit.</p></div>
 <h2>Related tools</h2><div class="tool-grid">${tools.filter((item) => item.mode === tool.mode && item.slug !== tool.slug).slice(0,6).map(toolCard).join("")}</div>
-<p><a href="${BASE_URL}">DocuMosaic</a> is a free browser-based collection of PDF, image, text and file utilities. See <a href="${urlFor("policies/privacy/")}">the privacy policy</a> for details about browser processing and website hosting.</p>`;
+<p><a href="${BASE_URL}">Files Format</a> is a free browser-based collection of PDF, image, text and file utilities. See <a href="${urlFor("policies/privacy/")}">the privacy policy</a> for details about browser processing and website hosting.</p>`;
   const schema = {
     "@context":"https://schema.org",
     "@graph":[
-      {"@type":"WebPage","name":tool.title,"description":tool.description,"url":canonical,"isPartOf":{"@type":"WebSite","name":"DocuMosaic","url":BASE_URL}},
-      {"@type":"SoftwareApplication","name":"DocuMosaic " + tool.name,"applicationCategory":"UtilitiesApplication","operatingSystem":"Any modern web browser","description":tool.description,"url":canonical,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}},
+      {"@type":"WebPage","name":tool.title,"description":tool.description,"url":canonical,"isPartOf":{"@type":"WebSite","name":"Files Format","url":BASE_URL}},
+      {"@type":"SoftwareApplication","name":"Files Format " + tool.name,"applicationCategory":"UtilitiesApplication","operatingSystem":"Any modern web browser","description":tool.description,"url":canonical,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}},
       {"@type":"BreadcrumbList","itemListElement":[
         {"@type":"ListItem","position":1,"name":"Home","item":BASE_URL},
         {"@type":"ListItem","position":2,"name":categoryFor(tool.mode),"item":urlFor(categoryPath(tool.mode))},
@@ -110,15 +142,15 @@ for (const tool of tools) {
       ]}
     ]
   };
-  await writePage("tools/" + tool.slug + "/index.html", shell({title:tool.title + " | DocuMosaic",description:tool.description,canonical,body,schema,keywords:[tool.name,...tool.keywords]}));
+  await writePage("tools/" + tool.slug + "/index.html", shell({title:tool.title + " | Files Format",description:tool.description,canonical,body,schema,keywords:[tool.name,...tool.keywords]}));
   addUrl("tools/" + tool.slug + "/");
 }
 
 for (const mode of ["pdf","images","text"]) {
   const relevant = tools.filter((tool) => tool.mode === mode);
   const path = categoryPath(mode);
-  const title = categoryFor(mode) + " — Free Online Utilities | DocuMosaic";
-  const description = "Browse free " + categoryFor(mode).toLowerCase() + " in DocuMosaic. " + relevant.map((tool) => tool.name).join(", ") + ".";
+  const title = categoryFor(mode) + " — Free Online Utilities | Files Format";
+  const description = "Browse free " + categoryFor(mode).toLowerCase() + " in Files Format. " + relevant.map((tool) => tool.name).join(", ") + ".";
   const canonical = urlFor(path);
   const schema = {
     "@context":"https://schema.org",
@@ -129,18 +161,18 @@ for (const mode of ["pdf","images","text"]) {
     "mainEntity":{"@type":"ItemList","itemListElement":relevant.map((tool,index)=>({"@type":"ListItem","position":index+1,"name":tool.title,"url":urlFor("tools/"+tool.slug+"/")}))}
   };
   const body = `<nav class="breadcrumbs"><a href="${BASE_URL}">Home</a><span>›</span><span>${esc(categoryFor(mode))}</span></nav>
-<p class="eyebrow">DocuMosaic tool collection</p><h1>${esc(categoryFor(mode))}</h1><p class="summary">${esc(description)}</p>
+<p class="eyebrow">Files Format tool collection</p><h1>${esc(categoryFor(mode))}</h1><p class="summary">${esc(description)}</p>
 <div class="tool-grid">${relevant.map(toolCard).join("")}</div>
-<p class="notice">All tools run in your browser. DocuMosaic does not upload selected documents to a processing server. Read the <a href="${urlFor("policies/privacy/")}">privacy policy</a> for hosting details and usage limits.</p>`;
+<p class="notice">All tools run in your browser. Files Format does not upload selected documents to a processing server. Read the <a href="${urlFor("policies/privacy/")}">privacy policy</a> for hosting details and usage limits.</p>`;
   await writePage(path + "index.html", shell({title,description,canonical,body,schema}));
   addUrl(path);
 }
 
 {
-  const title = "All PDF, Image, Text and File Tools | DocuMosaic";
-  const description = "Browse the complete DocuMosaic directory of free browser-based PDF, image, text and data utilities.";
+  const title = "All PDF, Image, Text and File Tools | Files Format";
+  const description = "Browse the complete Files Format directory of free browser-based PDF, image, text and data utilities.";
   const canonical = urlFor("tools/");
-  const body = `<nav class="breadcrumbs"><a href="${BASE_URL}">Home</a><span>›</span><span>All tools</span></nav><p class="eyebrow">Complete directory</p><h1>All DocuMosaic tools</h1><p class="summary">${esc(description)}</p>
+  const body = `<nav class="breadcrumbs"><a href="${BASE_URL}">Home</a><span>›</span><span>All tools</span></nav><p class="eyebrow">Complete directory</p><h1>All Files Format tools</h1><p class="summary">${esc(description)}</p>
 <h2>PDF tools</h2><div class="tool-grid">${tools.filter(t=>t.mode==="pdf").map(toolCard).join("")}</div>
 <h2>Image tools</h2><div class="tool-grid">${tools.filter(t=>t.mode==="images").map(toolCard).join("")}</div>
 <h2>Text and data tools</h2><div class="tool-grid">${tools.filter(t=>t.mode==="text").map(toolCard).join("")}</div>`;
@@ -149,12 +181,12 @@ for (const mode of ["pdf","images","text"]) {
 }
 
 {
-  const title = "About DocuMosaic — PDF, Image and File Tools";
-  const description = "Learn about DocuMosaic, a free browser-based toolkit for everyday PDF, image, text and data tasks.";
+  const title = "About Files Format — PDF, Image and File Tools";
+  const description = "Learn about Files Format, a free browser-based toolkit for everyday PDF, image, text and data tasks.";
   const canonical = urlFor("about/");
-  const body = `<nav class="breadcrumbs"><a href="${BASE_URL}">Home</a><span>›</span><span>About</span></nav><p class="eyebrow">About the project</p><h1>DocuMosaic</h1><p class="summary">A straightforward collection of free tools for everyday PDFs, images, text and files.</p>
-<h2>What DocuMosaic does</h2><p>DocuMosaic brings common file utilities into one small browser-based website. Choose a task, select a file or enter text, run the tool and download or copy the result.</p>
-<h2>Local processing</h2><p>PDF, image and text processing happens inside your browser. Selected documents are not uploaded to a DocuMosaic processing server. The website itself is hosted by GitHub Pages, which may receive normal technical request metadata.</p>
+  const body = `<nav class="breadcrumbs"><a href="${BASE_URL}">Home</a><span>›</span><span>About</span></nav><p class="eyebrow">About the project</p><h1>Files Format</h1><p class="summary">A straightforward collection of free tools for everyday PDFs, images, text and files.</p>
+<h2>What Files Format does</h2><p>Files Format brings common file utilities into one small browser-based website. Choose a task, select a file or enter text, run the tool and download or copy the result.</p>
+<h2>Local processing</h2><p>PDF, image and text processing happens inside your browser. Selected documents are not uploaded to a Files Format processing server. The website itself is hosted by GitHub Pages, which may receive normal technical request metadata.</p>
 <h2>Current tool categories</h2><ul><li>PDF: merge, split, extract pages, rotate, images to PDF and PDF to PNG.</li><li>Images: resize, convert and compress common still image formats.</li><li>Text and data: formatting, JSON, CSV, URL and Base64 conversion, percentage calculations and unit conversion.</li></ul>
 <h2>What is not supported</h2><p>Encrypted PDFs, OCR, editing text inside existing PDFs, digital signatures, form filling, annotation editing and animated image processing are not supported. See each tool's page for more exact limits.</p><p><a href="${urlFor("tools/")}">Browse all tools</a>.</p>`;
   await writePage("about/index.html",shell({title,description,canonical,body,schema:{"@context":"https://schema.org","@type":"AboutPage","name":title,"description":description,"url":canonical}}));
@@ -162,10 +194,10 @@ for (const mode of ["pdf","images","text"]) {
 }
 
 {
-  const title="Free PDF, Image, Text and File Tools | DocuMosaic";
+  const title="Free PDF, Image, Text and File Tools | Files Format";
   const lines=[
-    "# DocuMosaic",
-    "> Free browser-based tools for PDF, image, text and everyday file tasks. Selected files are processed locally in the browser, not uploaded to a DocuMosaic processing server.",
+    "# Files Format",
+    "> Free browser-based tools for PDF, image, text and everyday file tasks. Selected files are processed locally in the browser, not uploaded to a Files Format processing server.",
     "",
     "## Main website",
     "- " + BASE_URL,
@@ -184,7 +216,7 @@ for (const mode of ["pdf","images","text"]) {
     ...tools.map((tool) => "- ["+tool.title+"]("+urlFor("tools/"+tool.slug+"/")+"): "+tool.description),
     "",
     "## Privacy and limitations",
-    "- Processing is performed locally in the browser; selected documents are not uploaded to a DocuMosaic server.",
+    "- Processing is performed locally in the browser; selected documents are not uploaded to a Files Format server.",
     "- The static website is hosted by GitHub Pages, which may receive normal request metadata.",
     "- Encrypted PDFs, OCR, PDF text editing, signatures, forms, annotations and animated image processing are not supported.",
     "- File and page limits are described on each tool page.",

@@ -1,4 +1,4 @@
-const CACHE_PREFIX = "documosaic-static-";
+const CACHE_PREFIX = "files-format-static-";
 const CACHE_NAME = CACHE_PREFIX + "v1";
 const APP_ROOT = new URL("./", self.location.href).pathname;
 

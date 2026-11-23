@@ -2,16 +2,11 @@ import { assertInputFiles, formatBytes, MAX_TOTAL_BYTES } from "./lib/core.js";
 import { mergePdfs, splitPdf, extractPdfPages, rotatePdf, imagesToPdf, renderPdf } from "./lib/pdf-tools.js";
 import { processImages } from "./lib/image-tools.js";
 import { runTextTool } from "./lib/text-tools.js";
-import { TOOL_CATALOG, findToolBySlug } from "./lib/tool-catalog.js";
+import { TOOL_CATALOG } from "./lib/tool-catalog.js";
 
 const $ = (selector) => document.querySelector(selector);
 const elements = {
   tabs: [...document.querySelectorAll("[data-mode]")],
-  toolSearch: $("#tool-search"),
-  toolGrid: $("#tool-grid"),
-  toolEmpty: $("#tool-empty"),
-  toolCount: $("#tool-count"),
-  discoveryDescription: $("#discovery-description"),
   workspaceTitle: $("#workspace-title"),
   workspaceDescription: $("#workspace-description"),
   operation: $("#operation"),
@@ -120,11 +115,6 @@ function setMode(nextMode) {
   }
   elements.workspaceTitle.textContent = definitions[mode].title;
   elements.workspaceDescription.textContent = definitions[mode].description;
-  elements.discoveryDescription.textContent = mode === "pdf"
-    ? "Find a PDF task, from merging documents to extracting pages."
-    : mode === "images"
-      ? "Resize, convert or compress common image formats."
-      : "Clean text, convert data, and use everyday calculators.";
   elements.operation.replaceChildren(...definitions[mode].operations.map(([value, label]) => makeOption(value, label)));
   selectedFiles = [];
   renderFileList();
@@ -133,75 +123,6 @@ function setMode(nextMode) {
   elements.textInput.value = "";
   elements.textExtraInput.value = "";
   updateTextControls();
-  renderToolGrid();
-}
-
-function renderToolGrid() {
-  if (!elements.toolGrid) return;
-  const query = elements.toolSearch.value.trim().toLocaleLowerCase();
-  const visible = TOOL_CATALOG.filter((tool) => tool.mode === mode && (
-    !query ||
-    tool.name.toLocaleLowerCase().includes(query) ||
-    tool.title.toLocaleLowerCase().includes(query) ||
-    tool.description.toLocaleLowerCase().includes(query) ||
-    tool.keywords.some((keyword) => keyword.toLocaleLowerCase().includes(query))
-  ));
-  elements.toolGrid.replaceChildren();
-
-  for (const tool of visible) {
-    const card = document.createElement("button");
-    card.type = "button";
-    card.className = "tool-card";
-    const isSelected = elements.operation.value === tool.operation;
-    card.classList.toggle("is-selected", isSelected);
-    card.setAttribute("aria-pressed", String(isSelected));
-
-    const icon = document.createElement("span");
-    icon.className = "tool-card-icon";
-    icon.setAttribute("aria-hidden", "true");
-    icon.textContent = tool.mode === "pdf" ? "PDF" : tool.mode === "images" ? "IMG" : "TXT";
-
-    const title = document.createElement("strong");
-    title.className = "tool-card-title";
-    title.textContent = tool.name;
-
-    const description = document.createElement("span");
-    description.className = "tool-card-description";
-    description.textContent = tool.description;
-
-    const action = document.createElement("span");
-    action.className = "tool-card-action";
-    action.textContent = isSelected ? "Selected" : "Open tool";
-    card.append(icon, title, description, action);
-    card.addEventListener("click", () => openTool(tool.slug));
-    elements.toolGrid.append(card);
-  }
-
-  elements.toolCount.textContent = visible.length + (visible.length === 1 ? " tool" : " tools");
-  elements.toolEmpty.hidden = visible.length > 0;
-}
-
-function openTool(slug, updateAddress = true) {
-  const tool = findToolBySlug(slug);
-  if (!tool) return false;
-
-  if (mode !== tool.mode) setMode(tool.mode);
-  selectedFiles = [];
-  renderFileList();
-  elements.textInput.value = "";
-  elements.textExtraInput.value = "";
-  clearResult();
-  elements.operation.value = tool.operation;
-  updateOperation();
-  updateTextControls();
-  renderToolGrid();
-
-  if (updateAddress) {
-    const next = new URL(location.href);
-    next.searchParams.set("tool", tool.slug);
-    history.replaceState(null, "", next.pathname + next.search + "#workspace");
-  }
-  return true;
 }
 
 function currentOperation() {
@@ -619,20 +540,13 @@ function clearWorkspace() {
   clearResult();
 }
 
-elements.tabs.forEach((tab) => tab.addEventListener("click", () => {
-  const nextMode = tab.dataset.mode;
-  setMode(nextMode);
-  const defaultTool = TOOL_CATALOG.find((tool) => tool.mode === nextMode);
-  if (defaultTool) openTool(defaultTool.slug);
-}));
-elements.toolSearch.addEventListener("input", renderToolGrid);
+elements.tabs.forEach((tab) => tab.addEventListener("click", () => setMode(tab.dataset.mode)));
 elements.operation.addEventListener("change", () => {
   selectedFiles = [];
   renderFileList();
   updateOperation();
   updateTextControls();
   clearResult();
-  renderToolGrid();
 });
 elements.unitCategory.addEventListener("change", updateUnitOptions);
 elements.fileInput.addEventListener("change", (event) => {
@@ -662,11 +576,19 @@ elements.privacyDialog.addEventListener("click", (event) => {
 });
 
 setMode("pdf");
-const requestedTool = new URLSearchParams(location.search).get("tool");
-if (requestedTool && !openTool(requestedTool, false)) {
-  history.replaceState(null, "", location.pathname);
-} else if (!requestedTool) {
-  openTool("merge-pdf", false);
+const requestedToolSlug = new URLSearchParams(location.search).get("tool");
+if (requestedToolSlug) {
+  const requestedTool = TOOL_CATALOG.find((tool) => tool.slug === requestedToolSlug);
+  if (requestedTool) {
+    setMode(requestedTool.mode);
+    elements.operation.value = requestedTool.operation;
+    updateOperation();
+    updateTextControls();
+  } else {
+    const cleanedUrl = new URL(location.href);
+    cleanedUrl.searchParams.delete("tool");
+    history.replaceState(null, "", cleanedUrl.pathname + cleanedUrl.hash);
+  }
 }
 
 if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {

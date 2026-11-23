@@ -3,70 +3,32 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#123047" />
-    <meta name="description" content="Free online PDF tools, image converter, image resizer, image compressor, JSON and CSV tools. Merge, split, rotate and extract PDFs. Files stay in your browser." />
-    <meta name="robots" content="index,follow,max-image-preview:large" />
-    <link rel="canonical" href="https://gaurav01mh.github.io/everyday-tools-python/" />
-    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
-    <link rel="manifest" href="%BASE_URL%manifest.webmanifest" />
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="DocuMosaic" />
-    <meta property="og:title" content="DocuMosaic — Free PDF, Image &amp; File Tools" />
-    <meta property="og:description" content="Free browser-based PDF, image, text and file utilities. Selected files are processed locally in your browser." />
-    <meta property="og:url" content="https://gaurav01mh.github.io/everyday-tools-python/" />
-    <meta property="og:image" content="https://gaurav01mh.github.io/everyday-tools-python/logo.svg" />
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="DocuMosaic — PDF, Image &amp; File Tools" />
-    <meta name="twitter:description" content="Free browser-based PDF, image, text and file utilities." />
+    <meta name="theme-color" content="#f7f8fa" />
+    <meta name="description" content="Files Format offers free online PDF, image, text and data tools. Merge, split and rotate PDFs, convert and resize images, format JSON, convert CSV and more. Files are processed in your browser." />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' blob: data:; font-src 'self' blob: data:; connect-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'" />
     <meta name="referrer" content="no-referrer" />
-    <title>DocuMosaic — Free PDF, Image &amp; File Tools</title>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "WebSite",
-          "name": "DocuMosaic",
-          "url": "https://gaurav01mh.github.io/everyday-tools-python/",
-          "description": "Free browser-based PDF, image, text and everyday file tools."
-        },
-        {
-          "@type": "WebApplication",
-          "name": "DocuMosaic — PDF, Image & File Tools",
-          "url": "https://gaurav01mh.github.io/everyday-tools-python/",
-          "applicationCategory": "UtilitiesApplication",
-          "operatingSystem": "Any modern web browser",
-          "browserRequirements": "Requires a modern browser with JavaScript enabled.",
-          "description": "Free browser-based tools for PDF merging, splitting, page extraction, rotation, image conversion, resizing, compression, JSON, CSV, text and unit conversion.",
-          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
-        }
-      ]
-    }
-    </script>
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <link rel="manifest" href="%BASE_URL%manifest.webmanifest" />
+    <link rel="stylesheet" href="/src/styles.css" />
+    <title>Files Format — Free PDF, Image &amp; File Tools</title>
   </head>
   <body>
-    <header class="site-header">
-      <a class="brand" href="%BASE_URL%" aria-label="DocuMosaic home">
-        <img src="%BASE_URL%logo.svg" alt="DocuMosaic — PDF, Image & File Tools" width="218" height="64" />
+    <header class="site-header" id="home">
+      <a class="brand" href="#home">
+        <span class="brand-mark" aria-hidden="true">FF</span>
+        <span>Files Format</span>
       </a>
-      <nav class="header-nav" aria-label="Main navigation">
-        <a href="%BASE_URL%tools/">All tools</a>
-        <a href="%BASE_URL%about/">About</a>
-        <a href="%BASE_URL%policies/privacy/">Privacy</a>
-      </nav>
-      <span class="privacy-note"><span class="privacy-dot" aria-hidden="true"></span> Files stay on this device</span>
+      <div class="header-right">
+        <span class="privacy-note"><span class="privacy-dot" aria-hidden="true"></span> Files stay on this device</span>
+      </div>
     </header>
 
     <main id="main-content">
       <section class="intro">
-        <p class="eyebrow">PDF · Images · Documents · Text</p>
-        <h1>Everyday file jobs, made simpler.</h1>
-        <p class="intro-copy">Find a tool, add your file, and get the result. Free to use, with processing in your browser.</p>
-        <div class="intro-facts">
-          <span> <strong>27</strong> useful tools</span>
-          <span> No account</span>
-          <span> No file uploads</span>
+        <div>
+          <p class="eyebrow">A small toolbox for everyday files</p>
+          <h1>Get your file work done.</h1>
+          <p class="intro-copy">PDF, image, and text tools. No account, no ads, no file uploads.</p>
         </div>
       </section>
 
@@ -76,27 +38,9 @@
         <button class="nav-tab" type="button" aria-pressed="false" data-mode="text">Text &amp; data</button>
       </nav>
 
-      <section class="tool-discovery" aria-labelledby="discovery-title">
-        <div class="discovery-heading">
-          <div>
-            <h2 id="discovery-title">Find the tool you need</h2>
-            <p id="discovery-description">Choose a PDF task or search by name.</p>
-          </div>
-          <span id="tool-count" class="tool-count">6 tools</span>
-        </div>
-        <label class="search-wrap" for="tool-search">
-          <span aria-hidden="true">⌕</span>
-          <input id="tool-search" type="search" aria-label="Search tools, e.g. merge PDF or compress image" placeholder="Search tools, e.g. merge PDF or compress image" autocomplete="off" />
-        </label>
-        <div id="tool-grid" class="tool-grid" aria-live="polite"></div>
-        <p id="tool-empty" class="empty-search" hidden>No tools match that search in this category. Try another word or category.</p>
-        <p class="directory-link"><a href="%BASE_URL%tools/">Browse the complete list of DocuMosaic tools →</a></p>
-      </section>
-
-      <section id="workspace" class="workspace" aria-labelledby="workspace-title">
+      <section id="workspace" class="workspace">
         <div class="workspace-heading">
           <div>
-            <p class="eyebrow">Selected tool</p>
             <h2 id="workspace-title">PDF tools</h2>
             <p id="workspace-description">Combine, split, rotate, extract, or render PDF pages.</p>
           </div>
@@ -112,10 +56,9 @@
           <section id="file-section" class="file-section" aria-labelledby="files-label">
             <div class="field-heading">
               <span id="files-label" class="field-label">Choose files</span>
-              <span id="file-hint" class="field-hint">PDF files · Up to 12 files</span>
+              <span id="file-hint" class="field-hint">PDF files · Up to 20 files</span>
             </div>
             <label id="drop-zone" class="drop-zone" for="file-input">
-              <span class="drop-icon" aria-hidden="true">↑</span>
               <span class="drop-title">Drop files here or <span class="text-link">browse</span></span>
               <span class="drop-subtitle">Your files are read locally in this tab.</span>
             </label>
@@ -168,22 +111,8 @@
         </section>
       </section>
 
-      <section class="search-seo-copy" aria-labelledby="all-tools-heading">
-        <h2 id="all-tools-heading">Free online PDF, image and file tools</h2>
-        <p>DocuMosaic brings common file tasks together in one place: merge PDF files, split PDF pages, extract selected pages, rotate PDF pages, convert images to PDF, turn PDF pages into PNG images, resize photos, convert JPG, PNG and WEBP formats, compress images, format JSON, convert CSV data and more.</p>
-        <p>Files selected for processing stay in your browser. The website does not upload your documents to a DocuMosaic processing server. Review the <a href="%BASE_URL%policies/privacy/">privacy policy</a> and <a href="%BASE_URL%policies/licensing/">licensing information</a>.</p>
-      </section>
-
       <footer class="site-footer">
-        <p>Free to use. No account or ads. Your selected files are processed in this browser; they are not sent to a DocuMosaic processing server.</p>
-        <nav aria-label="Footer links">
-          <a href="%BASE_URL%tools/">All tools</a>
-          <a href="%BASE_URL%about/">About</a>
-          <a href="%BASE_URL%policies/privacy/">Privacy</a>
-          <a href="%BASE_URL%policies/terms/">Terms</a>
-          <a href="%BASE_URL%policies/licensing/">Licensing</a>
-          <a href="%BASE_URL%THIRD_PARTY_NOTICES.md">Third-party notices</a>
-        </nav>
+        <p>Free to use. No account or ads. Your selected files are processed in this browser; they are not sent to a server.</p>
         <a href="#privacy-dialog" id="privacy-link">Privacy &amp; limits</a>
       </footer>
     </main>

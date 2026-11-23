@@ -1,6 +1,6 @@
 {
-  "name": "DocuMosaic — PDF, Image & File Tools",
-  "short_name": "DocuMosaic",
+  "name": "Files Format — PDF, Image & File Tools",
+  "short_name": "Files Format",
   "description": "Free browser-based PDF, image, text and everyday file tools",
   "start_url": "./",
   "scope": "./",

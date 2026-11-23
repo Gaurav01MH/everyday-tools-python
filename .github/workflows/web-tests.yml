@@ -39,8 +39,8 @@ jobs:
         working-directory: web
         env:
           GITHUB_PAGES: "true"
-          PUBLIC_SITE_ORIGIN: "https://gaurav01mh.github.io"
-          PUBLIC_BASE_PATH: "/everyday-tools-python/"
+          PUBLIC_SITE_ORIGIN: ${{ vars.PUBLIC_SITE_ORIGIN || 'https://gaurav01mh.github.io' }}
+          PUBLIC_BASE_PATH: ${{ vars.PUBLIC_BASE_PATH || '/everyday-tools-python/' }}
         run: npm run build
       - name: Verify output has expected app files
         working-directory: web
@@ -55,7 +55,7 @@ jobs:
           test -s dist/tools/merge-pdf/index.html
           test -s dist/tools/resize-image/index.html
           test -s dist/tools/validate-json/index.html
-          grep -q "DocuMosaic" dist/index.html
+          grep -q "Files Format" dist/index.html
           grep -q "merge-pdf" dist/sitemap.xml
           grep -q "PDF tools" dist/tools/merge-pdf/index.html
           grep -q "/everyday-tools-python/" dist/index.html
