@@ -155,7 +155,6 @@ function renderToolGrid() {
     const isSelected = elements.operation.value === tool.operation;
     card.classList.toggle("is-selected", isSelected);
     card.setAttribute("aria-pressed", String(isSelected));
-    card.setAttribute("aria-label", tool.name + ". " + tool.description);
 
     const icon = document.createElement("span");
     icon.className = "tool-card-icon";
