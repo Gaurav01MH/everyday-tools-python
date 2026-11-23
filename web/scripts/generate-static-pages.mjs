@@ -5,8 +5,12 @@ import { TOOL_CATALOG } from "../src/lib/tool-catalog.js";
 
 const dist = new URL("../dist/", import.meta.url);
 const DIST = fileURLToPath(new URL("../dist/", import.meta.url));
-const SITE_ORIGIN = (process.env.PUBLIC_SITE_ORIGIN || "https://gaurav01mh.github.io").replace(/\/$/, "");
-const BASE_PATH = process.env.PUBLIC_BASE_PATH || (process.env.GITHUB_PAGES === "true" ? "/everyday-tools-python/" : "/");
+const repositoryName = process.env.GITHUB_REPOSITORY?.split("/").pop() || "files-format";
+const defaultSiteOrigin = process.env.GITHUB_REPOSITORY_OWNER
+  ? "https://" + process.env.GITHUB_REPOSITORY_OWNER + ".github.io"
+  : "https://files-format.example";
+const SITE_ORIGIN = (process.env.PUBLIC_SITE_ORIGIN || defaultSiteOrigin).replace(/\/$/, "");
+const BASE_PATH = process.env.PUBLIC_BASE_PATH || (process.env.GITHUB_PAGES === "true" ? "/" + repositoryName + "/" : "/");
 const BASE_URL = new URL(BASE_PATH.endsWith("/") ? BASE_PATH : BASE_PATH + "/", SITE_ORIGIN).href;
 const ASSET_CSS = BASE_URL + "assets/site-pages.css";
 const LOGO = BASE_URL + "logo.svg";
@@ -96,7 +100,7 @@ await writeFile(homepagePath, homepageHtml, "utf8");
 
 // Keep the original GitHub Pages project URL, and expose a readable, free
 // branded alias beneath it:
-// /everyday-tools-python/too-broke-for-a-custom-domain/
+// /<repository-slug>/too-broke-for-a-custom-domain/
 //
 // Copy the fully Vite-built homepage so all scripts, styles and public assets
 // continue to resolve from the repository's configured base path. The alias
