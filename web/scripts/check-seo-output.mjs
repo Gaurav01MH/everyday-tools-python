@@ -22,7 +22,7 @@ assert.match(home, /logo\.svg/);
 assert.equal(brandedAlias, home, "Branded GitHub Pages alias should match the homepage");
 assert.match(robots, /User-agent: \*/);
 assert.match(robots, /User-agent: \*\s+Allow: \//);
-assert.doesNotMatch(robots, /OAI-SearchBot|GPTBot|OpenAI|ChatGPT/i);
+assert.equal(robots.trim(), ["User-agent: *", "Allow: /", "", "Sitemap: " + baseUrl + "sitemap.xml"].join("\n"));
 assert.ok(robots.includes("Sitemap: " + baseUrl + "sitemap.xml"));
 assert.ok(llms.includes("Files Format"));
 assert.ok(llms.includes("Individual tools"));
