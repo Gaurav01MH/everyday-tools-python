@@ -322,7 +322,7 @@ export const TOOL_CATALOG = [
     inputs: "A numeric value, a category, and source and destination units.",
     steps: ["Enter the value.", "Choose the unit category and source unit.", "Choose the destination unit and process the conversion."],
     limitation: "Only the units listed in the tool are supported. Temperature below absolute zero is rejected."
-  }
+  },
   {
     slug: "link-maker",
     mode: "text",
