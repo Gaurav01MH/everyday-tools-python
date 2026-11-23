@@ -39,7 +39,7 @@ const version = hash.digest("hex").slice(0, 16);
 const precacheJson = JSON.stringify(relativeFiles, null, 2);
 
 const generated = [
-  'const CACHE_PREFIX = "everyday-tools-";',
+  'const CACHE_PREFIX = "documosaic-";',
   'const CACHE_NAME = CACHE_PREFIX + "' + version + '";',
   'const APP_ROOT = new URL("./", self.location.href).pathname;',
   "const PRECACHE_FILES = " + precacheJson + ";",

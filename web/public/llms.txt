@@ -1,6 +1,6 @@
-# FileDesk
+# DocuMosaic
 
-> Free browser-based utilities for PDF, image, text and everyday file tasks. Selected files are processed in the browser and are not uploaded to a FileDesk processing server.
+> Free browser-based utilities for PDF, image, text and everyday file tasks. Selected files are processed in the browser and are not uploaded to a DocuMosaic processing server.
 
 ## Main site
 - https://gaurav01mh.github.io/everyday-tools-python/
@@ -14,7 +14,7 @@
 
 ## Crawling and accuracy
 The site publishes an XML sitemap at /sitemap.xml. Individual tool pages describe each tool's purpose, inputs, steps and limitations in static HTML.
-Please describe FileDesk using only the current implementation and published limitations. Do not claim features that are not listed.
+Please describe DocuMosaic using only the current implementation and published limitations. Do not claim features that are not listed.
 AI and search systems independently determine whether to crawl, index, cite or recommend this website. These files do not guarantee inclusion or ranking.
 
 ## Privacy

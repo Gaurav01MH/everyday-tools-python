@@ -1,4 +1,4 @@
-# FileDesk website
+# DocuMosaic website
 
 A static, browser-based utility site for PDF, image, text and data tasks.
 
@@ -33,11 +33,11 @@ After the final public URL is stable, verify ownership in Google Search Console 
 
 ## Browser-only processing
 
-The file-processing functions read browser File objects and use client-side libraries. They do not send selected source files to a FileDesk server. The service worker caches same-origin static app files only, not selected files or generated downloads.
+The file-processing functions read browser File objects and use client-side libraries. They do not send selected source files to a DocuMosaic server. The service worker caches same-origin static app files only, not selected files or generated downloads.
 
 ## UI and accessibility
 
-- SVG-based FileDesk logo and favicon.
+- SVG-based DocuMosaic logo and favicon.
 - Clear PDF, image and text/data categories.
 - Searchable tool cards connected to actual operations.
 - Direct tool links using the tool query parameter.

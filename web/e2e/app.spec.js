@@ -28,7 +28,7 @@ async function choosePdf(page, operation, name, bytes) {
 test("page loads with a simple default workspace and local-processing notice", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Everyday file jobs, made simpler." })).toBeVisible();
-  await expect(page.getByRole("img", { name: "FileDesk — PDF, Image & File Tools" })).toBeVisible();
+  await expect(page.getByRole("img", { name: "DocuMosaic — PDF, Image & File Tools" })).toBeVisible();
   await expect(page.getByLabel("Search tools, e.g. merge PDF or compress image")).toBeVisible();
   await expect(page.getByText("Files stay on this device")).toBeVisible();
   await expect(page.getByRole("button", { name: "PDF tools" })).toHaveAttribute("aria-pressed", "true");
