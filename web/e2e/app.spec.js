@@ -98,7 +98,7 @@ test("extracts selected PDF pages and validates an invalid selection", async ({ 
   await page.goto("/");
   const source = await makePdf([[200, 300], [400, 500], [600, 700]]);
   await choosePdf(page, "extract", "sample.pdf", source);
-  await page.getByLabel("Pages").fill("2");
+  await page.locator("#page-selection").fill("2");
   const downloadPromise = page.waitForEvent("download");
   await page.getByRole("button", { name: "Run tool" }).click();
   const download = await downloadPromise;
@@ -107,7 +107,7 @@ test("extracts selected PDF pages and validates an invalid selection", async ({ 
   expect(output.getPage(0).getWidth()).toBe(400);
 
   await choosePdf(page, "extract", "sample.pdf", source);
-  await page.getByLabel("Pages").fill("4-5");
+  await page.locator("#page-selection").fill("4-5");
   await page.getByRole("button", { name: "Run tool" }).click();
   await expect(page.getByRole("heading", { name: "Could not finish" })).toBeVisible();
   await expect(page.getByText(/outside this PDF/)).toBeVisible();
@@ -117,7 +117,7 @@ test("PDF rotation adds to the existing page rotation", async ({ page }) => {
   await page.goto("/");
   const source = await makePdf([[200, 300, 90]]);
   await choosePdf(page, "rotate", "quarter-turn.pdf", source);
-  await page.getByLabel("Pages").fill("1");
+  await page.locator("#page-selection").fill("1");
   await page.getByLabel("Rotation").selectOption("90");
   const downloadPromise = page.waitForEvent("download");
   await page.getByRole("button", { name: "Run tool" }).click();
