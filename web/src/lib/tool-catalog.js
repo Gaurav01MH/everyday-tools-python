@@ -12,6 +12,54 @@ export const TOOL_CATALOG = [
     limitation: "Password-protected PDFs are not supported. Original files are not modified."
   },
   {
+    slug: "compress-pdf",
+    mode: "pdf",
+    operation: "compress-pdf",
+    name: "Compress PDF",
+    title: "Compress a PDF file in your browser",
+    description: "Optimise PDF structure and remove document metadata locally. Embedded images are not recompressed, so file-size savings vary by document.",
+    keywords: ["compress pdf", "reduce pdf size", "optimise pdf", "pdf size reducer"],
+    inputs: "One PDF file up to 50 MB and 250 pages.",
+    steps: ["Choose a PDF file.", "Run Compress PDF.", "Compare the original and optimised file sizes before using the result."],
+    limitation: "This pass optimises PDF structure and metadata; it does not re-encode embedded images. Some files may become only slightly smaller or may not shrink."
+  },
+  {
+    slug: "organise-pdf",
+    mode: "pdf",
+    operation: "organise-pdf",
+    name: "Reorder or delete PDF pages",
+    title: "Reorder or remove pages from a PDF",
+    description: "Choose a new page order and omit pages you do not need. Your original PDF stays unchanged.",
+    keywords: ["reorder pdf pages", "delete pdf pages", "organise pdf", "rearrange pdf pages"],
+    inputs: "One PDF file up to 50 MB and 250 pages. Enter a comma-separated page order such as 3,1,2,5.",
+    steps: ["Choose a PDF file and review its page thumbnails.", "Enter the page numbers in the order to keep; leave out pages to delete.", "Download the reorganised PDF."],
+    limitation: "The output contains only the pages listed. Document-level bookmarks, attachments, forms and annotations may not be preserved."
+  },
+  {
+    slug: "add-page-numbers",
+    mode: "pdf",
+    operation: "page-numbers",
+    name: "Add page numbers",
+    title: "Add page numbers to a PDF",
+    description: "Add simple page numbers to the bottom-right corner of every PDF page, processed in your browser.",
+    keywords: ["add page numbers pdf", "number pdf pages", "pdf page numbering"],
+    inputs: "One PDF file and a starting number.",
+    steps: ["Choose a PDF file.", "Set the starting page number.", "Download the numbered PDF."],
+    limitation: "Numbers are placed at the bottom-right and may overlap content close to the page edge."
+  },
+  {
+    slug: "add-watermark",
+    mode: "pdf",
+    operation: "watermark",
+    name: "Add PDF watermark",
+    title: "Add a text watermark to a PDF",
+    description: "Place a light, diagonal text watermark across every page of a PDF without uploading the document.",
+    keywords: ["watermark pdf", "add text watermark pdf", "stamp pdf"],
+    inputs: "One PDF file and watermark text up to 80 characters.",
+    steps: ["Choose a PDF file.", "Enter the watermark text.", "Download the watermarked PDF."],
+    limitation: "The watermark is visible text, not a security control; it does not prevent copying or editing."
+  },
+  {
     slug: "split-pdf",
     mode: "pdf",
     operation: "split",
@@ -101,11 +149,35 @@ export const TOOL_CATALOG = [
     operation: "compress",
     name: "Compress image",
     title: "Compress JPG and WEBP images",
-    description: "Reduce image file size by adjusting the output quality for JPG or WEBP images, with processing in your browser.",
+    description: "Reduce JPG or WEBP image size by choosing quality or trying a target size such as 100 KB. Processing stays in your browser.",
     keywords: ["compress image", "image compressor", "reduce photo size", "compress jpg", "compress webp"],
     inputs: "Still JPG, PNG, WEBP or BMP images; JPG or WEBP output.",
     steps: ["Choose your images.", "Select JPG or WEBP and set the quality value.", "Compress and download the output files."],
     limitation: "Compression trades some image detail for a smaller file. Compare the result with the original before using it."
+  },
+  {
+    slug: "remove-image-metadata",
+    mode: "images",
+    operation: "metadata",
+    name: "Remove image metadata",
+    title: "Remove EXIF and metadata from an image",
+    description: "Re-export a still image in your browser to remove embedded EXIF and common metadata such as camera and location tags.",
+    keywords: ["remove exif", "remove image metadata", "strip photo location", "remove gps from photo"],
+    inputs: "Still JPG, PNG, WEBP or BMP images up to 20 MB and 16 megapixels each.",
+    steps: ["Choose one or more images.", "Run Remove image metadata.", "Download the cleaned copies and inspect them before sharing."],
+    limitation: "Re-exporting removes metadata supported by the browser's image decoder; it does not inspect every proprietary metadata block. Original files are unchanged."
+  },
+  {
+    slug: "passport-photo-resizer",
+    mode: "images",
+    operation: "id-photo",
+    name: "Passport / ID photo resizer",
+    title: "Resize a photo for common passport and ID print sizes",
+    description: "Fit an image inside common photo dimensions such as 35 × 45 mm or 2 × 2 inches, with a plain background and no automatic face crop.",
+    keywords: ["passport photo size", "id photo resizer", "35x45 photo", "2x2 visa photo"],
+    inputs: "One still image up to 20 MB and 16 megapixels. Common print presets are provided in pixels at 300 DPI.",
+    steps: ["Choose a photo.", "Select a print-size preset.", "Download the fitted photo and check the receiving authority's exact requirements."],
+    limitation: "These are convenience presets, not a guarantee of compliance with a particular passport, visa or ID authority. The photo is fitted without automatic face cropping."
   },
   {
     slug: "text-statistics",
