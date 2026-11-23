@@ -261,7 +261,7 @@ progress { width: 100%; height: 7px; margin-top: 12px; accent-color: var(--accen
   /* Keep the interface intentionally light and predictable across systems. */
 }
 
-/* FileDesk brand and easier tool discovery */
+/* DocuMosaic brand and easier tool discovery */
 :root {
   --ink: #123047;
   --muted: #607282;
