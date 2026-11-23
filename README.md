@@ -1,8 +1,8 @@
 # Files Format
 
-Files Format is a free, browser-based collection of PDF, image, text and data utilities.
+Files Format is a free collection of PDF, image, text and data tools, plus two optional temporary sharing tools.
 
-Selected files are processed locally in the browser. The application does not upload files to a Files Format processing server and does not require an account.
+The original simple three-tab interface is preserved. PDF and image editing and ordinary text/data utilities process locally in the browser. Link Tool and QR Tool are deliberate exceptions: they upload only the file or text the visitor chooses to share and create a public-by-link download URL.
 
 ## Tools
 
@@ -15,72 +15,60 @@ Selected files are processed locally in the browser. The application does not up
 - Render PDF pages as PNG images.
 
 ### Images
-- Resize still images with optional aspect-ratio preservation.
-- Convert JPG, PNG, WEBP and BMP input to common output formats.
-- Compress JPG and WEBP output.
-- Process batches of images.
+- Resize still images.
+- Convert JPG, PNG, WEBP and BMP formats.
+- Compress JPG and WEBP images.
+- Process image batches.
 
 ### Text and data
-- Text statistics and case conversion.
-- Remove blank and duplicate lines.
-- Format and validate JSON.
-- Convert CSV to JSON and JSON to CSV.
+- Text statistics, case conversion, blank-line cleanup and duplicate-line removal.
+- JSON formatting and validation.
+- CSV/JSON conversion.
 - URL and Base64 encoding/decoding.
-- Percentage calculations.
-- Length, weight, time and temperature conversion.
-- Markdown and HTML link creation with HTTP/HTTPS validation.
-- Browser-local QR generation with PNG and SVG downloads.
+- Percentage and unit calculations.
+- Link Tool: paste text or upload one file (maximum 10 MB) to create a shareable download URL.
+- QR Tool: paste text or upload one file to create the same kind of share URL, then download a QR code for that URL as PNG or SVG.
 
-## Search and AI discovery
+Share links expire after seven days. Anyone with the URL can download the contents. Uploads require a Cloudflare Turnstile check. Do not use the share tools for confidential or personal files or content you lack permission to share.
 
-The production build generates an individual static HTML page for every tool, category pages, a complete directory, robots.txt, an XML sitemap, llms.txt, canonical URLs, Open Graph metadata and JSON-LD structured data. The homepage keeps the original simple three-tab interface; the crawlable directory and tool pages are separate from the app UI.
+## Free website hostname
 
-OAI-SearchBot is allowed in robots.txt. GPTBot is disallowed. These settings and metadata make the pages discoverable but cannot guarantee indexing, ranking or recommendations by a search engine or AI service.
+The requested Cloudflare Pages project name is exactly: too-broke-for-a-custom-domain
 
-## Run locally
+Intended public URL, available only after the project name is claimed and deployed:
 
-Requirements: Node.js 22.12 or newer.
+https://too-broke-for-a-custom-domain.pages.dev/
 
-From the `web` directory:
-1. Run `npm install`.
-2. Run `npm run dev`.
-3. Open the local address printed by Vite.
+No paid custom domain is required. Cloudflare must confirm the project name is available during account setup. The previous GitHub Pages hostname remains a fallback with share uploads disabled.
 
-## Tests and production build
+## Hosting and storage setup
 
-Run `npm test`, `npm run build`, `node scripts/check-seo-output.mjs` and `npm run test:e2e` from `web`.
+See web/DEPLOY-CLOUDFLARE.md. The setup uses Pages Functions under web/functions/, an R2 bucket named files-format-shares, the SHARES binding, Turnstile and an R2 lifecycle rule for the shared/ prefix. Application caps: one file or text per share, 10 MB per upload, 300 active objects, 3 GB active content and a seven-day link lifetime.
 
-The automated workflows run unit tests, dependency auditing, production builds, generated SEO checks, browser tests, accessibility checks and mobile-layout checks.
-
-## Hosting
-
-The current deployment still uses the personal GitHub Pages hostname associated with this repository. The Pages build supports repository variables `PUBLIC_SITE_ORIGIN` and `PUBLIC_BASE_PATH`, so the canonical URL, sitemap and tool links can be switched together when a neutral hostname is connected.
-
-A hostname without the repository owner's name requires a custom domain or moving the Pages site to a separate organisation/hosting account. No new hostname has been connected yet.
+R2 free usage is limited, not unlimited; usage above free allowances may be billed. Anyone with a share URL can download it.
 
 ## MCP integration
 
-A Cloudflare Worker in `mcp-server/` serves both the website and MCP endpoint from one free `workers.dev` hostname. See [MCP setup](mcp-server/README.md). The Cloudflare account owner must authorize the first deployment; GitHub Pages remains a fallback. PDF, image and QR image generation stays in the browser. MCP provides tool discovery, safe link markup and prefilled QR-generator links; only text explicitly sent to its text action is processed by the Worker.
+The optional MCP server is a separate Cloudflare Worker in mcp-server/. It discovers the 29 website tools and can prepare a QR Tool link with text prefilled. It does not accept file uploads or bypass Turnstile. The Worker has its own phrase-branded free workers.dev hostname, separate from the Pages hostname. See mcp-server/README.md.
 
-## Privacy and limits
+## Search and AI discovery
 
-- No account, ad network, analytics service or AI API is included in the application.
-- Selected files are read locally by browser APIs and libraries.
-- The service worker caches static site files, not selected documents.
-- The website host receives ordinary hosting request metadata.
-- Downloads are new files; source files are not overwritten.
+The production build generates static HTML pages for every tool, category pages, a complete directory, robots.txt, sitemap.xml, llms.txt, canonical URLs, Open Graph metadata and JSON-LD structured data. OAI-SearchBot is allowed and GPTBot is disallowed. Crawlability does not guarantee indexing or recommendations.
 
-Safety limits include 100 MB total selected input, 50 MB per PDF, 20 MB per image, 16 megapixels per image, 20 files per batch, 250 pages per PDF and 100 MB per generated PDF or ZIP. Browser memory may impose lower practical limits.
+After deploying the final Pages URL, verify ownership in Google Search Console and submit /sitemap.xml.
 
-Encrypted PDFs, OCR, editing existing PDF text, digital signatures, annotations, form filling and animated image processing are not supported. PDF rewriting can lose bookmarks, attachments, forms and annotations, and invalidates existing digital signatures. Keep original copies of important files and verify outputs.
+## Tests and local development
 
-## Policies and licenses
+From web/ run npm install, npm run dev, npm test, npm run build, node scripts/check-seo-output.mjs and npm run test:e2e.
 
-- [About Files Format](web/public/about/index.html)
-- [Privacy policy](web/public/policies/privacy/index.html)
-- [Terms of use](web/public/policies/terms/index.html)
-- [Licensing](web/public/policies/licensing/index.html)
-- [Third-party notices](web/public/THIRD_PARTY_NOTICES.md)
-- [MIT License](LICENSE.md)
+## Privacy and limitations
 
-The application source is under the MIT License. Third-party dependencies remain under their respective licenses.
+- The application does not require a user account and contains no advertising integration or analytics.
+- PDF/image editing uses browser APIs and local libraries.
+- Share content is sent to Cloudflare R2 only when the user selects Link Tool or QR Tool and completes Turnstile.
+- Shared content is downloadable by anyone with its URL; avoid confidential and personal data.
+- R2 quotas are finite and overages may be billed.
+- Encrypted PDFs, OCR, editing existing PDF text, signatures, form filling, annotations and animated image processing are not supported.
+- Keep originals and verify output before relying on it.
+
+The application source is under the MIT License. Third-party notices and licences remain applicable.

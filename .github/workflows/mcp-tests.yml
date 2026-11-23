@@ -32,6 +32,9 @@ jobs:
         working-directory: web
         env:
           PUBLIC_BASE_PATH: "/"
+          PUBLIC_SITE_ORIGIN: "https://too-broke-for-a-custom-domain.pages.dev"
+          VITE_SHARE_API_ENABLED: "true"
+          VITE_TURNSTILE_SITE_KEY: "test-site-key-for-ci-only"
         run: npm install --no-audit --no-fund && npm run build
       - name: Check generated website pages
         working-directory: web

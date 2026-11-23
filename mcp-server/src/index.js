@@ -4,7 +4,7 @@ import { z } from "zod";
 import { TOOL_CATALOG, findTool, searchTools } from "./catalog.js";
 import { runTextTool } from "./text-tools.js";
 
-const DEFAULT_SITE_URL = "https://gaurav01mh.github.io/everyday-tools-python";
+const DEFAULT_SITE_URL = "https://too-broke-for-a-custom-domain.pages.dev";
 const TEXT_OPERATIONS = [
   "stats", "upper", "lower", "title", "sentence", "clean", "unique",
   "json-format", "json-validate", "csv-json", "json-csv",
@@ -17,7 +17,7 @@ function textResult(text) {
 }
 
 function createFilesFormatServer({ requestInfo } = {}) {
-  const SITE_URL = new URL(requestInfo?.url || DEFAULT_SITE_URL).origin;
+  const SITE_URL = DEFAULT_SITE_URL;
   const server = new McpServer({
     name: "files-format",
     version: "1.0.0"
@@ -71,7 +71,7 @@ function createFilesFormatServer({ requestInfo } = {}) {
       const tool = findTool(slug);
       if (!tool) return textResult("No Files Format tool exists with slug: " + slug);
 
-      const processing = tool.operation === "qr-code"
+      const processing = tool.operation === "qr-tool"
         ? "QR image generation runs locally in the visitor's browser. The MCP server can return a prefilled page link but does not render or store QR images."
         : tool.category === "pdf" || tool.category === "images"
           ? "This file task runs locally in the visitor's browser. The MCP server does not receive the file."
@@ -141,13 +141,13 @@ function createFilesFormatServer({ requestInfo } = {}) {
         return { ...textResult("QR content must be 1,000 UTF-8 bytes or fewer."), isError: true };
       }
       const pageUrl = new URL(SITE_URL + "/");
-      pageUrl.searchParams.set("tool", "qr-code-generator");
-      pageUrl.hash = "workspace&qr=" + encodeURIComponent(text);
+      pageUrl.searchParams.set("tool", "qr-tool");
+      pageUrl.hash = "workspace&share=" + encodeURIComponent(text);
       return textResult(JSON.stringify({
-        message: "Open the prefilled QR generator in Files Format, then choose Generate QR code and download PNG or SVG.",
+        message: "Open the prefilled QR Tool in Files Format, complete the security check, create the seven-day share link, and download its QR code.",
         url: pageUrl.href,
         textBytes: byteLength,
-        processing: "The payload is in the URL fragment. The browser generates the QR locally; the fragment is not sent in the website page request."
+        processing: "The payload is in the URL fragment; the visitor explicitly starts the temporary upload after completing the security check."
       }, null, 2));
     }
   );

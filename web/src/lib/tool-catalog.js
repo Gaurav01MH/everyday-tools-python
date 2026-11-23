@@ -324,28 +324,28 @@ export const TOOL_CATALOG = [
     limitation: "Only the units listed in the tool are supported. Temperature below absolute zero is rejected."
   },
   {
-    slug: "link-maker",
+    slug: "link-tool",
     mode: "text",
-    operation: "link-make",
-    name: "Link maker",
-    title: "Create Markdown and HTML hyperlinks",
-    description: "Turn a website address into a reusable Markdown link and safe HTML hyperlink with your own link text. Processing stays in your browser.",
-    keywords: ["link maker", "create hyperlink", "HTML link generator", "Markdown link generator", "clickable link"],
-    inputs: "An HTTP or HTTPS website address and optional link text.",
-    steps: ["Enter a website address. A missing scheme defaults to HTTPS.", "Optionally enter the text people should click.", "Generate and copy the Markdown or HTML link."],
-    limitation: "Only HTTP and HTTPS website addresses are supported. This creates a hyperlink; it does not shorten or host the destination URL."
+    operation: "link-tool",
+    name: "Link Tool",
+    title: "Upload a file or text and create a shareable link",
+    description: "Upload one file or paste text to create a private, unguessable download URL that can be shared with anyone who has the link. Links expire automatically after seven days.",
+    keywords: ["share file link", "upload file and get link", "text sharing link", "temporary file hosting", "create download link"],
+    inputs: "One file up to 10 MB, or pasted text. A free security check is required before upload.",
+    steps: ["Choose one file or paste text (use one input at a time).", "Complete the security check and create your link.", "Copy the share URL and send it to the recipient."],
+    limitation: "Anyone with the link can download the content. Links expire after seven days. Do not upload confidential, personal, illegal or copyrighted material you do not have permission to share."
   },
   {
-    slug: "qr-code-generator",
+    slug: "qr-tool",
     mode: "text",
-    operation: "qr-code",
-    name: "QR code generator",
-    title: "Create and download a QR code",
-    description: "Generate a scannable QR code from a website URL or short text and download it as PNG or SVG. Content is encoded locally in your browser.",
-    keywords: ["QR code generator", "create QR code", "URL to QR", "text to QR code", "download QR"],
-    inputs: "A URL or text value up to 1,000 UTF-8 bytes.",
-    steps: ["Paste a website address or short text.", "Choose Generate QR code.", "Preview and download the PNG or SVG QR code."],
-    limitation: "Longer content creates denser QR codes that may be harder to scan. Test the downloaded code before printing."
+    operation: "qr-tool",
+    name: "QR Tool",
+    title: "Upload a file or text and create a QR sharing code",
+    description: "Upload one file or paste text, create a temporary share URL, and turn that URL into a downloadable QR code in PNG or SVG format.",
+    keywords: ["file to QR code", "upload file QR code", "text to QR sharing", "share file with QR", "QR code download link"],
+    inputs: "One file up to 10 MB, or pasted text. A free security check is required before upload.",
+    steps: ["Choose one file or paste text (use one input at a time).", "Complete the security check and create your share link.", "Preview and download the QR code that opens the share link."],
+    limitation: "The QR code points to a public-by-link download URL. Links expire after seven days. Test the QR before sharing and do not upload confidential, personal, illegal or copyrighted material you do not have permission to share."
   }
 ];
 

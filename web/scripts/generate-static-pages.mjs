@@ -170,7 +170,7 @@ for (const mode of ["pdf","images","text"]) {
   const body = `<nav class="breadcrumbs"><a href="${BASE_URL}">Home</a><span>›</span><span>${esc(categoryFor(mode))}</span></nav>
 <p class="eyebrow">Files Format tool collection</p><h1>${esc(categoryFor(mode))}</h1><p class="summary">${esc(description)}</p>
 <div class="tool-grid">${relevant.map(toolCard).join("")}</div>
-<p class="notice">All tools run in your browser. Files Format does not upload selected documents to a processing server. Read the <a href="${urlFor("policies/privacy/")}">privacy policy</a> for hosting details and usage limits.</p>`;
+<p class="notice">PDF, image and ordinary text tools process locally. Link Tool and QR Tool upload only the file or text you choose to share, using seven-day expiring links. Read the <a href="${urlFor("policies/privacy/")}">privacy policy</a> before sharing.</p>`;
   await writePage(path + "index.html", shell({title,description,canonical,body,schema}));
   addUrl(path);
 }
@@ -193,7 +193,7 @@ for (const mode of ["pdf","images","text"]) {
   const canonical = urlFor("about/");
   const body = `<nav class="breadcrumbs"><a href="${BASE_URL}">Home</a><span>›</span><span>About</span></nav><p class="eyebrow">About the project</p><h1>Files Format</h1><p class="summary">A straightforward collection of free tools for everyday PDFs, images, text and files.</p>
 <h2>What Files Format does</h2><p>Files Format brings common file utilities into one small browser-based website. Choose a task, select a file or enter text, run the tool and download or copy the result.</p>
-<h2>Local processing</h2><p>PDF, image and text processing happens inside your browser. Selected documents are not uploaded to a Files Format processing server. The website itself is hosted by GitHub Pages, which may receive normal technical request metadata.</p>
+<h2>Local processing</h2><p>PDF, image and ordinary text/data tools run inside your browser. Selected documents for those local tools are not uploaded to a Files Format processing server.</p><h2>Temporary sharing</h2><p>Link Tool and QR Tool are optional upload features. They send the one file or pasted text you choose to Cloudflare R2 and create a public-by-link download URL. Each upload is limited to 10 MB, protected by Cloudflare Turnstile, and expires after seven days. Anyone with the URL can download it. Do not use these tools for confidential or personal content.</p>
 <h2>Current tool categories</h2><ul><li>PDF: merge, split, extract pages, rotate, images to PDF and PDF to PNG.</li><li>Images: resize, convert and compress common still image formats.</li><li>Text and data: formatting, JSON, CSV, URL and Base64 conversion, percentage calculations and unit conversion.</li></ul>
 <h2>What is not supported</h2><p>Encrypted PDFs, OCR, editing text inside existing PDFs, digital signatures, form filling, annotation editing and animated image processing are not supported. See each tool's page for more exact limits.</p><p><a href="${urlFor("tools/")}">Browse all tools</a>.</p>`;
   await writePage("about/index.html",shell({title,description,canonical,body,schema:{"@context":"https://schema.org","@type":"AboutPage","name":title,"description":description,"url":canonical}}));
@@ -204,7 +204,7 @@ for (const mode of ["pdf","images","text"]) {
   const title="Free PDF, Image, Text and File Tools | Files Format";
   const lines=[
     "# Files Format",
-    "> Free browser-based tools for PDF, image, text and everyday file tasks. Selected files are processed locally in the browser, not uploaded to a Files Format processing server.",
+    "> Free browser-based PDF, image and data tools, plus optional temporary file/text sharing. Local processing tools keep selected files in the browser; Link Tool and QR Tool upload only content the visitor explicitly chooses to share.",
     "",
     "## Main website",
     "- " + BASE_URL,

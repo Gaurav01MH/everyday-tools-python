@@ -41,6 +41,7 @@ jobs:
           GITHUB_PAGES: "true"
           PUBLIC_SITE_ORIGIN: ${{ vars.PUBLIC_SITE_ORIGIN || 'https://gaurav01mh.github.io' }}
           PUBLIC_BASE_PATH: ${{ vars.PUBLIC_BASE_PATH || '/everyday-tools-python/' }}
+          VITE_SHARE_API_ENABLED: "false"
         run: npm run build
       - name: Verify output has expected app files
         working-directory: web
@@ -71,4 +72,7 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Run browser, PDF, mobile and accessibility checks
         working-directory: web
+        env:
+          VITE_SHARE_API_ENABLED: "true"
+          VITE_TURNSTILE_SITE_KEY: "test-site-key-for-ci-only"
         run: npm run test:e2e

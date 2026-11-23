@@ -28,7 +28,7 @@
         <div>
           <p class="eyebrow">A small toolbox for everyday files</p>
           <h1>Get your file work done.</h1>
-          <p class="intro-copy">PDF, image, and text tools. No account, no ads, no file uploads.</p>
+          <p class="intro-copy">PDF, image, and data tools, plus temporary file sharing. No account or ads.</p>
         </div>
       </section>
 
@@ -73,6 +73,11 @@
               <label class="field-label" for="text-input">Input</label>
               <textarea id="text-input" rows="8" spellcheck="false" placeholder="Paste or type your text here"></textarea>
             </div>
+            <div class="field-row" id="share-security" hidden>
+              <div id="turnstile-container"></div>
+              <p id="share-security-message" class="inline-note" role="status">Complete the security check before creating a public share link.</p>
+              <p class="inline-note">Only upload material you have permission to share. Anyone with the link can download it. Do not share private or sensitive documents.</p>
+            </div>
             <div class="field-row" id="text-extra-row" hidden>
               <label class="field-label" for="text-extra-input">Additional input</label>
               <textarea id="text-extra-input" rows="5" spellcheck="false" placeholder="Paste the second value here"></textarea>
@@ -112,7 +117,7 @@
       </section>
 
       <footer class="site-footer">
-        <p>Free to use. No account or ads. Your selected files are processed in this browser; they are not sent to a server.</p>
+        <p>Free to use. No account or ads. PDF and image tools run in your browser; Link Tool and QR Tool upload only the content you choose to share.</p>
         <a href="%BASE_URL%connect/">Connect AI tools</a>
         <a href="#privacy-dialog" id="privacy-link">Privacy &amp; limits</a>
       </footer>
@@ -124,11 +129,11 @@
         <button id="close-dialog" class="icon-button" type="button" aria-label="Close">×</button>
       </div>
       <div class="dialog-body">
-        <p><strong>Your documents are not uploaded.</strong> The app reads files you select and processes them in your browser. It has no server-side file upload, account, analytics, ads, or AI service.</p>
-        <p>The website itself must be downloaded from GitHub Pages the first time. GitHub receives standard hosting request metadata (including visitor IP addresses) for security; the selected documents are not uploaded. After it has loaded, its static app files can be cached for offline use. Your files are never placed in that cache.</p>
+        <p><strong>PDF and image editing tools work locally.</strong> Link Tool and QR Tool are different: when you choose them, one file or pasted text is uploaded to the Files Format share service to create a public-by-link download.</p>
+        <p>Shared uploads are stored in the Files Format R2 bucket, protected by a security check, and automatically expire after seven days. Anyone with the share URL can download them. Do not upload confidential or personal documents. Cloudflare receives the upload and standard request metadata.</p>
         <p>To keep browser memory use reasonable, this version limits total selected input to 100 MB, each PDF to 50 MB, each image to 20 MB and 16 megapixels, a batch to 20 files, and PDF processing to 250 pages per document (100 pages for PNG rendering). Generated PDF and ZIP downloads are limited to 100 MB. Large or unusual documents may still exceed your browser's memory.</p>
         <p>Encrypted PDFs, OCR, PDF text editing, signatures, and form filling are not supported. PDF page-copy operations can discard document-level items such as bookmarks, attachments, form fields, and annotations; saving a changed PDF also invalidates existing digital signatures. Image conversion depends on formats your browser can decode; animated images are not supported.</p>
-        <p>Links and QR codes are generated in this browser. QR content is not sent to an external QR service. Always keep an original copy of important files. Processing creates new downloads and does not overwrite your source files.</p>
+        <p>QR Tool generates the QR image in your browser from the share URL. The QR image is not sent to an external QR service. Shared content is removed after seven days; preserve your own original copy.</p>
       </div>
     </dialog>
 

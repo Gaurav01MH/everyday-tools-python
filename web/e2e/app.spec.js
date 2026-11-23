@@ -224,36 +224,95 @@ test("a directory link opens its matching operation in the original workspace", 
 });
 
 
-test("link maker creates safe Markdown and HTML hyperlinks", async ({ page }) => {
+
+async function mockShareSecurity(page) {
+  await page.addInitScript(() => {
+    window.turnstile = {
+      render(_container, options) {
+        queueMicrotask(() => options.callback("test-turnstile-token"));
+        return "test-widget";
+      },
+      reset() {}
+    };
+  });
+}
+
+test("Link Tool turns pasted text into a seven-day share link", async ({ page }) => {
+  await mockShareSecurity(page);
+  await page.route("**/api/upload", async (route) => {
+    const request = route.request();
+    expect(request.method()).toBe("POST");
+    expect(request.headers()["x-share-kind"]).toBe("text");
+    expect(request.headers()["x-turnstile-token"]).toBe("test-turnstile-token");
+    expect(request.postDataBuffer()?.toString("utf8")).toBe("A note to share");
+    await route.fulfill({
+      status: 201,
+      contentType: "application/json",
+      body: JSON.stringify({
+        id: "a".repeat(48),
+        url: "https://too-broke-for-a-custom-domain.pages.dev/s/" + "a".repeat(48),
+        filename: "shared-text.txt",
+        size: 15,
+        expiresAt: new Date(Date.now() + 7 * 86400000).toISOString(),
+        expiresInDays: 7
+      })
+    });
+  });
+
   await page.goto("/");
   await page.getByRole("button", { name: "Text & data" }).click();
-  await page.getByLabel("Choose a task").selectOption("link-make");
-  await page.getByLabel("Website URL").fill("example.com/guide?q=1&x=2");
-  await page.getByLabel("Link text (optional)").fill("Files & Format");
-  await page.getByRole("button", { name: "Process text" }).click();
-  await expect(page.getByLabel("Processed output")).toHaveValue(/Markdown link:[\s\S]*https:\/\/example.com\/guide\?q=1&x=2[\s\S]*Files &amp; Format/);
+  await page.getByLabel("Choose a task").selectOption("link-tool");
+  await page.getByLabel("Text to share (optional when a file is selected)").fill("A note to share");
+  await expect(page.getByText("Security check complete.")).toBeVisible();
+  await page.getByRole("button", { name: "Create share link" }).click();
+  await expect(page.getByRole("link", { name: "Shareable download link" })).toHaveAttribute(
+    "href", "https://too-broke-for-a-custom-domain.pages.dev/s/" + "a".repeat(48)
+  );
+  await expect(page.getByText(/expires in 7 days/i)).toBeVisible();
 });
 
-test("QR generator creates local PNG and SVG downloads", async ({ page }) => {
+test("QR Tool turns an uploaded file into a QR for its share URL", async ({ page }) => {
+  await mockShareSecurity(page);
+  await page.route("**/api/upload", async (route) => {
+    const request = route.request();
+    expect(request.headers()["x-share-kind"]).toBe("file");
+    expect(request.headers()["x-share-filename"]).toBe(encodeURIComponent("notes.txt"));
+    expect(request.postDataBuffer()?.toString("utf8")).toBe("uploaded text file");
+    await route.fulfill({
+      status: 201,
+      contentType: "application/json",
+      body: JSON.stringify({
+        id: "b".repeat(48),
+        url: "https://too-broke-for-a-custom-domain.pages.dev/s/" + "b".repeat(48),
+        filename: "notes.txt",
+        size: 18,
+        expiresAt: new Date(Date.now() + 7 * 86400000).toISOString(),
+        expiresInDays: 7
+      })
+    });
+  });
+
   await page.goto("/");
   await page.getByRole("button", { name: "Text & data" }).click();
-  await page.getByLabel("Choose a task").selectOption("qr-code");
-  await page.getByLabel("Text or URL").fill("https://example.com");
-  await page.getByRole("button", { name: "Generate QR code" }).click();
-  await expect(page.getByRole("img", { name: "Generated QR code preview" })).toBeVisible();
-
+  await page.getByLabel("Choose a task").selectOption("qr-tool");
+  await page.locator("#file-input").setInputFiles({
+    name: "notes.txt",
+    mimeType: "text/plain",
+    buffer: Buffer.from("uploaded text file")
+  });
+  await expect(page.getByText("Security check complete.")).toBeVisible();
+  await page.getByRole("button", { name: "Create share link and QR" }).click();
+  await expect(page.getByRole("img", { name: "QR code for the shareable download link" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Shareable download link" })).toHaveAttribute(
+    "href", "https://too-broke-for-a-custom-domain.pages.dev/s/" + "b".repeat(48)
+  );
   const pngPromise = page.waitForEvent("download");
-  await page.getByRole("link", { name: "Download PNG" }).click();
+  await page.getByRole("link", { name: "Download QR (PNG)" }).click();
   const pngDownload = await pngPromise;
-  expect(pngDownload.suggestedFilename()).toBe("files-format-qr-code.png");
   const png = await readFile(await pngDownload.path());
   expect([...png.subarray(0, 8)]).toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
-
   const svgPromise = page.waitForEvent("download");
-  await page.getByRole("link", { name: "Download SVG" }).click();
+  await page.getByRole("link", { name: "Download QR (SVG)" }).click();
   const svgDownload = await svgPromise;
-  const svg = await readFile(await svgDownload.path(), "utf8");
-  expect(svgDownload.suggestedFilename()).toBe("files-format-qr-code.svg");
-  expect(svg).toContain("<svg");
-  expect(svg).toContain("<path");
+  expect(await readFile(await svgDownload.path(), "utf8")).toContain("<svg");
 });

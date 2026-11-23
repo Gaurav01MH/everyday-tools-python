@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Connect AI tools — Files Format</title>
-  <meta name="description" content="Connect Files Format to compatible AI clients using its remote Model Context Protocol server.">
+  <meta name="description" content="Connect compatible AI clients to Files Format using its remote MCP server.">
   <meta name="robots" content="index,follow">
-  <link rel="canonical" href="https://gaurav01mh.github.io/everyday-tools-python/connect/">
+  <link rel="canonical" href="https://too-broke-for-a-custom-domain.pages.dev/connect/">
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../assets/site-pages.css">
 </head>
@@ -15,49 +15,33 @@
   <a class="back-link" href="../">← Files Format home</a>
   <p class="eyebrow">AI integration</p>
   <h1>Connect Files Format to AI tools</h1>
-  <p class="summary">Files Format includes a remote MCP server for AI clients that support the Model Context Protocol (MCP). This is a modern MCP integration, not the old-style plugin store.</p>
+  <p class="summary">Files Format provides a remote Model Context Protocol (MCP) connector for compatible AI clients. Tool discovery and QR Tool hand-off are available through MCP; file uploads still use the website's Turnstile-protected flow.</p>
 
   <h2>What the connector exposes</h2>
   <ul>
-    <li>Search and list all 29 Files Format utilities.</li>
-    <li>Read tool descriptions and return direct links that open the matching utility in the website.</li>
-    <li>Run text/data operations, including JSON, CSV, case conversion, URL/Base64, percentage calculations, unit conversion and safe HTTP/HTTPS link markup; prepare prefilled QR-generator links.</li>
+    <li>Search and list the 29 Files Format utilities.</li>
+    <li>Read descriptions and direct links for individual tools.</li>
+    <li>Run supported text/data transformations on text explicitly sent by an AI client.</li>
+    <li>Prepare a QR Tool link with short text prefilled so the visitor can complete the share upload.</li>
   </ul>
-  <p>PDF, image and QR image generation remain in your browser. The MCP service does not accept PDF or image uploads.</p>
 
-  <h2>One free website and MCP address</h2>
-  <p>The combined site is designed for Cloudflare Workers Free. The website and MCP API share one included <code>workers.dev</code> hostname. After deployment, the addresses look like:</p>
-  <p><code>https://files-format-files-format-too-broke-for-a-custom-domain.YOUR-SUBDOMAIN.workers.dev/</code> — website</p>
-  <p><code>https://files-format-files-format-too-broke-for-a-custom-domain.YOUR-SUBDOMAIN.workers.dev/mcp</code> — MCP endpoint</p>
-  <p>No paid custom domain is needed. Cloudflare assigns the account subdomain when you deploy.</p>
+  <h2>Free website address</h2>
+  <p>The requested free Cloudflare Pages project name is <code>too-broke-for-a-custom-domain</code>. Once you claim that project name and deploy it, the website address will be:</p>
+  <p><code>https://too-broke-for-a-custom-domain.pages.dev/</code></p>
+  <p>This is a free platform-provided hostname, not a purchased custom domain. Cloudflare confirms availability when you create the Pages project. The address is not live until that account step and first deployment are complete.</p>
 
-  <h2>Deploy the combined website and MCP server</h2>
-  <p>The Worker source is in this repository's <code>mcp-server/</code> folder. A Cloudflare account is required to create the free hostname and deploy it.</p>
-  <ol>
-    <li>Open <a href="https://dash.cloudflare.com/">Cloudflare Dashboard</a> and create or sign in to an account.</li>
-    <li>Open <strong>Workers &amp; Pages → Create application → GitHub</strong> and connect this repository.</li>
-    <li>Set the repository root directory to the <strong>repository root</strong>, not <code>mcp-server</code>.</li>
-    <li>Set the build command to <code>npm --prefix web install --no-audit --no-fund &amp;&amp; PUBLIC_BASE_PATH=/ npm --prefix web run build &amp;&amp; npm --prefix mcp-server install --no-audit --no-fund</code>.</li>
-    <li>Set the deploy command to <code>cd mcp-server &amp;&amp; npx wrangler deploy</code>. Keep the Worker name <code>files-format-too-broke-for-a-custom-domain</code>.</li>
-    <li>Deploy and copy the assigned <code>workers.dev</code> hostname. In the Cloudflare build environment variables, set <code>PUBLIC_SITE_ORIGIN</code> to that exact origin and <code>PUBLIC_BASE_PATH</code> to <code>/</code>, then redeploy. This sets canonical URLs and the sitemap to the new hostname.</li>
-  </ol>
-
-  <h2>Check the MCP endpoint</h2>
-  <p>Open <code>https://files-format-files-format-too-broke-for-a-custom-domain.YOUR-SUBDOMAIN.workers.dev/health</code>. It should return <code>status: ok</code>, six MCP actions and 29 catalogue tools. Connect an MCP-compatible AI client to the same hostname followed by <code>/mcp</code>.</p>
-
-  <h2>Test it</h2>
-  <p>Open the deployed Worker's <code>/health</code> address. It should return a JSON response showing <code>status: ok</code>, six MCP actions and 29 catalogue tools. The connection URL to enter in an MCP client is the same hostname followed by <code>/mcp</code>.</p>
+  <h2>Optional MCP endpoint</h2>
+  <p>The MCP connector is a separate Cloudflare Worker. Its configured free project name is <code>too-broke-for-a-custom-domain-mcp</code>; after deployment its endpoint will look like:</p>
+  <p><code>https://too-broke-for-a-custom-domain-mcp.YOUR-ACCOUNT.workers.dev/mcp</code></p>
+  <p>Cloudflare assigns the account-specific part of that hostname. The website remains on the Pages address above; these are two different deployments.</p>
 
   <h2>Connect an AI client</h2>
-  <p>In an MCP-compatible client, add a remote Streamable HTTP server using the public HTTPS <code>/mcp</code> address. The endpoint does not exist until the Worker is deployed in a Cloudflare account.</p>
+  <p>In an MCP-compatible client, add a remote Streamable HTTP server using the deployed Worker URL ending in <code>/mcp</code>. ChatGPT documents custom MCP connections for eligible Business and Enterprise/Edu workspaces; Pro access is limited to read/fetch permissions. Custom MCP connections are not listed for ChatGPT Free. Other compatible AI clients may use the same endpoint.</p>
+  <p><a href="https://help.openai.com/en/articles/12584461-connecting-custom-mcp-servers-in-chatgpt">OpenAI MCP requirements</a> · <a href="https://developers.cloudflare.com/agents/model-context-protocol/guides/remote-mcp-server/">Cloudflare remote MCP guide</a></p>
 
-  <h2>ChatGPT compatibility</h2>
-  <p>OpenAI currently documents custom MCP connections for ChatGPT Business and Enterprise/Edu workspaces. Pro users can connect custom MCP servers with read/fetch permissions only. The current OpenAI requirements do not include the Free plan, so this connector cannot currently be added to a Free ChatGPT account. Other compatible AI clients may connect to the same endpoint.</p>
-  <p><a href="https://help.openai.com/en/articles/12584461-connecting-custom-mcp-servers-in-chatgpt">OpenAI's current MCP connection requirements</a> · <a href="https://developers.cloudflare.com/agents/model-context-protocol/guides/remote-mcp-server/">Cloudflare MCP guide</a></p>
-
-  <h2>Privacy and limits</h2>
-  <p>Tool discovery requests contain only search terms and tool slugs. When an AI client calls a text transformation, the text supplied by that client is sent to Cloudflare for processing. The Worker does not store the input in a database or file store, but Cloudflare processes the network request under its service terms. Do not send confidential information unless you are comfortable with that transfer.</p>
-  <p>Text input is limited to 32,000 characters per field. The connector does not expose file upload, account access, storage, delete or other write actions.</p>
+  <h2>File sharing and privacy</h2>
+  <p>Link Tool and QR Tool accept either pasted text or one file up to 10 MB. They upload only the content the visitor explicitly chooses after a Turnstile security check. The resulting URL is public to anyone who has it and expires after seven days. R2 lifecycle cleanup removes expired objects. Do not upload confidential or personal material.</p>
+  <p>PDF and image editing tools remain browser-local. The MCP service does not accept file uploads and cannot bypass the website's security check.</p>
   <p><a href="../tools/">Browse all 29 tools</a>.</p>
 </main>
 </body>

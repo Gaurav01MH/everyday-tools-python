@@ -1,56 +1,56 @@
 # Files Format website
 
-A static browser-based utility site for PDF, image, text and data tasks. The main app retains its original simple three-tab interface and task selector.
+A browser-based utility site for PDF, image, text and data tasks, with separate Link Tool and QR Tool sharing options. The original simple three-tab interface is preserved.
 
 ## Requirements and commands
 
 - Node.js 22.12 or newer
 - npm
 
-From this directory run `npm install`, `npm run dev`, `npm test`, `npm run build`, `node scripts/check-seo-output.mjs`, `npm run preview` and `npm run test:e2e` as needed.
+From this directory, run npm install, npm run dev, npm test, npm run build, node scripts/check-seo-output.mjs, npm run preview and npm run test:e2e as needed.
 
-The production build creates the Vite app, copies PDF.js support resources, generates static HTML pages for each tool and category, creates the sitemap and llms.txt, and builds an offline service worker that caches static site assets only.
+The production build generates the Vite app, PDF.js support resources, individual tool and category HTML pages, the sitemap, llms.txt and a service worker. The service worker deliberately bypasses /api/* and /s/*, so uploads and downloads are not cached.
+
+## Tools and upload behavior
+
+- PDF and image editing run locally in the browser. These selected source files are not uploaded.
+- Ordinary text/data tools run locally in the browser.
+- Link Tool accepts one file or pasted text (not both), uploads it to Cloudflare R2 after Turnstile verification, and returns a shareable download URL.
+- QR Tool accepts one file or pasted text, creates the same temporary share URL, then generates a downloadable PNG and SVG QR code for that URL.
+
+Share limits: one item per link, 10 MB maximum per upload, 300 active share objects and 3 GB active storage. Links expire after seven days. R2 lifecycle cleanup removes expired objects. Anyone with the share URL can download it, so do not share confidential or personal documents.
+
+## Free website hostname
+
+The requested Cloudflare Pages project name is too-broke-for-a-custom-domain. Its intended public hostname is:
+
+https://too-broke-for-a-custom-domain.pages.dev/
+
+The name must be available and claimed in a Cloudflare account; source code cannot reserve a pages.dev address. See DEPLOY-CLOUDFLARE.md for the Pages build, Turnstile keys, R2 binding and seven-day lifecycle setup.
+
+GitHub Pages remains a fallback, but sharing is disabled on that address because static GitHub Pages cannot run the upload Function or bind the R2 bucket.
+
+## Search and AI discovery
+
+- Every tool has an individual static page under /tools/.
+- Category and directory pages link to the individual tools.
+- robots.txt, sitemap.xml and llms.txt are generated on each production build.
+- Pages have unique titles, descriptions, canonical URLs, Open Graph metadata and JSON-LD structured data.
+- OAI-SearchBot is allowed and GPTBot is disallowed. These settings improve crawlability but cannot guarantee indexing or recommendations.
+
+After deploying the Pages hostname, verify ownership in Google Search Console and submit /sitemap.xml.
 
 ## MCP integration
 
-The public `/connect/` page explains the separate remote MCP Worker. The website remains static and browser-only for file operations; the MCP server source is kept in the repository's `mcp-server/` directory.
+The optional MCP connector is a separate Cloudflare Worker under ../mcp-server/. It uses the Pages site as its tool-link destination. Its own free workers.dev endpoint uses the same phrase in a separate hostname. See ../mcp-server/README.md.
 
-## Search engine and AI discovery
+## Privacy and limits
 
-- Each tool has an individual static HTML page under `/tools/`.
-- Category and directory pages link to the individual tools.
-- The root includes `robots.txt`, `sitemap.xml` and `llms.txt`.
-- Pages use unique titles, descriptions, canonical URLs, Open Graph metadata and relevant JSON-LD structured data.
-- The homepage receives its metadata at build time; the original UI is not replaced with search cards.
-- Individual tool-page links open the corresponding operation in the original workspace.
+- No user account, advertising integration or analytics is required.
+- Turnstile checks every share upload; its secret is a server-side Pages Function secret, never a Vite build variable.
+- Uploaded share content is stored in the R2 bucket files-format-shares, bound as SHARES.
+- Files are served as downloads with attachment, no-sniff, no-index and restrictive CSP headers.
+- Do not upload content you do not own or have permission to share.
+- R2 free quotas are finite; usage above the included monthly allowances may be billed. The active-share cap is conservative but this is not unlimited free hosting.
 
-OAI-SearchBot is allowed and GPTBot is disallowed. These settings improve crawlability but cannot guarantee indexing, ranking or recommendations.
-
-After the final public URL is stable, verify ownership in Google Search Console and submit `/sitemap.xml`.
-
-## Browser-only processing
-
-The file-processing functions read browser File objects and use client-side libraries. They do not send selected source files to a Files Format processing server. The service worker caches same-origin static app files only, not selected files or generated downloads.
-
-## UI and accessibility
-
-The original layout remains in place: simple PDF, image and text/data tabs, a task selector, file drop zone, options and result panel. Text & data now includes a Link maker for Markdown/HTML and a browser-local QR generator with PNG and SVG downloads. Individual SEO pages are separate from the app interface. The logo and favicon are code-based SVG assets.
-
-## Limits
-
-- 100 MB total selected input.
-- 50 MB per PDF; 20 MB and 16 megapixels per image.
-- 20 files per batch; maximum 12 PDFs in a merge.
-- Up to 250 pages per PDF; rendering is limited to 100 pages.
-- 100 MB per generated PDF/ZIP output.
-- 2 million characters per text input.
-
-Actual browser memory may be lower than these safety limits.
-
-## PDF caveats
-
-Password-protected PDFs are rejected. Rewriting PDFs can lose bookmarks, attachments, form fields and annotations, and invalidates existing signatures. OCR, editing text inside a PDF, signing, annotation editing and form filling are not implemented.
-
-## Hosting
-
-The GitHub Pages workflow remains a fallback. The optional combined Cloudflare Worker is configured with the free hostname slug `files-format-too-broke-for-a-custom-domain`; Cloudflare appends the account's `workers.dev` subdomain after the Worker is deployed. See `mcp-server/README.md` for the free deployment instructions. The exact public hostname does not exist until it is deployed in the connected Cloudflare account.
+Local PDF limits remain 100 MB total input, 50 MB per PDF, 20 MB per image, 16 megapixels per image, 20 files per batch, 250 pages per PDF and 100 MB generated PDF/ZIP output.

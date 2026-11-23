@@ -1,26 +1,32 @@
 # Files Format
 
-> Free browser-based utilities for PDF, image, text and everyday file tasks. Selected files are processed in the browser and are not uploaded to a Files Format processing server.
+> Free browser-based PDF, image and data tools, plus optional temporary file/text sharing. Local tools process files in the browser; Link Tool and QR Tool upload only the content the visitor explicitly chooses to share.
 
-## Main site
-- https://gaurav01mh.github.io/everyday-tools-python/
-- https://gaurav01mh.github.io/everyday-tools-python/tools/
-- https://gaurav01mh.github.io/everyday-tools-python/about/
+## Main website
+- https://too-broke-for-a-custom-domain.pages.dev/
+- https://too-broke-for-a-custom-domain.pages.dev/tools/
+- https://too-broke-for-a-custom-domain.pages.dev/about/
 
 ## Categories
-- https://gaurav01mh.github.io/everyday-tools-python/pdf-tools/
-- https://gaurav01mh.github.io/everyday-tools-python/image-tools/
-- https://gaurav01mh.github.io/everyday-tools-python/text-tools/
+- https://too-broke-for-a-custom-domain.pages.dev/pdf-tools/
+- https://too-broke-for-a-custom-domain.pages.dev/image-tools/
+- https://too-broke-for-a-custom-domain.pages.dev/text-tools/
+
+## Temporary sharing
+- Link Tool accepts one uploaded file or pasted text up to 10 MB and creates a public-by-link download URL.
+- QR Tool accepts the same input types, creates a temporary share URL, and generates a QR code for that URL.
+- A Cloudflare Turnstile check is required before each upload.
+- Share links expire after seven days; an R2 lifecycle rule removes the objects.
+- Anyone with the URL can download the shared content. Do not upload confidential or personal material.
 
 ## MCP integration
-- AI client connection instructions: https://gaurav01mh.github.io/everyday-tools-python/connect/
-- Remote MCP server source is in the repository's mcp-server/ directory.
-- It exposes tool discovery, safe link markup, and a prefilled QR-generator link. PDF, image and QR image generation remain in-browser.
+- AI client connection guide: https://too-broke-for-a-custom-domain.pages.dev/connect/
+- The separate MCP Worker discovers website tools and can open QR Tool with text prefilled.
+- The MCP Worker does not accept file uploads or bypass the website's Turnstile check.
 
-## Crawling and accuracy
-The site publishes an XML sitemap at /sitemap.xml. All 29 tools have individual static HTML pages describing their purpose, inputs, steps and limitations.
-Please describe Files Format using only the current implementation and published limitations. Do not claim features that are not listed.
-AI and search systems independently determine whether to crawl, index, cite or recommend this website. These files do not guarantee inclusion or ranking.
+## Search and accuracy
+The site publishes an XML sitemap at /sitemap.xml. All 29 tools have individual static HTML pages describing purpose, inputs, steps and limitations.
+AI and search systems decide independently whether to crawl, index, cite or recommend the website. SEO metadata does not guarantee ranking or indexing.
 
 ## Privacy
-The website has no account, ad integration, analytics or AI API. Selected files are processed locally in the browser. The static site is hosted by GitHub Pages, which may receive standard request metadata.
+The website has no account, advertising integration or analytics. PDF/image editing stays local. Link Tool and QR Tool upload only the content explicitly selected for sharing to Cloudflare R2, and share objects expire after seven days.

@@ -18,6 +18,9 @@ const elements = {
   fileList: $("#file-list"),
   options: $("#options-section"),
   textSection: $("#text-section"),
+  shareSecurity: $("#share-security"),
+  turnstileContainer: $("#turnstile-container"),
+  shareSecurityMessage: $("#share-security-message"),
   textInput: $("#text-input"),
   textExtraRow: $("#text-extra-row"),
   textExtraInput: $("#text-extra-input"),
@@ -84,8 +87,8 @@ const definitions = {
       ["percent-of", "Calculate percentage of a value"],
       ["percent-change", "Percentage change"],
       ["unit-convert", "Unit conversion"],
-      ["link-make", "Link maker"],
-      ["qr-code", "QR code generator"]
+      ["link-tool", "Link Tool"],
+      ["qr-tool", "QR Tool"]
     ]
   }
 };
@@ -101,6 +104,11 @@ let mode = "pdf";
 let selectedFiles = [];
 let busy = false;
 let qrSvgObjectUrl = null;
+let turnstileToken = "";
+let turnstileWidgetId = null;
+let turnstileScriptPromise = null;
+const SHARE_API_ENABLED = import.meta.env.VITE_SHARE_API_ENABLED === "true";
+const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || "";
 
 function makeOption(value, text) {
   const option = document.createElement("option");
@@ -190,18 +198,29 @@ function updateOperation() {
   const operation = currentOperation();
   const isText = mode === "text";
   const isFile = mode !== "text";
+  const isShareTool = mode === "text" && ["link-tool", "qr-tool"].includes(operation);
   elements.textSection.hidden = !isText;
-  elements.fileSection.hidden = !isFile;
+  elements.fileSection.hidden = !isFile && !isShareTool;
+  elements.shareSecurity.hidden = !isShareTool;
   elements.operation.closest(".field-row").hidden = false;
-  elements.fileInput.multiple = ["merge", "images-pdf"].includes(operation) || mode === "images";
-  elements.fileInput.accept = mode === "pdf"
+  elements.fileInput.multiple = isShareTool ? false : ["merge", "images-pdf"].includes(operation) || mode === "images";
+  elements.fileInput.accept = isShareTool ? "" : mode === "pdf"
     ? operation === "images-pdf" ? "image/png,image/jpeg,image/webp,image/bmp,.png,.jpg,.jpeg,.webp,.bmp" : ".pdf,application/pdf"
     : "image/png,image/jpeg,image/webp,image/bmp,.png,.jpg,.jpeg,.webp,.bmp";
-  elements.fileHint.textContent = mode === "pdf"
+  elements.fileHint.textContent = isShareTool ? "One file · Up to 10 MB" : mode === "pdf"
     ? operation === "images-pdf" ? "PNG, JPG, WEBP or BMP · Up to 20 images" : operation === "merge" ? "PDF files · Up to 12 files" : "PDF files · One file at a time"
     : "PNG, JPG, WEBP or BMP · Up to 20 images";
+  elements.dropZone.querySelector(".drop-subtitle").textContent = isShareTool
+    ? "Or paste text below. One file or text per share link."
+    : "Your files are read locally in this tab.";
   elements.fileInput.required = isFile;
   elements.options.replaceChildren();
+  if (isShareTool) {
+    const note = document.createElement("p");
+    note.className = "inline-note";
+    note.textContent = "Your share URL is public to anyone who has it and expires after seven days. Uploads are limited to 10 MB.";
+    elements.options.append(note);
+  }
 
   if (mode === "pdf") {
     if (operation === "extract" || operation === "rotate") {
@@ -252,7 +271,8 @@ function updateOperation() {
     elements.textExtraRow.hidden = !needsExtra;
     elements.unitRow.hidden = operation !== "unit-convert";
     const inputLabel = elements.textSection.querySelector('label[for="text-input"]');
-    inputLabel.textContent = operation === "percent-of" ? "Percentage" :
+    inputLabel.textContent = ["link-tool", "qr-tool"].includes(operation) ? "Text to share (optional when a file is selected)" :
+      operation === "percent-of" ? "Percentage" :
       operation === "percent-change" ? "Starting value" :
       operation === "link-make" ? "Website URL" :
       operation === "qr-code" ? "Text or URL" :
@@ -262,7 +282,8 @@ function updateOperation() {
       operation === "link-make" ? "Link text (optional)" : "New value";
     elements.textExtraInput.placeholder = operation === "percent-of" ? "Number to calculate from" :
       operation === "link-make" ? "Example: Open Files Format" : "New value";
-    elements.textInput.placeholder = operation === "unit-convert" ? "Enter a number" :
+    elements.textInput.placeholder = ["link-tool", "qr-tool"].includes(operation) ? "Paste the text you want to share" :
+      operation === "unit-convert" ? "Enter a number" :
       operation === "link-make" ? "https://example.com" :
       operation === "qr-code" ? "Paste a URL or short text" :
       operation === "percent-of" ? "Percentage" :
@@ -276,8 +297,12 @@ function updateOperation() {
       elements.options.append(note);
     }
     if (operation === "unit-convert") updateUnitOptions();
+    if (["link-tool", "qr-tool"].includes(operation)) {
+      elements.runButton.textContent = operation === "link-tool" ? "Create share link" : "Create share link and QR";
+      void prepareTurnstileWidget();
+    }
   }
-  elements.runButton.textContent = isText ? (operation === "qr-code" ? "Generate QR code" : "Process text") : "Run tool";
+  elements.runButton.textContent = isText ? (operation === "link-tool" ? "Create share link" : operation === "qr-tool" ? "Create share link and QR" : operation === "qr-code" ? "Generate QR code" : "Process text") : "Run tool";
 }
 
 function updateUnitOptions() {
@@ -294,28 +319,39 @@ function updateUnitOptions() {
 function updateTextControls() {
   if (mode !== "text") return;
   const operation = currentOperation();
+  const isShareTool = ["link-tool", "qr-tool"].includes(operation);
   const needsExtra = ["percent-of", "percent-change", "link-make"].includes(operation);
   elements.textExtraRow.hidden = !needsExtra;
   elements.unitRow.hidden = operation !== "unit-convert";
+
   const inputLabel = elements.textSection.querySelector('label[for="text-input"]');
-  inputLabel.textContent = operation === "percent-of" ? "Percentage" :
+  inputLabel.textContent = isShareTool ? "Text to share (optional when a file is selected)" :
+    operation === "percent-of" ? "Percentage" :
     operation === "percent-change" ? "Starting value" :
     operation === "link-make" ? "Website URL" :
     operation === "qr-code" ? "Text or URL" :
     operation === "unit-convert" ? "Value" :
     operation === "stats" ? "Text to analyse" : "Input";
-  elements.textExtraRow.querySelector("label").textContent = operation === "percent-of" ? "Value" :
+
+  elements.textExtraRow.querySelector("label").textContent =
+    operation === "percent-of" ? "Value" :
     operation === "link-make" ? "Link text (optional)" : "New value";
   elements.textExtraInput.placeholder = operation === "percent-of" ? "Number to calculate from" :
     operation === "link-make" ? "Example: Open Files Format" : "New value";
-  elements.textInput.placeholder = operation === "unit-convert" ? "Enter a number" :
+
+  elements.textInput.placeholder = isShareTool ? "Paste the text you want to share" :
+    operation === "unit-convert" ? "Enter a number" :
     operation === "link-make" ? "https://example.com" :
     operation === "qr-code" ? "Paste a URL or short text" :
     operation === "percent-of" ? "Enter a percentage" :
     operation === "percent-change" ? "Enter the starting value" :
     operation.startsWith("json") ? "Paste JSON here" :
     operation === "csv-json" ? "Paste CSV here" : "Paste or type your text here";
-  elements.runButton.textContent = operation === "qr-code" ? "Generate QR code" : "Process text";
+
+  elements.runButton.textContent = operation === "link-tool" ? "Create share link" :
+    operation === "qr-tool" ? "Create share link and QR" :
+    operation === "qr-code" ? "Generate QR code" : "Process text";
+
   if (operation === "unit-convert") updateUnitOptions();
 }
 
@@ -386,6 +422,19 @@ function moveFile(index, direction) {
 function addFiles(files) {
   if (busy) return;
   const newFiles = [...files];
+  const isShareTool = mode === "text" && ["link-tool", "qr-tool"].includes(currentOperation());
+  if (isShareTool) {
+    selectedFiles = newFiles.slice(0, 1);
+    if (selectedFiles[0]?.size > 10 * 1024 * 1024) {
+      selectedFiles = [];
+      showMessage("Each shared file is limited to 10 MB.", "error");
+    } else {
+      if (selectedFiles.length) elements.textInput.value = "";
+      clearResult();
+    }
+    renderFileList();
+    return;
+  }
   const singleInputOperation = mode === "pdf" && !["merge", "images-pdf"].includes(currentOperation());
   selectedFiles = singleInputOperation ? newFiles.slice(0, 1) : [...selectedFiles, ...newFiles];
   if (selectedFiles.length > 20) {
@@ -431,6 +480,8 @@ function setBusy(value) {
   elements.clearButton.disabled = value;
   elements.operation.disabled = value;
   elements.fileInput.disabled = value;
+  elements.textInput.disabled = value;
+  elements.textExtraInput.disabled = value;
   elements.busyLabel.hidden = !value;
   renderFileList();
 }
@@ -573,13 +624,179 @@ async function runQrCode() {
   showMessage("QR code generated in your browser. The encoded text was not sent to a server.", "success");
 }
 
+async function ensureTurnstileScript() {
+  if (window.turnstile) return;
+  if (!TURNSTILE_SITE_KEY) throw new Error("The free sharing service is not configured yet. The site owner must finish the Cloudflare setup.");
+  if (!turnstileScriptPromise) {
+    turnstileScriptPromise = new Promise((resolve, reject) => {
+      const existing = document.querySelector('script[data-turnstile-loader]');
+      if (existing) {
+        existing.addEventListener("load", resolve, { once: true });
+        existing.addEventListener("error", () => reject(new Error("Could not load the security check.")), { once: true });
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+      script.async = true;
+      script.defer = true;
+      script.dataset.turnstileLoader = "true";
+      script.onload = resolve;
+      script.onerror = () => reject(new Error("Could not load the security check."));
+      document.head.append(script);
+    });
+  }
+  await turnstileScriptPromise;
+}
+
+async function prepareTurnstileWidget() {
+  if (!elements.shareSecurity || elements.shareSecurity.hidden) return;
+  if (!SHARE_API_ENABLED || !TURNSTILE_SITE_KEY) {
+    elements.shareSecurityMessage.textContent = "Sharing is disabled on this fallback address. The free Cloudflare Pages version will enable it after the storage and security settings are connected.";
+    elements.turnstileContainer.hidden = true;
+    return;
+  }
+  try {
+    await ensureTurnstileScript();
+    if (turnstileWidgetId !== null) return;
+    turnstileWidgetId = window.turnstile.render(elements.turnstileContainer, {
+      sitekey: TURNSTILE_SITE_KEY,
+      action: "share-upload",
+      theme: "light",
+      callback(token) {
+        turnstileToken = token;
+        elements.shareSecurityMessage.textContent = "Security check complete.";
+      },
+      "expired-callback"() {
+        turnstileToken = "";
+        elements.shareSecurityMessage.textContent = "Security check expired. Complete it again before uploading.";
+      },
+      "error-callback"() {
+        turnstileToken = "";
+        elements.shareSecurityMessage.textContent = "The security check had an error. Reload the check and retry.";
+      }
+    });
+  } catch (error) {
+    elements.shareSecurityMessage.textContent = error.message;
+  }
+}
+
+async function runShareTool(kind) {
+  if (!SHARE_API_ENABLED) {
+    throw new Error("The share-link service is available on the free Cloudflare Pages address after its storage and security setup. This GitHub Pages fallback cannot host uploaded files.");
+  }
+  if (!TURNSTILE_SITE_KEY || !turnstileToken) {
+    throw new Error("Complete the security check before creating a share link.");
+  }
+
+  let body;
+  let filename;
+  let contentKind;
+  if (selectedFiles.length) {
+    const file = selectedFiles[0];
+    if (file.size > 10 * 1024 * 1024) throw new Error("Each shared file is limited to 10 MB.");
+    body = file;
+    filename = file.name;
+    contentKind = "file";
+  } else {
+    const value = elements.textInput.value;
+    if (!value.trim()) throw new Error("Choose one file or paste the text you want to share.");
+    body = new TextEncoder().encode(value);
+    if (body.byteLength > 10 * 1024 * 1024) throw new Error("Pasted text is limited to 10 MB.");
+    filename = "shared-text.txt";
+    contentKind = "text";
+  }
+
+  setBusy(true);
+  try {
+    const response = await fetch("/api/upload", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+        "X-Share-Kind": contentKind,
+        "X-Share-Filename": encodeURIComponent(filename),
+        "X-Turnstile-Token": turnstileToken
+      },
+      body
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(payload.error || "The share link could not be created.");
+    const shareUrl = new URL(payload.url, location.origin);
+    if (shareUrl.origin !== location.origin || !/^\/s\/[a-f0-9]{48}$/.test(shareUrl.pathname)) {
+      throw new Error("The share service returned an invalid link. Please retry.");
+    }
+
+    const urlLink = document.createElement("a");
+    urlLink.href = shareUrl.href;
+    urlLink.textContent = shareUrl.href;
+    urlLink.target = "_blank";
+    urlLink.rel = "noopener noreferrer";
+    urlLink.className = "share-url";
+    urlLink.setAttribute("aria-label", "Shareable download link");
+
+    const copyButton = document.createElement("button");
+    copyButton.type = "button";
+    copyButton.className = "secondary-button";
+    copyButton.textContent = "Copy share link";
+    copyButton.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(shareUrl.href);
+        showMessage("Share link copied. Anyone with the link can download it until it expires.", "success");
+      } catch {
+        showMessage("Select and copy the share URL shown above.", "warning");
+      }
+    });
+
+    const expiry = document.createElement("p");
+    expiry.className = "inline-note";
+    expiry.textContent = "This link expires in 7 days. Anyone who has it can download the shared content.";
+
+    if (kind === "qr") {
+      const qrOptions = { errorCorrectionLevel: "M", margin: 4, width: 320, color: { dark: "#000000", light: "#ffffff" } };
+      const [pngDataUrl, svgMarkup] = await Promise.all([
+        QRCode.toDataURL(shareUrl.href, qrOptions),
+        QRCode.toString(shareUrl.href, { ...qrOptions, type: "svg" })
+      ]);
+      if (qrSvgObjectUrl) URL.revokeObjectURL(qrSvgObjectUrl);
+      qrSvgObjectUrl = URL.createObjectURL(new Blob([svgMarkup], { type: "image/svg+xml;charset=utf-8" }));
+      const preview = document.createElement("img");
+      preview.className = "qr-preview";
+      preview.src = pngDataUrl;
+      preview.alt = "QR code for the shareable download link";
+      const pngLink = document.createElement("a");
+      pngLink.href = pngDataUrl;
+      pngLink.download = "files-format-share-qr.png";
+      pngLink.className = "secondary-button";
+      pngLink.textContent = "Download QR (PNG)";
+      const svgLink = document.createElement("a");
+      svgLink.href = qrSvgObjectUrl;
+      svgLink.download = "files-format-share-qr.svg";
+      svgLink.className = "secondary-button";
+      svgLink.textContent = "Download QR (SVG)";
+      elements.resultActions.replaceChildren(preview, urlLink, copyButton, pngLink, svgLink, expiry);
+    } else {
+      elements.resultActions.replaceChildren(urlLink, copyButton, expiry);
+    }
+
+    showMessage("Your share link is ready.", "success");
+  } finally {
+    turnstileToken = "";
+    if (window.turnstile && turnstileWidgetId !== null) window.turnstile.reset(turnstileWidgetId);
+    if (elements.shareSecurityMessage) {
+      elements.shareSecurityMessage.textContent = "Complete the security check again for another upload.";
+    }
+    setBusy(false);
+  }
+}
+
 async function handleSubmit(event) {
   event.preventDefault();
   if (busy) return;
   clearResult();
   if (mode === "text") {
     try {
-      if (currentOperation() === "qr-code") await runQrCode();
+      if (currentOperation() === "link-tool") await runShareTool("link");
+      else if (currentOperation() === "qr-tool") await runShareTool("qr");
+      else if (currentOperation() === "qr-code") await runQrCode();
       else await runText(currentOperation());
     } catch (error) {
       showMessage(error.message || "The text could not be processed.", "error");
@@ -613,6 +830,12 @@ function clearWorkspace() {
 }
 
 elements.tabs.forEach((tab) => tab.addEventListener("click", () => setMode(tab.dataset.mode)));
+elements.textInput.addEventListener("input", () => {
+  if (mode === "text" && ["link-tool", "qr-tool"].includes(currentOperation()) && elements.textInput.value.length && selectedFiles.length) {
+    selectedFiles = [];
+    renderFileList();
+  }
+});
 elements.operation.addEventListener("change", () => {
   selectedFiles = [];
   renderFileList();
@@ -656,9 +879,9 @@ if (requestedToolSlug) {
     elements.operation.value = requestedTool.operation;
     updateOperation();
     updateTextControls();
-    if (requestedTool.operation === "qr-code") {
+    if (requestedTool.operation === "qr-tool") {
       const fragmentParams = new URLSearchParams(location.hash.slice(1).split("&").slice(1).join("&"));
-      const prefill = fragmentParams.get("qr");
+      const prefill = fragmentParams.get("share");
       if (prefill !== null) {
         elements.textInput.value = prefill;
         document.querySelector("#workspace").scrollIntoView({ block: "start" });

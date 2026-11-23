@@ -33,8 +33,8 @@ test("every tool has enough factual detail to render its SEO page", () => {
 test("tool slug lookup is safe for existing and unknown slugs", () => {
   assert.equal(findToolBySlug("merge-pdf")?.operation, "merge");
   assert.equal(findToolBySlug("validate-json")?.operation, "json-validate");
-  assert.equal(findToolBySlug("link-maker")?.operation, "link-make");
-  assert.equal(findToolBySlug("qr-code-generator")?.operation, "qr-code");
+  assert.equal(findToolBySlug("link-tool")?.operation, "link-tool");
+  assert.equal(findToolBySlug("qr-tool")?.operation, "qr-tool");
   assert.equal(findToolBySlug("../admin"), null);
   assert.equal(findToolBySlug("does-not-exist"), null);
 });

@@ -1,72 +1,54 @@
-# Files Format — free website + MCP server
+# Files Format MCP connector
 
-A stateless remote Model Context Protocol server for Files Format. Cloudflare Workers serves the website and MCP endpoint from **one free `workers.dev` hostname**.
+This is the optional remote Model Context Protocol server for Files Format. The public website is intended to use the free Cloudflare Pages hostname:
+
+https://too-broke-for-a-custom-domain.pages.dev/
+
+The MCP Worker is a separate deployment. Its configured project name is too-broke-for-a-custom-domain-mcp; Cloudflare assigns the account-specific part of its workers.dev hostname.
 
 ## Tools exposed
 
-- `search_tools`, `list_tools`, `get_tool_info` and `open_tool_in_browser` for the website utilities.
-- `run_text_tool` for supported text/data operations, including safe HTTP/HTTPS link markup.
-- `generate_qr_code` to return a link that opens the browser QR generator with content prefilled; the QR image itself is generated locally in the browser.
+- search_tools, list_tools, get_tool_info and open_tool_in_browser discover and link to the 29 website tools.
+- run_text_tool runs supported text/data operations on text explicitly supplied by the AI client.
+- generate_qr_code returns a link to QR Tool with text in the URL fragment. The visitor opens the Pages site, completes Turnstile and creates the temporary share URL; QR Tool generates a QR for that URL.
 
-The catalogue is imported from the website's single source of truth at `web/src/lib/tool-catalog.js`.
+The tool catalogue is imported from the website's single source of truth at web/src/lib/tool-catalog.js.
 
-## Privacy and file handling
+## Privacy
 
-PDF and image processing stays in the browser. The MCP server does not accept files, file URLs or file-storage actions. Text sent to `run_text_tool` is processed by the Worker; the code does not persist it in a database or file store. Cloudflare receives the network request and may process request metadata under its service terms. Do not send confidential content unless you accept that transfer.
+The MCP service does not accept file bytes, file URLs or R2 storage actions. It cannot bypass the Pages site's Turnstile check. Link Tool and QR Tool upload only when the visitor explicitly starts the share action in the website. Pasted text sent to run_text_tool is processed by the Worker; do not send confidential material.
 
-The server is stateless, has no account access, no credentials, no database and no write/delete actions.
+## Deploy the website first
 
-## Free hostname
+Follow web/DEPLOY-CLOUDFLARE.md to create the Pages project, claim the too-broke-for-a-custom-domain.pages.dev hostname, bind R2, configure Turnstile and set the seven-day lifecycle rule.
 
-The Worker is configured with the free hostname slug:
+## Deploy the MCP Worker
 
-`files-format-too-broke-for-a-custom-domain`
+1. Sign in to the same Cloudflare account.
+2. Create a Workers project from this Git repository, using the repository root as the root directory.
+3. Use this build command:
 
-After deployment, Cloudflare combines that slug with the `workers.dev` account subdomain selected in your Cloudflare account. The final hostname will look like:
+   npm --prefix web install --no-audit --no-fund && PUBLIC_BASE_PATH=/ PUBLIC_SITE_ORIGIN=https://too-broke-for-a-custom-domain.pages.dev npm --prefix web run build && npm --prefix mcp-server install --no-audit --no-fund
 
-- Website: `https://files-format-too-broke-for-a-custom-domain.<your-account-subdomain>.workers.dev/`
-- MCP endpoint: `https://files-format-too-broke-for-a-custom-domain.<your-account-subdomain>.workers.dev/mcp`
-- Health: `https://files-format-too-broke-for-a-custom-domain.<your-account-subdomain>.workers.dev/health`
+4. Use this deploy command:
 
-This uses a free platform-provided hostname; it does not require buying or connecting a custom domain. The account subdomain is selected separately in Cloudflare. GitHub Pages remains available as a fallback until the Worker is deployed.
-
-## Deploy through Cloudflare Git integration
-
-1. Create or sign in to Cloudflare.
-2. Open **Workers & Pages → Create application → GitHub** and connect this repository.
-3. Set the repository root directory to the repository root, not `mcp-server`.
-4. Build command:
-
-   ```bash
-   npm --prefix web install --no-audit --no-fund && PUBLIC_BASE_PATH=/ npm --prefix web run build && npm --prefix mcp-server install --no-audit --no-fund
-   ```
-
-5. Deploy command:
-
-   ```bash
    cd mcp-server && npx wrangler deploy
-   ```
 
-6. Keep the Worker name `files-format-too-broke-for-a-custom-domain`.
-7. Deploy and copy the assigned `workers.dev` hostname. In the Cloudflare build environment variables, set `PUBLIC_SITE_ORIGIN` to that exact origin (for example, `https://files-format-too-broke-for-a-custom-domain.<your-account-subdomain>.workers.dev`) and `PUBLIC_BASE_PATH` to `/`, then redeploy. This aligns canonical URLs and the sitemap with the new hostname.
+5. Keep the Worker name too-broke-for-a-custom-domain-mcp.
 
-Wrangler serves static assets from `../web/dist`; the script runs first only for `/mcp*` and `/health`.
+The Worker has a free workers.dev hostname. It can serve a static mirror of the site and the MCP protocol at /mcp; the preferred website address remains the separate Pages hostname.
 
 ## Local development
 
-```bash
-cd web
-npm install
-PUBLIC_BASE_PATH=/ npm run build
-cd ../mcp-server
-npm install
-npx wrangler login
-npm test
-npm run dev
-```
+From the repository root:
 
-The website is at `http://localhost:8787/`; MCP is at `http://localhost:8787/mcp`. Publish with `npm run deploy`.
+   npm --prefix web install
+   PUBLIC_BASE_PATH=/ PUBLIC_SITE_ORIGIN=https://too-broke-for-a-custom-domain.pages.dev npm --prefix web run build
+   npm --prefix mcp-server install
+   npm --prefix mcp-server test
+   cd mcp-server
+   npx wrangler dev
 
-## Free-tier constraints
+## Service limits
 
-The deployment uses the Cloudflare Workers Free plan. Review Cloudflare's current limits and terms before relying on it for high traffic or production workloads.
+The Pages share tools cap each upload at 10 MB, 300 active objects and 3 GB active storage. Links expire after seven days; R2 lifecycle cleanup removes the objects. Cloudflare free allowances are finite and may change; usage above free allowances may be billed.
