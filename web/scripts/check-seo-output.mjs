@@ -5,8 +5,12 @@ import { fileURLToPath } from "node:url";
 import { TOOL_CATALOG } from "../src/lib/tool-catalog.js";
 
 const dist = fileURLToPath(new URL("../dist/", import.meta.url));
-const basePath = process.env.PUBLIC_BASE_PATH || (process.env.GITHUB_PAGES === "true" ? "/everyday-tools-python/" : "/");
-const origin = (process.env.PUBLIC_SITE_ORIGIN || "https://gaurav01mh.github.io").replace(/\/$/, "");
+const repositoryName = process.env.GITHUB_REPOSITORY?.split("/").pop() || "files-format";
+const basePath = process.env.PUBLIC_BASE_PATH || (process.env.GITHUB_PAGES === "true" ? "/" + repositoryName + "/" : "/");
+const defaultSiteOrigin = process.env.GITHUB_REPOSITORY_OWNER
+  ? "https://" + process.env.GITHUB_REPOSITORY_OWNER + ".github.io"
+  : "https://files-format.example";
+const origin = (process.env.PUBLIC_SITE_ORIGIN || defaultSiteOrigin).replace(/\/$/, "");
 const baseUrl = new URL(basePath.endsWith("/") ? basePath : basePath + "/", origin).href;
 const sitemap = await readFile(join(dist, "sitemap.xml"), "utf8");
 const robots = await readFile(join(dist, "robots.txt"), "utf8");
