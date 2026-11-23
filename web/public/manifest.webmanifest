@@ -1,12 +1,12 @@
 {
-  "name": "Everyday Tools",
-  "short_name": "Everyday Tools",
-  "description": "Local PDF, image and text tools",
+  "name": "FileDesk — PDF, Image & File Tools",
+  "short_name": "FileDesk",
+  "description": "Free browser-based PDF, image, text and everyday file tools",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f7f8fa",
-  "theme_color": "#f7f8fa",
+  "background_color": "#f7f9fb",
+  "theme_color": "#123047",
   "icons": [
     {
       "src": "./favicon.svg",
