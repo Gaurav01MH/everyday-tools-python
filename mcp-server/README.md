@@ -4,7 +4,7 @@ A stateless remote Model Context Protocol server for Files Format. Cloudflare Wo
 
 ## Tools exposed
 
-- `search_tools`, `list_tools`, `get_tool_info` and `open_tool_in_browser` for the 29 website utilities.
+- `search_tools`, `list_tools`, `get_tool_info` and `open_tool_in_browser` for the website utilities.
 - `run_text_tool` for supported text/data operations, including safe HTTP/HTTPS link markup.
 - `generate_qr_code` to return a link that opens the browser QR generator with content prefilled; the QR image itself is generated locally in the browser.
 
@@ -18,13 +18,17 @@ The server is stateless, has no account access, no credentials, no database and 
 
 ## Free hostname
 
-Cloudflare Workers Free includes a `workers.dev` hostname. After deployment, the same Worker serves:
+The Worker is configured with the free hostname slug:
 
-- Website: `https://files-format-mcp.<your-workers-dev-subdomain>.workers.dev/`
-- MCP endpoint: `https://files-format-mcp.<your-workers-dev-subdomain>.workers.dev/mcp`
-- Health: `https://files-format-mcp.<your-workers-dev-subdomain>.workers.dev/health`
+`too-broke-for-a-custom-domain`
 
-No paid custom domain is required. Cloudflare assigns the account subdomain. GitHub Pages remains available as a fallback.
+After deployment, Cloudflare combines that slug with the `workers.dev` account subdomain selected in your Cloudflare account. The final hostname will look like:
+
+- Website: `https://too-broke-for-a-custom-domain.<your-account-subdomain>.workers.dev/`
+- MCP endpoint: `https://too-broke-for-a-custom-domain.<your-account-subdomain>.workers.dev/mcp`
+- Health: `https://too-broke-for-a-custom-domain.<your-account-subdomain>.workers.dev/health`
+
+This uses a free platform-provided hostname; it does not require buying or connecting a custom domain. The account subdomain is selected separately in Cloudflare. GitHub Pages remains available as a fallback until the Worker is deployed.
 
 ## Deploy through Cloudflare Git integration
 
@@ -43,8 +47,8 @@ No paid custom domain is required. Cloudflare assigns the account subdomain. Git
    cd mcp-server && npx wrangler deploy
    ```
 
-6. Keep the Worker name `files-format-mcp`.
-7. After first deploy, set build environment variables `PUBLIC_SITE_ORIGIN` to the assigned origin (for example `https://files-format-mcp.your-subdomain.workers.dev`) and `PUBLIC_BASE_PATH` to `/`, then redeploy. This aligns canonical URLs and the sitemap with the new hostname.
+6. Keep the Worker name `too-broke-for-a-custom-domain`.
+7. Deploy and copy the assigned `workers.dev` hostname. In the Cloudflare build environment variables, set `PUBLIC_SITE_ORIGIN` to that exact origin (for example, `https://too-broke-for-a-custom-domain.<your-account-subdomain>.workers.dev`) and `PUBLIC_BASE_PATH` to `/`, then redeploy. This aligns canonical URLs and the sitemap with the new hostname.
 
 Wrangler serves static assets from `../web/dist`; the script runs first only for `/mcp*` and `/health`.
 
@@ -65,4 +69,4 @@ The website is at `http://localhost:8787/`; MCP is at `http://localhost:8787/mcp
 
 ## Free-tier constraints
 
-Cloudflare Workers Free currently includes 100,000 requests/day and 10 ms CPU per invocation. Remote text fields are limited to 32,000 characters. PDF/image tasks remain browser-local; confirm current Cloudflare limits if you expect higher traffic.
+The deployment uses the Cloudflare Workers Free plan. Review Cloudflare's current limits and terms before relying on it for high traffic or production workloads.
