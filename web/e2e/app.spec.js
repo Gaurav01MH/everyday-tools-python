@@ -27,9 +27,29 @@ async function choosePdf(page, operation, name, bytes) {
 
 test("page loads with a simple default workspace and local-processing notice", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Get your file work done." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Everyday file jobs, made simpler." })).toBeVisible();
+  await expect(page.getByRole("img", { name: "FileDesk — PDF, Image & File Tools" })).toBeVisible();
+  await expect(page.getByLabel("Search tools, e.g. merge PDF or compress image")).toBeVisible();
   await expect(page.getByText("Files stay on this device")).toBeVisible();
   await expect(page.getByRole("button", { name: "PDF tools" })).toHaveAttribute("aria-pressed", "true");
+});
+
+test("searches tool cards and opens the matching PDF operation", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("searchbox", { name: "Search tools, e.g. merge PDF or compress image" }).fill("merge");
+  await expect(page.getByRole("button", { name: /Merge PDF/ })).toBeVisible();
+  await expect(page.locator("#tool-count")).toHaveText("1 tool");
+  await page.getByRole("button", { name: /Merge PDF/ }).click();
+  await expect(page.getByLabel("Choose a task")).toHaveValue("merge");
+  await expect(page).toHaveURL(/tool=merge-pdf/);
+  await expect(page.locator(".tool-card.is-selected")).toContainText("Merge PDF");
+});
+
+test("opens a selected tool from a shareable direct URL", async ({ page }) => {
+  await page.goto("/?tool=validate-json");
+  await expect(page.getByRole("button", { name: "Text & data" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByLabel("Choose a task")).toHaveValue("json-validate");
+  await expect(page.getByLabel("Input", { exact: true })).toHaveAttribute("placeholder", "Paste JSON here");
 });
 
 test("switches tool categories and transforms text", async ({ page }) => {
