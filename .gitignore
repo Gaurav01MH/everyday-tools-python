@@ -5,3 +5,10 @@ venv/
 .env
 .DS_Store
 .pytest_cache/
+
+# Browser app build output and local dependencies
+web/node_modules/
+web/dist/
+web/public/pdfjs/
+web/playwright-report/
+web/test-results/
