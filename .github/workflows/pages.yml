@@ -3,7 +3,6 @@ name: Publish browser app to GitHub Pages
 on:
   push:
     branches:
-      - app/browser-tools-website
       - main
     paths:
       - "web/**"
@@ -41,6 +40,8 @@ jobs:
         working-directory: web
         env:
           GITHUB_PAGES: "true"
+          PUBLIC_SITE_ORIGIN: "https://gaurav01mh.github.io"
+          PUBLIC_BASE_PATH: "/everyday-tools-python/"
         run: npm run build
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v5

@@ -1,73 +1,67 @@
-# Everyday Tools — Web app
+# FileDesk website
 
-A small, static browser app with a restrained interface. File processing happens on-device in the browser.
+A static, browser-based utility site for PDF, image, text and data tasks.
 
 ## Requirements
 
 - Node.js 22.12 or newer
-- npm (included with Node.js)
+- npm
 
 ## Commands
 
-From this directory:
+From this directory run npm install, npm run dev, npm test, npm run build, node scripts/check-seo-output.mjs, npm run preview and npm run test:e2e as needed.
 
-```sh
-npm install
-npm run dev
-npm test
-npm run build
-npm run preview
-npm run test:e2e
-```
+The predev step copies PDF.js support resources into the ignored public/pdfjs folder. The production build creates the Vite application, copies PDF.js support resources, generates static HTML pages for each tool and category, creates the sitemap and llms.txt, and finally builds a versioned offline service worker that precaches the complete site.
 
-The `predev` step copies PDF.js support files into the ignored `public/pdfjs/` folder so the development preview uses the same local support data as the production build. `npm run build` builds the Vite app, copies PDF.js support files into `dist/pdfjs/`, and generates a fingerprinted service worker which precaches the complete static app and PDF renderer assets.
+## GitHub Pages build
 
-For a GitHub Pages build:
+On Windows PowerShell, set GITHUB_PAGES=true, PUBLIC_SITE_ORIGIN=https://gaurav01mh.github.io and PUBLIC_BASE_PATH=/everyday-tools-python/, then run npm run build and node scripts/check-seo-output.mjs.
 
-```sh
-GITHUB_PAGES=true npm run build
-```
+The origin and base path are configurable for a future organization Pages site or a custom domain.
 
-On Windows PowerShell:
+## Search engine and AI discovery
 
-```powershell
-$env:GITHUB_PAGES = "true"
-npm run build
-```
+- Each tool has its own static HTML page under /tools/.
+- Category and directory pages link to the individual tools.
+- The root includes robots.txt, sitemap.xml and llms.txt.
+- Pages use unique titles, descriptions, canonical URLs, Open Graph metadata and relevant JSON-LD structured data.
+- Generated pages contain actual tool steps, requirements and limitations, not placeholder keyword pages.
 
-## Local-only behavior
+These settings make the pages crawlable and easier to understand. They cannot guarantee indexing, a search ranking or a recommendation by a specific AI system.
 
-The file-processing functions receive browser `File` objects and use browser APIs/libraries directly. They do not call a server or upload the selected source files. Only normal requests to the GitHub Pages host are made to load the static website.
+After the final public URL is stable, verify ownership in Google Search Console and submit /sitemap.xml. Google requires site ownership verification before Search Console can manage a website property.
 
-The service worker caches the app files after first load. It only handles same-origin GET requests under the app path. It does not intercept or cache selected files or generated downloads.
+## Browser-only processing
+
+The file-processing functions read browser File objects and use client-side libraries. They do not send selected source files to a FileDesk server. The service worker caches same-origin static app files only, not selected files or generated downloads.
 
 ## UI and accessibility
 
-- Plain light theme, simple tabs, conventional form controls and clear result/error states.
-- Keyboard-visible focus states and reduced-motion support.
-- Native dialog and progress elements with labels.
-- Automated axe checks, mobile viewport checks and Playwright interaction tests.
+- SVG-based FileDesk logo and favicon.
+- Clear PDF, image and text/data categories.
+- Searchable tool cards connected to actual operations.
+- Direct tool links using the tool query parameter.
+- Responsive cards and forms, visible focus states and reduced-motion support.
+- Native dialog and progress elements.
+- Playwright browser checks, axe accessibility tests and mobile layout tests.
 
 ## Limits
 
-- 100 MB total input; 50 MB per PDF; 20 MB per image.
-- 16 megapixels per image.
-- 20 files per batch; no more than 12 PDFs in a merge.
-- Up to 250 pages for PDF operations; rendering has a 100-page cap.
-- 100 MB total generated PDF or ZIP output.
+- 100 MB total selected input.
+- 50 MB per PDF; 20 MB and 16 megapixels per image.
+- 20 files per batch; maximum 12 PDFs in a merge.
+- Up to 250 pages per PDF; rendering is limited to 100 pages.
+- 100 MB per generated PDF/ZIP output.
 - 2 million characters per text input.
 
-These are conservative checks, not guaranteed memory budgets. A browser or device may run out of memory earlier.
+Actual browser memory may be lower than these safety limits.
 
-## Known PDF caveats
+## PDF caveats
 
-- Password-protected PDFs are rejected.
-- Page-copying/rewriting can lose bookmarks, attachments, form fields or annotations.
-- A modified PDF no longer has a valid original digital signature.
-- OCR, editing text already inside a PDF, signatures, annotation editing and form filling are not implemented.
+Password-protected PDFs are rejected. Rewriting PDFs can lose bookmarks, attachments, form fields and annotations, and invalidates existing signatures. OCR, editing text inside a PDF, signing, annotation editing and form filling are not implemented.
 
-## Distribution
+## Hosting
 
-GitHub Pages is the current free static hosting choice because the source repository is public. The repository's `.github/workflows/pages.yml` builds and deploys the static site. Enable GitHub Pages with **Settings → Pages → Source → GitHub Actions**.
+The current site is deployed through GitHub Pages at https://gaurav01mh.github.io/everyday-tools-python/.
 
-The site is not considered published until GitHub reports a successful Pages deployment. The intended site address is `https://gaurav01mh.github.io/everyday-tools-python/`.
+A clean hostname without the personal GitHub username requires a custom domain or transfer to a GitHub organization that owns the Pages site. No domain has been purchased.

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 64" role="img" aria-labelledby="title desc">
+  <title id="title">FileDesk</title>
+  <desc id="desc">Overlapping document and image pages, representing an all-in-one file toolbox.</desc>
+  <rect x="4" y="9" width="41" height="47" rx="8" fill="#123047"/>
+  <path d="M28 9v13h17" fill="#1B9C91"/>
+  <path d="M14 31h18M14 39h18M14 47h12" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+  <rect x="19" y="4" width="39" height="45" rx="8" fill="#1B9C91"/>
+  <circle cx="45" cy="18" r="4" fill="#fff"/>
+  <path d="M25 40l10-12 7 8 5-5 7 9H25z" fill="#fff"/>
+  <text x="70" y="31" fill="#123047" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="700" letter-spacing="-1">FileDesk</text>
+  <text x="71" y="48" fill="#5F6F7B" font-family="Arial, Helvetica, sans-serif" font-size="9.5" font-weight="600" letter-spacing="1.2">PDF · IMAGE · FILE TOOLS</text>
+</svg>

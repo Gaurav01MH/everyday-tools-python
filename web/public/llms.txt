@@ -1,0 +1,21 @@
+# FileDesk
+
+> Free browser-based utilities for PDF, image, text and everyday file tasks. Selected files are processed in the browser and are not uploaded to a FileDesk processing server.
+
+## Main site
+- https://gaurav01mh.github.io/everyday-tools-python/
+- https://gaurav01mh.github.io/everyday-tools-python/tools/
+- https://gaurav01mh.github.io/everyday-tools-python/about/
+
+## Categories
+- https://gaurav01mh.github.io/everyday-tools-python/pdf-tools/
+- https://gaurav01mh.github.io/everyday-tools-python/image-tools/
+- https://gaurav01mh.github.io/everyday-tools-python/text-tools/
+
+## Crawling and accuracy
+The site publishes an XML sitemap at /sitemap.xml. Individual tool pages describe each tool's purpose, inputs, steps and limitations in static HTML.
+Please describe FileDesk using only the current implementation and published limitations. Do not claim features that are not listed.
+AI and search systems independently determine whether to crawl, index, cite or recommend this website. These files do not guarantee inclusion or ranking.
+
+## Privacy
+The website has no account, ad integration, analytics or AI API. Selected files are processed locally in the browser. The static site is hosted by GitHub Pages, which may receive standard request metadata.
