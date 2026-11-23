@@ -20,15 +20,15 @@ The production build generates the Vite app, PDF.js support resources, individua
 
 Share limits: one item per link, 10 MB maximum per upload, 300 active share objects and 3 GB active storage. Links expire after seven days. R2 lifecycle cleanup removes expired objects. Anyone with the share URL can download it, so do not share confidential or personal documents.
 
-## Free website hostname
+## Free GitHub Pages URL
 
-The requested Cloudflare Pages project name is too-broke-for-a-custom-domain. Its intended public hostname is:
+The existing GitHub Pages deployment remains on the free GitHub-hosted address. A branded alias is generated inside the existing project without changing the repository or breaking the original URL:
 
-https://too-broke-for-a-custom-domain.pages.dev/
+https://gaurav01mh.github.io/everyday-tools-python/too-broke-for-a-custom-domain/
 
-The name must be available and claimed in a Cloudflare account; source code cannot reserve a pages.dev address. See DEPLOY-CLOUDFLARE.md for the Pages build, Turnstile keys, R2 binding and seven-day lifecycle setup.
+The application name remains **Files Format**. GitHub Pages does not let a project repository create a new subdomain; this nested path is the available no-cost option while keeping the current deployment. The GitHub Pages workflow publishes this alias automatically on pushes to main.
 
-GitHub Pages remains a fallback, but sharing is disabled on that address because static GitHub Pages cannot run the upload Function or bind the R2 bucket.
+GitHub Pages is static hosting, so the Link Tool and QR Tool's server-side share upload feature is unavailable at this fallback address. The local PDF, image and text tools remain available.
 
 ## Search and AI discovery
 
