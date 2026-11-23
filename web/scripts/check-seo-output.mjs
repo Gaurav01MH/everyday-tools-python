@@ -13,13 +13,13 @@ const robots = await readFile(join(dist, "robots.txt"), "utf8");
 const llms = await readFile(join(dist, "llms.txt"), "utf8");
 const home = await readFile(join(dist, "index.html"), "utf8");
 
-assert.match(home, /<title>FileDesk/);
+assert.match(home, /<title>DocuMosaic/);
 assert.match(home, /name="description"/);
 assert.match(home, /application\/ld\+json/);
 assert.match(home, /logo\.svg/);
 assert.match(robots, /User-agent: \*/);
 assert.ok(robots.includes("Sitemap: " + baseUrl + "sitemap.xml"));
-assert.ok(llms.includes("FileDesk"));
+assert.ok(llms.includes("DocuMosaic"));
 assert.ok(llms.includes("Individual tools"));
 
 const requiredPages = [
@@ -42,7 +42,7 @@ for (const tool of TOOL_CATALOG) {
   const relativePath = "tools/" + tool.slug + "/index.html";
   const html = await readFile(join(dist, relativePath), "utf8");
   const canonical = baseUrl + "tools/" + tool.slug + "/";
-  assert.ok(html.includes("<title>" + tool.title + " | FileDesk</title>"), "Missing title for " + tool.slug);
+  assert.ok(html.includes("<title>" + tool.title + " | DocuMosaic</title>"), "Missing title for " + tool.slug);
   assert.ok(html.includes('rel="canonical" href="' + canonical + '"'), "Missing canonical for " + tool.slug);
   assert.ok(html.includes('type="application/ld+json"'), "Missing structured data for " + tool.slug);
   assert.ok(html.includes(tool.description), "Missing tool description for " + tool.slug);
