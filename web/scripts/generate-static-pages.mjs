@@ -94,6 +94,19 @@ const homepageMetadata = [
 homepageHtml = homepageHtml.replace("</head>", homepageMetadata + "\n</head>");
 await writeFile(homepagePath, homepageHtml, "utf8");
 
+// Keep the original GitHub Pages project URL, and expose a readable, free
+// branded alias beneath it:
+// /everyday-tools-python/too-broke-for-a-custom-domain/
+//
+// Copy the fully Vite-built homepage so all scripts, styles and public assets
+// continue to resolve from the repository's configured base path. The alias
+// deliberately keeps the root homepage as its canonical URL to avoid duplicate
+// search indexing.
+const brandedAliasPath = join(DIST, "too-broke-for-a-custom-domain", "index.html");
+await mkdir(join(DIST, "too-broke-for-a-custom-domain"), { recursive: true });
+await writeFile(brandedAliasPath, homepageHtml, "utf8");
+
+
 for (const policy of ["privacy", "terms", "licensing"]) {
   const policyFile = join(DIST, "policies", policy, "index.html");
   const policyUrl = urlFor("policies/" + policy + "/");
