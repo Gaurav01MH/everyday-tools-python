@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 284 64" role="img" aria-labelledby="title desc">
+  <title id="title">Files Format</title>
+  <desc id="desc">A simple document and image mark for PDF, image and file tools.</desc>
+  <rect x="4" y="8" width="42" height="48" rx="8" fill="#123047"/>
+  <path d="M29 8v14h17" fill="#1B9C91"/>
+  <path d="M14 31h20M14 39h20M14 47h13" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+  <rect x="20" y="4" width="39" height="45" rx="8" fill="#1B9C91"/>
+  <circle cx="46" cy="18" r="4" fill="#fff"/>
+  <path d="M26 40l10-12 7 8 5-5 7 9H26z" fill="#fff"/>
+  <text x="72" y="32" fill="#123047" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="700" letter-spacing="-0.7">Files Format</text>
+  <text x="73" y="49" fill="#5F6F7B" font-family="Arial, Helvetica, sans-serif" font-size="9.5" font-weight="600" letter-spacing="1.2">PDF · IMAGE · FILE TOOLS</text>
+</svg>

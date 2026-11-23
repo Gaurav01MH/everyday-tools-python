@@ -1,0 +1,9 @@
+.env
+.DS_Store
+
+# Browser app build output and local dependencies
+web/node_modules/
+web/dist/
+web/public/pdfjs/
+web/playwright-report/
+web/test-results/

@@ -1,0 +1,18 @@
+{
+  "name": "Files Format — PDF, Image & File Tools",
+  "short_name": "Files Format",
+  "description": "Free browser-based PDF, image, text and everyday file tools",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f9fb",
+  "theme_color": "#123047",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

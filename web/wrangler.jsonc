@@ -1,0 +1,12 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "too-broke-for-a-custom-domain",
+  "pages_build_output_dir": "./dist",
+  "compatibility_date": "2026-11-23",
+  "r2_buckets": [
+    {
+      "binding": "SHARES",
+      "bucket_name": "files-format-shares"
+    }
+  ]
+}

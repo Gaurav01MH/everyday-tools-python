@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f7f8fa" />
+    <meta name="description" content="Files Format offers free online PDF, image, text and data tools. Merge, split and rotate PDFs, convert and resize images, format JSON, convert CSV and more. Files are processed in your browser." />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' blob: data:; font-src 'self' blob: data:; connect-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'" />
+    <meta name="referrer" content="no-referrer" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <link rel="manifest" href="%BASE_URL%manifest.webmanifest" />
+    <link rel="stylesheet" href="/src/styles.css" />
+    <title>Files Format — Free PDF, Image &amp; File Tools</title>
+  </head>
+  <body>
+    <header class="site-header" id="home">
+      <a class="brand" href="#home">
+        <span class="brand-mark" aria-hidden="true">FF</span>
+        <span>Files Format</span>
+      </a>
+      <div class="header-right">
+        <span class="privacy-note"><span class="privacy-dot" aria-hidden="true"></span> Files stay on this device</span>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <section class="intro">
+        <div>
+          <p class="eyebrow">A small toolbox for everyday files</p>
+          <h1>Get your file work done.</h1>
+          <p class="intro-copy">PDF, image, and data tools, plus temporary file sharing. No account or ads.</p>
+        </div>
+      </section>
+
+      <nav class="tool-nav" aria-label="Tool categories">
+        <button class="nav-tab is-active" type="button" aria-pressed="true" data-mode="pdf">PDF tools</button>
+        <button class="nav-tab" type="button" aria-pressed="false" data-mode="images">Image tools</button>
+        <button class="nav-tab" type="button" aria-pressed="false" data-mode="text">Text &amp; data</button>
+      </nav>
+
+      <section id="workspace" class="workspace">
+        <div class="workspace-heading">
+          <div>
+            <h2 id="workspace-title">PDF tools</h2>
+            <p id="workspace-description">Combine, split, rotate, extract, or render PDF pages.</p>
+          </div>
+          <span class="local-label">Runs in your browser</span>
+        </div>
+
+        <form id="tool-form" novalidate>
+          <div id="operation-row" class="field-row">
+            <label class="field-label" for="operation">Choose a task</label>
+            <select id="operation" name="operation"></select>
+          </div>
+
+          <section id="file-section" class="file-section" aria-labelledby="files-label">
+            <div class="field-heading">
+              <span id="files-label" class="field-label">Choose files</span>
+              <span id="file-hint" class="field-hint">PDF files · Up to 20 files</span>
+            </div>
+            <label id="drop-zone" class="drop-zone" for="file-input">
+              <span class="drop-title">Drop files here or <span class="text-link">browse</span></span>
+              <span class="drop-subtitle">Your files are read locally in this tab.</span>
+            </label>
+            <input id="file-input" class="visually-hidden" type="file" multiple />
+            <ul id="file-list" class="file-list" aria-label="Selected files"></ul>
+          </section>
+
+          <section id="options-section" class="options-section" aria-label="Task options"></section>
+
+          <section id="text-section" class="text-section" hidden>
+            <div class="field-row">
+              <label class="field-label" for="text-input">Input</label>
+              <textarea id="text-input" rows="8" spellcheck="false" placeholder="Paste or type your text here"></textarea>
+            </div>
+            <div class="field-row" id="share-security" hidden>
+              <div id="turnstile-container"></div>
+              <p id="share-security-message" class="inline-note" role="status">Complete the security check before creating a public share link.</p>
+              <p class="inline-note">Only upload material you have permission to share. Anyone with the link can download it. Do not share private or sensitive documents.</p>
+            </div>
+            <div class="field-row" id="text-extra-row" hidden>
+              <label class="field-label" for="text-extra-input">Additional input</label>
+              <textarea id="text-extra-input" rows="5" spellcheck="false" placeholder="Paste the second value here"></textarea>
+            </div>
+            <div class="field-row" id="unit-row" hidden>
+              <label class="field-label" for="unit-category">Conversion</label>
+              <div class="inline-fields">
+                <select id="unit-category" aria-label="Unit category">
+                  <option value="length">Length</option>
+                  <option value="weight">Weight</option>
+                  <option value="time">Time</option>
+                  <option value="temperature">Temperature</option>
+                </select>
+                <select id="unit-from" aria-label="Convert from"></select>
+                <span class="to-word">to</span>
+                <select id="unit-to" aria-label="Convert to"></select>
+              </div>
+            </div>
+          </section>
+
+          <div class="action-row">
+            <button id="run-button" class="primary-button" type="submit">Run tool</button>
+            <button id="clear-button" class="secondary-button" type="button">Clear</button>
+            <span id="busy-label" class="busy-label" hidden>Processing…</span>
+          </div>
+        </form>
+
+        <section id="result-section" class="result-section" aria-live="polite" aria-atomic="true" hidden>
+          <div class="result-heading">
+            <h3 id="result-title">Ready</h3>
+            <span id="result-status" class="result-status"></span>
+          </div>
+          <progress id="progress-bar" max="100" value="0" aria-label="Processing progress" hidden></progress>
+          <p id="result-message" class="result-message"></p>
+          <div id="result-actions" class="result-actions"></div>
+        </section>
+      </section>
+
+      <footer class="site-footer">
+        <p>Free to use. No account or ads. PDF and image tools run in your browser; Link Tool and QR Tool upload only the content you choose to share.</p>
+        <a href="%BASE_URL%connect/">Connect AI tools</a>
+        <a href="#privacy-dialog" id="privacy-link">Privacy &amp; limits</a>
+      </footer>
+    </main>
+
+    <dialog id="privacy-dialog" class="privacy-dialog" aria-labelledby="privacy-title">
+      <div class="dialog-header">
+        <h2 id="privacy-title">Privacy and usage limits</h2>
+        <button id="close-dialog" class="icon-button" type="button" aria-label="Close">×</button>
+      </div>
+      <div class="dialog-body">
+        <p><strong>PDF and image editing tools work locally.</strong> Link Tool and QR Tool are different: when you choose them, one file or pasted text is uploaded to the Files Format share service to create a public-by-link download.</p>
+        <p>Shared uploads are stored in the Files Format R2 bucket, protected by a security check, and automatically expire after seven days. Anyone with the share URL can download them. Do not upload confidential or personal documents. Cloudflare receives the upload and standard request metadata.</p>
+        <p>To keep browser memory use reasonable, this version limits total selected input to 100 MB, each PDF to 50 MB, each image to 20 MB and 16 megapixels, a batch to 20 files, and PDF processing to 250 pages per document (100 pages for PNG rendering). Generated PDF and ZIP downloads are limited to 100 MB. Large or unusual documents may still exceed your browser's memory.</p>
+        <p>Encrypted PDFs, OCR, PDF text editing, signatures, and form filling are not supported. PDF page-copy operations can discard document-level items such as bookmarks, attachments, form fields, and annotations; saving a changed PDF also invalidates existing digital signatures. Image conversion depends on formats your browser can decode; animated images are not supported.</p>
+        <p>QR Tool generates the QR image in your browser from the share URL. The QR image is not sent to an external QR service. Shared content is removed after seven days; preserve your own original copy.</p>
+      </div>
+    </dialog>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

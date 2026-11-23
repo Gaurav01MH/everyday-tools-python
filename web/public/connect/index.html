@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Connect AI tools — Files Format</title>
+  <meta name="description" content="Connect compatible AI clients to Files Format using its remote Model Context Protocol service.">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://too-broke-for-a-custom-domain.pages.dev/connect/">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/site-pages.css">
+</head>
+<body>
+<main class="document-page">
+  <a class="back-link" href="../">← Files Format home</a>
+  <p class="eyebrow">Integrations</p>
+  <h1>Connect Files Format to compatible AI tools</h1>
+  <p class="summary">Files Format includes a remote Model Context Protocol (MCP) service for compatible AI clients. It lets an AI client discover utilities, retrieve their instructions and run supported text transformations.</p>
+
+  <h2>Available connector actions</h2>
+  <ul>
+    <li>Search and list the Files Format utilities.</li>
+    <li>Read descriptions, input requirements and direct links for individual tools.</li>
+    <li>Run supported text and data transformations on text explicitly provided by the client.</li>
+    <li>Prepare a link to open the QR Tool with content prefilled.</li>
+  </ul>
+
+  <h2>Connection address</h2>
+  <p>The MCP service is deployed separately from the website. Use the public HTTPS endpoint ending in <code>/mcp</code> supplied by its hosting provider. The endpoint is available only after the connector service has been deployed.</p>
+
+  <h2>Connect a client</h2>
+  <p>In an MCP-compatible application, add a remote Streamable HTTP server and enter the connector's full HTTPS <code>/mcp</code> address. The exact connection steps depend on the client. Consult that application's documentation for support and permission requirements.</p>
+  <p><a href="https://developers.cloudflare.com/agents/model-context-protocol/guides/remote-mcp-server/">MCP hosting and connection guide</a></p>
+
+  <h2>Privacy and file processing</h2>
+  <p>PDF and image editing remain in the browser. The connector does not receive PDF or image files. Text explicitly sent to a remote transformation action is processed by the connector service; do not submit confidential content unless you accept that transfer.</p>
+  <p>Link Tool and QR Tool are separate optional sharing features. They upload only the file or text the visitor chooses, after a security check. The resulting URL is public to anyone who has it and expires after seven days. Do not upload confidential or personal material.</p>
+  <p><a href="../tools/">Browse all tools</a>.</p>
+</main>
+</body>
+</html>

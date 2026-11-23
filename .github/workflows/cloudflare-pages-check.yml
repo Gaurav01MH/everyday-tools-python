@@ -1,0 +1,53 @@
+name: Build Cloudflare Pages site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "web/**"
+      - ".github/workflows/cloudflare-pages-check.yml"
+  pull_request:
+    paths:
+      - "web/**"
+      - ".github/workflows/cloudflare-pages-check.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Audit production and development dependencies
+        run: npm audit --audit-level=high
+      - name: Build for the free Pages hostname
+        env:
+          PUBLIC_BASE_PATH: "/"
+          PUBLIC_SITE_ORIGIN: "https://too-broke-for-a-custom-domain.pages.dev"
+          VITE_SHARE_API_ENABLED: "true"
+          VITE_TURNSTILE_SITE_KEY: "test-site-key-for-ci-only"
+        run: npm run build
+      - name: Check generated pages and sitemap
+        env:
+          PUBLIC_BASE_PATH: "/"
+          PUBLIC_SITE_ORIGIN: "https://too-broke-for-a-custom-domain.pages.dev"
+        run: node scripts/check-seo-output.mjs
+      - name: Run unit and sharing-function tests
+        run: npm test
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run browser, sharing, mobile and accessibility tests
+        env:
+          VITE_SHARE_API_ENABLED: "true"
+          VITE_TURNSTILE_SITE_KEY: "test-site-key-for-ci-only"
+        run: npm run test:e2e

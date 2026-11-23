@@ -1,0 +1,78 @@
+name: Browser app checks
+
+on:
+  push:
+    branches:
+      - app/browser-tools-website
+      - app/brand-ux-seo
+      - app/documosaic-brand
+      - main
+  pull_request:
+    paths:
+      - "web/**"
+      - ".github/workflows/web-tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  web-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Install pinned dependencies
+        working-directory: web
+        run: npm install --no-audit --no-fund
+      - name: Run utility unit tests
+        working-directory: web
+        run: npm test
+      - name: Audit all dependencies for high and critical advisories
+        working-directory: web
+        run: npm audit --audit-level=high
+      - name: Build GitHub Pages version
+        working-directory: web
+        env:
+          GITHUB_PAGES: "true"
+          PUBLIC_SITE_ORIGIN: ${{ vars.PUBLIC_SITE_ORIGIN || format('https://{0}.github.io', github.repository_owner) }}
+          PUBLIC_BASE_PATH: ${{ vars.PUBLIC_BASE_PATH || format('/{0}/', github.event.repository.name) }}
+          VITE_SHARE_API_ENABLED: "false"
+        run: npm run build
+      - name: Verify output has expected app files
+        working-directory: web
+        run: |
+          test -s dist/index.html
+          test -s dist/sw.js
+          test -s dist/manifest.webmanifest
+          test -s dist/robots.txt
+          test -s dist/sitemap.xml
+          test -s dist/llms.txt
+          test -s dist/logo.svg
+          test -s dist/tools/merge-pdf/index.html
+          test -s dist/tools/resize-image/index.html
+          test -s dist/tools/validate-json/index.html
+          grep -q "Files Format" dist/index.html
+          grep -q "merge-pdf" dist/sitemap.xml
+          grep -q "PDF tools" dist/tools/merge-pdf/index.html
+          test -s dist/too-broke-for-a-custom-domain/index.html
+      - name: Verify all generated crawlable pages and SEO metadata
+        working-directory: web
+        env:
+          GITHUB_PAGES: "true"
+          PUBLIC_SITE_ORIGIN: ${{ format('https://{0}.github.io', github.repository_owner) }}
+          PUBLIC_BASE_PATH: ${{ format('/{0}/', github.event.repository.name) }}
+        run: node scripts/check-seo-output.mjs
+      - name: Install Chromium for browser checks
+        working-directory: web
+        run: npx playwright install --with-deps chromium
+      - name: Run browser, PDF, mobile and accessibility checks
+        working-directory: web
+        env:
+          VITE_SHARE_API_ENABLED: "true"
+          VITE_TURNSTILE_SITE_KEY: "test-site-key-for-ci-only"
+        run: npm run test:e2e
