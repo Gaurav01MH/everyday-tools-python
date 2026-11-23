@@ -10,11 +10,8 @@
 }
 
 import { assertInputFiles, formatBytes, MAX_TOTAL_BYTES } from "./lib/core.js";
-import { mergePdfs, splitPdf, extractPdfPages, rotatePdf, imagesToPdf, renderPdf } from "./lib/pdf-tools.js";
-import { processImages } from "./lib/image-tools.js";
 import { runTextTool } from "./lib/text-tools.js";
 import { TOOL_CATALOG } from "./lib/tool-catalog.js";
-import QRCode from "qrcode";
 
 const $ = (selector) => document.querySelector(selector);
 const elements = {
@@ -51,7 +48,8 @@ const elements = {
   progress: $("#progress-bar"),
   privacyLink: $("#privacy-link"),
   privacyDialog: $("#privacy-dialog"),
-  closeDialog: $("#close-dialog")
+  closeDialog: $("#close-dialog"),
+  privacyBadge: $("#privacy-badge")
 };
 
 const definitions = {
@@ -64,7 +62,11 @@ const definitions = {
       ["extract", "Extract selected pages"],
       ["rotate", "Rotate pages"],
       ["images-pdf", "Images to PDF"],
-      ["render", "PDF pages to PNG"]
+      ["render", "PDF pages to PNG"],
+      ["compress-pdf", "Compress PDF"],
+      ["organise-pdf", "Reorder / delete PDF pages"],
+      ["page-numbers", "Add page numbers"],
+      ["watermark", "Add text watermark"]
     ]
   },
   images: {
@@ -73,7 +75,9 @@ const definitions = {
     operations: [
       ["resize", "Resize images"],
       ["convert", "Convert image format"],
-      ["compress", "Compress images"]
+      ["compress", "Compress images"],
+      ["metadata", "Remove image metadata"],
+      ["id-photo", "Passport / ID photo size"]
     ]
   },
   text: {
@@ -115,6 +119,8 @@ let mode = "pdf";
 let selectedFiles = [];
 let busy = false;
 let qrSvgObjectUrl = null;
+let filePreviewUrls = [];
+let previewRequest = 0;
 let turnstileToken = "";
 let turnstileWidgetId = null;
 let turnstileScriptPromise = null;
@@ -138,6 +144,7 @@ function setMode(nextMode) {
   }
   elements.workspaceTitle.textContent = definitions[mode].title;
   elements.workspaceDescription.textContent = definitions[mode].description;
+  if (elements.privacyBadge) elements.privacyBadge.textContent = mode === "text" && ["link-tool", "qr-tool"].includes(currentOperation()) ? "Uploads to create a link" : "Stays on your device";
   elements.operation.replaceChildren(...definitions[mode].operations.map(([value, label]) => makeOption(value, label)));
   selectedFiles = [];
   renderFileList();
@@ -214,7 +221,7 @@ function updateOperation() {
   elements.fileSection.hidden = !isFile && !isShareTool;
   elements.shareSecurity.hidden = !isShareTool;
   elements.operation.closest(".field-row").hidden = false;
-  elements.fileInput.multiple = isShareTool ? false : ["merge", "images-pdf"].includes(operation) || mode === "images";
+  elements.fileInput.multiple = isShareTool || operation === "id-photo" || operation === "organise-pdf" || operation === "compress-pdf" || operation === "page-numbers" || operation === "watermark" ? false : ["merge", "images-pdf"].includes(operation) || mode === "images";
   elements.fileInput.accept = isShareTool ? "" : mode === "pdf"
     ? operation === "images-pdf" ? "image/png,image/jpeg,image/webp,image/bmp,.png,.jpg,.jpeg,.webp,.bmp" : ".pdf,application/pdf"
     : "image/png,image/jpeg,image/webp,image/bmp,.png,.jpg,.jpeg,.webp,.bmp";
@@ -245,6 +252,33 @@ function updateOperation() {
     if (operation === "render") {
       elements.options.append(createSelect("render-scale", "Image size", [["0.5", "Small"], ["1", "Normal"], ["1.5", "Large"], ["2", "Extra large"]], "1"));
     }
+    if (operation === "organise-pdf") {
+      elements.options.append(createInput("page-order", "Page order to keep", "text", "all"));
+      $("#page-order").placeholder = "Example: 3, 1, 2, 5 — omitted pages are deleted";
+      const note = document.createElement("p");
+      note.className = "inline-note";
+      note.textContent = "Review the thumbnails, then enter page numbers in the order you want. Leave out any page you want to remove.";
+      elements.options.append(note);
+      const preview = document.createElement("div");
+      preview.id = "page-preview";
+      preview.className = "page-preview";
+      preview.setAttribute("aria-live", "polite");
+      elements.options.append(preview);
+      if (selectedFiles[0]) void renderPagePreviews(selectedFiles[0]);
+    }
+    if (operation === "compress-pdf") {
+      const note = document.createElement("p");
+      note.className = "inline-note";
+      note.textContent = "Optimises PDF structure and metadata. Embedded images are not recompressed, so savings vary.";
+      elements.options.append(note);
+    }
+    if (operation === "page-numbers") {
+      elements.options.append(createInput("page-start", "Starting number", "number", "1"));
+    }
+    if (operation === "watermark") {
+      elements.options.append(createInput("watermark-text", "Watermark text", "text", "CONFIDENTIAL"));
+      $("#watermark-text").maxLength = 80;
+    }
     if (operation === "merge") {
       const note = document.createElement("p");
       note.className = "inline-note";
@@ -252,24 +286,59 @@ function updateOperation() {
       elements.options.append(note);
     }
   } else if (mode === "images") {
-    if (operation === "resize") {
+    if (operation === "id-photo") {
+      elements.options.append(createSelect("id-photo-preset", "Photo size preset", [
+        ["413x531", "35 × 45 mm (413 × 531 px)"],
+        ["413x591", "35 × 50 mm (413 × 591 px)"],
+        ["600x600", "2 × 2 inches (600 × 600 px)"]
+      ], "413x531"));
+    }
+    if (operation === "resize" || operation === "id-photo") {
       const row = document.createElement("div");
       row.className = "two-column-fields";
+      const preset = operation === "id-photo" ? "413x531" : "1200x1200";
+      const [defaultWidth, defaultHeight] = preset.split("x");
       row.append(
-        createInput("image-width", "Maximum width (px)", "number", "1200"),
-        createInput("image-height", "Maximum height (px)", "number", "1200")
+        createInput("image-width", "Width (px)", "number", defaultWidth),
+        createInput("image-height", "Height (px)", "number", defaultHeight)
       );
-      elements.options.append(row, createCheck("keep-aspect", "Keep original proportions", true));
+      elements.options.append(row);
+      if (operation === "resize") elements.options.append(createCheck("keep-aspect", "Keep original proportions", true));
+      else {
+        const note = document.createElement("p");
+        note.className = "inline-note";
+        note.textContent = "The full photo is fitted inside a white frame without stretching or automatic face cropping. Verify the exact authority requirements.";
+        elements.options.append(note);
+        $("#id-photo-preset").addEventListener("change", (event) => {
+          const [w, h] = event.target.value.split("x");
+          $("#image-width").value = w;
+          $("#image-height").value = h;
+        });
+      }
     }
-    elements.options.append(createSelect("image-format", "Output format", operation === "compress" ? [
-      ["image/jpeg", "JPG"], ["image/webp", "WEBP"]
-    ] : [
-      ["image/jpeg", "JPG"], ["image/png", "PNG"], ["image/webp", "WEBP"]
-    ], operation === "compress" ? "image/jpeg" : "image/png"));
+    if (operation !== "metadata") {
+      elements.options.append(createSelect("image-format", "Output format", operation === "compress" || operation === "id-photo" ? [
+        ["image/jpeg", "JPG"], ["image/webp", "WEBP"]
+      ] : [
+        ["image/jpeg", "JPG"], ["image/png", "PNG"], ["image/webp", "WEBP"]
+      ], operation === "compress" || operation === "id-photo" ? "image/jpeg" : "image/png"));
+    } else {
+      const note = document.createElement("p");
+      note.className = "inline-note";
+      note.textContent = "The image is re-exported through the browser canvas to remove common EXIF and location metadata. The original is unchanged.";
+      elements.options.append(note);
+    }
     if (operation === "compress") {
       elements.options.append(createInput("image-quality", "Quality (10–95)", "number", "82"));
       $("#image-quality").min = "10";
       $("#image-quality").max = "95";
+      elements.options.append(createInput("target-size-kb", "Optional target size (KB)", "number", "100"));
+      $("#target-size-kb").min = "5";
+      $("#target-size-kb").max = "10240";
+      const note = document.createElement("p");
+      note.className = "inline-note";
+      note.textContent = "Target size is best-effort. The tool lowers quality and may reduce dimensions to get closer.";
+      elements.options.append(note);
     }
     if (operation === "resize") {
       const note = document.createElement("p");
@@ -314,6 +383,18 @@ function updateOperation() {
     }
   }
   elements.runButton.textContent = isText ? (operation === "link-tool" ? "Create share link" : operation === "qr-tool" ? "Create share link and QR" : operation === "qr-code" ? "Generate QR code" : "Process text") : "Run tool";
+}
+
+async function renderPagePreviews(file) {
+  const container = $("#page-preview");
+  if (!container) return;
+  const request = ++previewRequest;
+  try {
+    const { renderPdfThumbnails } = await import("./lib/pdf-preview.js");
+    if (request === previewRequest && $("#page-preview")) await renderPdfThumbnails(file, $("#page-preview"));
+  } catch {
+    if (container.isConnected) container.textContent = "Page thumbnails could not be loaded in this browser.";
+  }
 }
 
 function updateUnitOptions() {
@@ -367,10 +448,19 @@ function updateTextControls() {
 }
 
 function renderFileList() {
+  filePreviewUrls.forEach((url) => URL.revokeObjectURL(url));
+  filePreviewUrls = [];
   elements.fileList.replaceChildren();
   selectedFiles.forEach((file, index) => {
     const item = document.createElement("li");
     item.className = "file-item";
+    const mergeMode = mode === "pdf" && currentOperation() === "merge";
+    item.draggable = mergeMode && !busy;
+    if (item.draggable) {
+      item.addEventListener("dragstart", (event) => { event.dataTransfer.setData("text/plain", String(index)); event.dataTransfer.effectAllowed = "move"; });
+      item.addEventListener("dragover", (event) => { event.preventDefault(); event.dataTransfer.dropEffect = "move"; });
+      item.addEventListener("drop", (event) => { event.preventDefault(); const from = Number(event.dataTransfer.getData("text/plain")); const to = index; if (Number.isInteger(from) && from !== to && from >= 0 && from < selectedFiles.length) { const [moved] = selectedFiles.splice(from, 1); selectedFiles.splice(to, 0, moved); renderFileList(); } });
+    }
     const details = document.createElement("div");
     details.className = "file-details";
     const name = document.createElement("span");
@@ -380,6 +470,22 @@ function renderFileList() {
     const size = document.createElement("span");
     size.className = "file-size";
     size.textContent = formatBytes(file.size);
+    if (file.type.startsWith("image/")) {
+      const preview = document.createElement("img");
+      const previewUrl = URL.createObjectURL(file);
+      filePreviewUrls.push(previewUrl);
+      preview.className = "file-thumbnail";
+      preview.src = previewUrl;
+      preview.alt = "";
+      preview.setAttribute("aria-hidden", "true");
+      details.append(preview);
+    } else if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
+      const preview = document.createElement("span");
+      preview.className = "file-type-thumbnail";
+      preview.textContent = "PDF";
+      preview.setAttribute("aria-hidden", "true");
+      details.append(preview);
+    }
     details.append(name, size);
     const controls = document.createElement("div");
     controls.className = "file-controls";
@@ -460,6 +566,7 @@ function addFiles(files) {
     clearResult();
   }
   renderFileList();
+  if (mode === "pdf" && currentOperation() === "organise-pdf" && selectedFiles[0]) void renderPagePreviews(selectedFiles[0]);
 }
 
 function clearResult() {
@@ -483,6 +590,15 @@ function showMessage(message, status = "success") {
   elements.resultStatus.className = `result-status ${status === "error" ? "status-error" : status === "warning" ? "status-warning" : "status-success"}`;
   elements.resultMessage.textContent = message;
   elements.progress.hidden = true;
+  if (status !== "error" && !elements.resultActions.querySelector("[data-process-another]")) {
+    const another = document.createElement("button");
+    another.type = "button";
+    another.className = "secondary-button";
+    another.textContent = "Process another file";
+    another.dataset.processAnother = "true";
+    another.addEventListener("click", () => { clearWorkspace(); elements.fileSection.scrollIntoView({ block: "nearest" }); });
+    elements.resultActions.append(another);
+  }
 }
 
 function setBusy(value) {
@@ -490,6 +606,7 @@ function setBusy(value) {
   elements.runButton.disabled = value;
   elements.clearButton.disabled = value;
   elements.operation.disabled = value;
+  if (elements.privacyBadge) elements.privacyBadge.textContent = mode === "text" && ["link-tool", "qr-tool"].includes(currentOperation()) ? "Uploads to create a link" : "Stays on your device";
   elements.fileInput.disabled = value;
   elements.textInput.disabled = value;
   elements.textExtraInput.disabled = value;
@@ -533,55 +650,48 @@ function showTextResult(value) {
 
 async function runPdf(operation) {
   const files = selectedFiles;
-  assertInputFiles(files, { min: operation === "merge" || operation === "images-pdf" ? 1 : 1 });
+  assertInputFiles(files);
   const onProgress = updateProgress;
+  const pdf = await import("./lib/pdf-tools.js");
+  const advanced = ["compress-pdf", "organise-pdf", "page-numbers", "watermark"].includes(operation)
+    ? await import("./lib/advanced-pdf-tools.js") : null;
   switch (operation) {
     case "merge":
       if (files.length < 2) throw new Error("Choose at least two PDFs to merge.");
-      if (files.some((file) => !/\.pdf$/i.test(file.name) && file.type !== "application/pdf")) {
-        throw new Error("Merge accepts PDF files only.");
-      }
-      await mergePdfs(files, onProgress);
+      if (files.some((file) => !/\.pdf$/i.test(file.name) && file.type !== "application/pdf")) throw new Error("Merge accepts PDF files only.");
+      await pdf.mergePdfs(files, onProgress);
       break;
-    case "split":
-      await splitPdf(files[0], onProgress);
-      break;
-    case "extract":
-      await extractPdfPages(files[0], $("#page-selection").value, onProgress);
-      break;
-    case "rotate":
-      await rotatePdf(files[0], $("#page-selection").value, $("#rotation-angle").value, onProgress);
-      break;
-    case "images-pdf":
-      await imagesToPdf(files, onProgress);
-      break;
-    case "render":
-      await renderPdf(files[0], $("#render-scale").value, onProgress);
-      break;
-    default:
-      throw new Error("Choose a valid PDF task.");
+    case "split": await pdf.splitPdf(files[0], onProgress); break;
+    case "extract": await pdf.extractPdfPages(files[0], $("#page-selection").value, onProgress); break;
+    case "rotate": await pdf.rotatePdf(files[0], $("#page-selection").value, $("#rotation-angle").value, onProgress); break;
+    case "images-pdf": await pdf.imagesToPdf(files, onProgress); break;
+    case "render": await pdf.renderPdf(files[0], $("#render-scale").value, onProgress); break;
+    case "compress-pdf": return await advanced.compressPdf(files[0], onProgress);
+    case "organise-pdf": return await advanced.organisePdf(files[0], $("#page-order").value, onProgress);
+    case "page-numbers": return await advanced.addPageNumbers(files[0], $("#page-start").value, onProgress);
+    case "watermark": return await advanced.watermarkPdf(files[0], $("#watermark-text").value, onProgress);
+    default: throw new Error("Choose a valid PDF task.");
   }
+  return null;
 }
 
 async function runImage(operation) {
   assertInputFiles(selectedFiles);
+  const { processImages } = await import("./lib/image-tools.js");
   const width = $("#image-width")?.value;
   const height = $("#image-height")?.value;
   const quality = Number($("#image-quality")?.value ?? 82);
-  if (operation === "compress" && (!Number.isInteger(quality) || quality < 10 || quality > 95)) {
-    throw new Error("Image quality must be an integer from 10 to 95.");
-  }
+  if (operation === "compress" && (!Number.isInteger(quality) || quality < 10 || quality > 95)) throw new Error("Image quality must be an integer from 10 to 95.");
+  const targetKB = Number($("#target-size-kb")?.value ?? 0);
+  if (operation === "compress" && targetKB && (!Number.isFinite(targetKB) || targetKB < 5 || targetKB > 10240)) throw new Error("Choose a target size between 5 KB and 10,240 KB.");
   const result = await processImages(selectedFiles, operation, {
-    width,
-    height,
+    width, height,
     keepAspect: $("#keep-aspect")?.checked ?? true,
-    format: $("#image-format").value,
-    quality
+    format: $("#image-format")?.value ?? "image/jpeg",
+    quality,
+    targetKB
   }, updateProgress);
-  if (result.failures.length) {
-    return `Downloaded ${result.succeeded} image(s). ${result.failures.length} could not be processed:\n${result.failures.join("\n")}`;
-  }
-  return "";
+  return result;
 }
 
 async function runText(operation) {
@@ -596,6 +706,7 @@ async function runText(operation) {
 }
 
 async function runQrCode() {
+  const { default: QRCode } = await import("qrcode");
   const value = elements.textInput.value.trim();
   if (!value) throw new Error("Enter a URL or text to encode.");
   if (new TextEncoder().encode(value).length > 1000) {
@@ -717,6 +828,8 @@ async function runShareTool(kind) {
     contentKind = "text";
   }
 
+  const accepted = window.confirm("Upload warning: the selected file or pasted text will be sent to Files Format storage to create a shareable link. Anyone with the link can download it for up to 7 days. Do not share private or sensitive material. Continue?");
+  if (!accepted) return;
   setBusy(true);
   try {
     const response = await fetch("/api/upload", {
@@ -762,6 +875,7 @@ async function runShareTool(kind) {
     expiry.textContent = "This link expires in 7 days. Anyone who has it can download the shared content.";
 
     if (kind === "qr") {
+      const { default: QRCode } = await import("qrcode");
       const qrOptions = { errorCorrectionLevel: "M", margin: 4, width: 320, color: { dark: "#000000", light: "#ffffff" } };
       const [pngDataUrl, svgMarkup] = await Promise.all([
         QRCode.toDataURL(shareUrl.href, qrOptions),
@@ -820,10 +934,23 @@ async function handleSubmit(event) {
   elements.progress.hidden = false;
   elements.progress.value = 0;
   try {
-    let warning = "";
-    if (mode === "pdf") await runPdf(currentOperation());
-    else warning = await runImage(currentOperation());
-    showMessage(warning || "Your download is ready. Source files were not changed.", warning ? "warning" : "success");
+    const output = mode === "pdf" ? await runPdf(currentOperation()) : await runImage(currentOperation());
+    if (output && Number.isFinite(output.before) && Number.isFinite(output.after)) {
+      const saved = output.before - output.after;
+      const summary = `Original: ${formatBytes(output.before)} · New: ${formatBytes(output.after)} · ${saved > 0 ? `Saved ${formatBytes(saved)}` : saved < 0 ? `Increased by ${formatBytes(Math.abs(saved))}` : "No size change"}.`;
+      const targetMissed = output.targetBytes && output.after > output.targetBytes;
+      const notSmaller = currentOperation() === "compress-pdf" && !output.reduced;
+      showMessage(summary + (targetMissed ? ` The requested ${formatBytes(output.targetBytes)} target was not reached; the closest available result was downloaded.` : ""), targetMissed || notSmaller ? "warning" : "success");
+    } else if (output?.stats?.length) {
+      const lines = output.stats.map((item) => `${item.name}: ${formatBytes(item.before)} → ${formatBytes(item.after)}${item.targetBytes && item.after > item.targetBytes ? " (target not reached)" : ""}`);
+      const summary = lines.join("\n");
+      const missed = output.stats.some((item) => item.targetBytes && item.after > item.targetBytes);
+      showMessage(summary + (output.failures.length ? `\n${output.failures.length} file(s) failed.` : ""), missed || output.failures.length ? "warning" : "success");
+    } else if (output?.failures?.length) {
+      showMessage(`Downloaded ${output.succeeded} file(s). ${output.failures.length} could not be processed: ${output.failures.join("\n")}`, "warning");
+    } else {
+      showMessage("Your download is ready. Source files were not changed.", "success");
+    }
   } catch (error) {
     showMessage(error.message || "The file could not be processed.", "error");
   } finally {
@@ -882,10 +1009,15 @@ elements.privacyDialog.addEventListener("click", (event) => {
 });
 
 setMode("pdf");
-const requestedToolSlug = new URLSearchParams(location.search).get("tool");
+const pathSlug = location.pathname.split("/").filter(Boolean).at(-1);
+const requestedToolSlug = new URLSearchParams(location.search).get("tool") || (TOOL_CATALOG.some((tool) => tool.slug === pathSlug) ? pathSlug : null);
 if (requestedToolSlug) {
   const requestedTool = TOOL_CATALOG.find((tool) => tool.slug === requestedToolSlug);
   if (requestedTool) {
+    const heroTitle = document.querySelector(".intro h1");
+    const heroCopy = document.querySelector(".intro-copy");
+    if (heroTitle) heroTitle.textContent = requestedTool.title;
+    if (heroCopy) heroCopy.textContent = requestedTool.description;
     setMode(requestedTool.mode);
     elements.operation.value = requestedTool.operation;
     updateOperation();
