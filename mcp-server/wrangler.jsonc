@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "files-format-mcp",
+  "name": "too-broke-for-a-custom-domain",
   "main": "src/index.js",
   "compatibility_date": "2026-11-23",
   "compatibility_flags": ["nodejs_compat"],
