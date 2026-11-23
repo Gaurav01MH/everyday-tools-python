@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - app/browser-tools-website
+      - app/brand-ux-seo
+      - app/brand-ux-seo
       - main
     paths:
       - "web/**"
