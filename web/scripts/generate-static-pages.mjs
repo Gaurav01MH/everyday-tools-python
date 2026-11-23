@@ -1,9 +1,10 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { TOOL_CATALOG } from "../src/lib/tool-catalog.js";
 
 const dist = new URL("../dist/", import.meta.url);
-const DIST = decodeURIComponent(dist.pathname);
+const DIST = fileURLToPath(new URL("../dist/", import.meta.url));
 const SITE_ORIGIN = (process.env.PUBLIC_SITE_ORIGIN || "https://gaurav01mh.github.io").replace(/\/$/, "");
 const BASE_PATH = process.env.PUBLIC_BASE_PATH || (process.env.GITHUB_PAGES === "true" ? "/everyday-tools-python/" : "/");
 const BASE_URL = new URL(BASE_PATH.endsWith("/") ? BASE_PATH : BASE_PATH + "/", SITE_ORIGIN).href;
@@ -52,6 +53,7 @@ async function writePage(relativePath, html) {
 
 const sitemapUrls = new Set([BASE_URL]);
 const addUrl = (path) => sitemapUrls.add(urlFor(path));
+for (const policy of ["policies/privacy/", "policies/terms/", "policies/licensing/"]) addUrl(policy);
 
 for (const tool of tools) {
   const canonical = urlFor("tools/" + tool.slug + "/");
@@ -140,6 +142,9 @@ for (const mode of ["pdf","images","text"]) {
     "- " + BASE_URL,
     "- " + urlFor("tools/"),
     "- " + urlFor("about/"),
+    "- " + urlFor("policies/privacy/"),
+    "- " + urlFor("policies/terms/"),
+    "- " + urlFor("policies/licensing/"),
     "",
     "## Tool categories",
     "- " + urlFor("pdf-tools/"),
