@@ -20,13 +20,13 @@ The server is stateless, has no account access, no credentials, no database and 
 
 The Worker is configured with the free hostname slug:
 
-`too-broke-for-a-custom-domain`
+`files-format-too-broke-for-a-custom-domain`
 
 After deployment, Cloudflare combines that slug with the `workers.dev` account subdomain selected in your Cloudflare account. The final hostname will look like:
 
-- Website: `https://too-broke-for-a-custom-domain.<your-account-subdomain>.workers.dev/`
-- MCP endpoint: `https://too-broke-for-a-custom-domain.<your-account-subdomain>.workers.dev/mcp`
-- Health: `https://too-broke-for-a-custom-domain.<your-account-subdomain>.workers.dev/health`
+- Website: `https://files-format-too-broke-for-a-custom-domain.<your-account-subdomain>.workers.dev/`
+- MCP endpoint: `https://files-format-too-broke-for-a-custom-domain.<your-account-subdomain>.workers.dev/mcp`
+- Health: `https://files-format-too-broke-for-a-custom-domain.<your-account-subdomain>.workers.dev/health`
 
 This uses a free platform-provided hostname; it does not require buying or connecting a custom domain. The account subdomain is selected separately in Cloudflare. GitHub Pages remains available as a fallback until the Worker is deployed.
 
@@ -47,8 +47,8 @@ This uses a free platform-provided hostname; it does not require buying or conne
    cd mcp-server && npx wrangler deploy
    ```
 
-6. Keep the Worker name `too-broke-for-a-custom-domain`.
-7. Deploy and copy the assigned `workers.dev` hostname. In the Cloudflare build environment variables, set `PUBLIC_SITE_ORIGIN` to that exact origin (for example, `https://too-broke-for-a-custom-domain.<your-account-subdomain>.workers.dev`) and `PUBLIC_BASE_PATH` to `/`, then redeploy. This aligns canonical URLs and the sitemap with the new hostname.
+6. Keep the Worker name `files-format-too-broke-for-a-custom-domain`.
+7. Deploy and copy the assigned `workers.dev` hostname. In the Cloudflare build environment variables, set `PUBLIC_SITE_ORIGIN` to that exact origin (for example, `https://files-format-too-broke-for-a-custom-domain.<your-account-subdomain>.workers.dev`) and `PUBLIC_BASE_PATH` to `/`, then redeploy. This aligns canonical URLs and the sitemap with the new hostname.
 
 Wrangler serves static assets from `../web/dist`; the script runs first only for `/mcp*` and `/health`.
 
