@@ -54,32 +54,82 @@ async function processOne(file, operation, options) {
   try {
     let width = bitmap.width;
     let height = bitmap.height;
-    if (operation === "resize") {
+    let format = options.format;
+
+    if (operation === "resize" || operation === "id-photo") {
       const maxWidth = Number(options.width);
       const maxHeight = Number(options.height);
       if (!Number.isInteger(maxWidth) || maxWidth < 1 || maxWidth > 12000 ||
           !Number.isInteger(maxHeight) || maxHeight < 1 || maxHeight > 12000) {
-        throw new Error("Enter image dimensions between 1 and 12,000 pixels.");
+        throw new Error("Choose valid output dimensions between 1 and 12,000 pixels.");
       }
-      const scale = options.keepAspect
-        ? Math.min(1, maxWidth / width, maxHeight / height)
-        : null;
-      if (scale !== null) {
-        width = Math.max(1, Math.round(width * scale));
-        height = Math.max(1, Math.round(height * scale));
-      } else {
+      if (operation === "id-photo") {
+        // Contain the complete photograph inside the chosen print frame. This
+        // avoids stretching or automatically cropping a person's face.
         width = maxWidth;
         height = maxHeight;
+      } else {
+        const scale = options.keepAspect ? Math.min(1, maxWidth / width, maxHeight / height) : null;
+        if (scale !== null) {
+          width = Math.max(1, Math.round(width * scale));
+          height = Math.max(1, Math.round(height * scale));
+        } else {
+          width = maxWidth;
+          height = maxHeight;
+        }
       }
     }
 
-    const format = options.format;
-    if (!OUTPUT_FORMATS.has(format)) throw new Error("Choose PNG, JPG, or WEBP as the output format.");
+    if (operation === "metadata") {
+      format = file.type === "image/jpeg" ? "image/jpeg" :
+        file.type === "image/webp" ? "image/webp" : "image/png";
+    }
+    if (!OUTPUT_FORMATS.has(format)) throw new Error("Choose JPG, PNG, or WEBP as the output format.");
     if (width * height > MAX_IMAGE_PIXELS) throw new Error("The requested output dimensions are too large.");
+
     const quality = Math.max(0.1, Math.min(0.95, Number(options.quality) / 100 || 0.82));
-    const blob = await canvasFor(bitmap, width, height, format, quality);
+    let blob;
+    if (operation === "compress" && Number(options.targetKB) > 0) {
+      const targetBytes = Math.round(Number(options.targetKB) * 1024);
+      if (!Number.isFinite(targetBytes) || targetBytes < 5 * 1024 || targetBytes > 10 * 1024 * 1024) {
+        throw new Error("Choose a target between 5 KB and 10,240 KB.");
+      }
+      // Try lowering quality first, then gently reduce dimensions. A target is
+      // best-effort because highly detailed images cannot always meet it.
+      let candidateWidth = width;
+      let candidateHeight = height;
+      let candidateQuality = quality;
+      for (let attempt = 0; attempt < 18; attempt += 1) {
+        blob = await canvasFor(bitmap, candidateWidth, candidateHeight, format, candidateQuality);
+        if (blob.size <= targetBytes) break;
+        if (candidateQuality > 0.28) candidateQuality = Math.max(0.25, candidateQuality - 0.09);
+        else {
+          candidateWidth = Math.max(160, Math.round(candidateWidth * 0.88));
+          candidateHeight = Math.max(160, Math.round(candidateHeight * 0.88));
+          if (candidateWidth === 160 && candidateHeight === 160) break;
+        }
+      }
+      width = candidateWidth;
+      height = candidateHeight;
+    } else if (operation === "id-photo") {
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const context = canvas.getContext("2d");
+      if (!context) throw new Error("Your browser could not create the photo canvas.");
+      context.fillStyle = "#ffffff";
+      context.fillRect(0, 0, width, height);
+      const scale = Math.min(width / bitmap.width, height / bitmap.height);
+      const drawWidth = Math.round(bitmap.width * scale);
+      const drawHeight = Math.round(bitmap.height * scale);
+      context.drawImage(bitmap, Math.round((width - drawWidth) / 2), Math.round((height - drawHeight) / 2), drawWidth, drawHeight);
+      blob = await new Promise((resolve, reject) => canvas.toBlob((result) => result ? resolve(result) : reject(new Error("Could not export the ID photo.")), format, quality));
+    } else {
+      blob = await canvasFor(bitmap, width, height, format, quality);
+    }
     const extension = format === "image/jpeg" ? "jpg" : format.slice("image/".length);
-    return { name: outputName(file, extension), blob };
+    const suffix = operation === "metadata" ? "-metadata-removed" : operation === "id-photo" ? "-id-photo" : "";
+    return { name: `${safeFilename(file.name)}${suffix}.${extension}`, blob, before: file.size, after: blob.size, targetBytes: Number(options.targetKB) > 0 ? Math.round(Number(options.targetKB) * 1024) : null };
   } finally {
     bitmap.close();
   }
@@ -87,7 +137,7 @@ async function processOne(file, operation, options) {
 
 export async function processImages(files, operation, options, onProgress) {
   assertInputFiles(files);
-  if (!["resize", "convert", "compress"].includes(operation)) throw new Error("Choose a valid image operation.");
+  if (!["resize", "convert", "compress", "metadata", "id-photo"].includes(operation)) throw new Error("Choose a valid image operation.");
   const results = [];
   const failures = [];
   const usedNames = new Set();
@@ -143,5 +193,5 @@ export async function processImages(files, operation, options, onProgress) {
   if (typeof onProgress === "function") {
     onProgress(100, failures.length ? `Downloaded ${results.length} file(s); ${failures.length} failed.` : `Downloaded ${results.length} file(s).`);
   }
-  return { succeeded: results.length, failures };
+  return { succeeded: results.length, failures, stats: results.map(({ name, before, after, targetBytes }) => ({ name, before, after, targetBytes })) };
 }
