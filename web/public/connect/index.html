@@ -27,8 +27,8 @@
 
   <h2>One free website and MCP address</h2>
   <p>The combined site is designed for Cloudflare Workers Free. The website and MCP API share one included <code>workers.dev</code> hostname. After deployment, the addresses look like:</p>
-  <p><code>https://files-format-mcp.YOUR-SUBDOMAIN.workers.dev/</code> — website</p>
-  <p><code>https://files-format-mcp.YOUR-SUBDOMAIN.workers.dev/mcp</code> — MCP endpoint</p>
+  <p><code>https://too-broke-for-a-custom-domain.YOUR-SUBDOMAIN.workers.dev/</code> — website</p>
+  <p><code>https://too-broke-for-a-custom-domain.YOUR-SUBDOMAIN.workers.dev/mcp</code> — MCP endpoint</p>
   <p>No paid custom domain is needed. Cloudflare assigns the account subdomain when you deploy.</p>
 
   <h2>Deploy the combined website and MCP server</h2>
@@ -38,12 +38,12 @@
     <li>Open <strong>Workers &amp; Pages → Create application → GitHub</strong> and connect this repository.</li>
     <li>Set the repository root directory to the <strong>repository root</strong>, not <code>mcp-server</code>.</li>
     <li>Set the build command to <code>npm --prefix web install --no-audit --no-fund &amp;&amp; PUBLIC_BASE_PATH=/ npm --prefix web run build &amp;&amp; npm --prefix mcp-server install --no-audit --no-fund</code>.</li>
-    <li>Set the deploy command to <code>cd mcp-server &amp;&amp; npx wrangler deploy</code>. Keep the Worker name <code>files-format-mcp</code>.</li>
+    <li>Set the deploy command to <code>cd mcp-server &amp;&amp; npx wrangler deploy</code>. Keep the Worker name <code>too-broke-for-a-custom-domain</code>.</li>
     <li>Deploy and copy the assigned <code>workers.dev</code> hostname. In the Cloudflare build environment variables, set <code>PUBLIC_SITE_ORIGIN</code> to that exact origin and <code>PUBLIC_BASE_PATH</code> to <code>/</code>, then redeploy. This sets canonical URLs and the sitemap to the new hostname.</li>
   </ol>
 
   <h2>Check the MCP endpoint</h2>
-  <p>Open <code>https://files-format-mcp.YOUR-SUBDOMAIN.workers.dev/health</code>. It should return <code>status: ok</code>, six MCP actions and 29 catalogue tools. Connect an MCP-compatible AI client to the same hostname followed by <code>/mcp</code>.</p>
+  <p>Open <code>https://too-broke-for-a-custom-domain.YOUR-SUBDOMAIN.workers.dev/health</code>. It should return <code>status: ok</code>, six MCP actions and 29 catalogue tools. Connect an MCP-compatible AI client to the same hostname followed by <code>/mcp</code>.</p>
 
   <h2>Test it</h2>
   <p>Open the deployed Worker's <code>/health</code> address. It should return a JSON response showing <code>status: ok</code>, six MCP actions and 29 catalogue tools. The connection URL to enter in an MCP client is the same hostname followed by <code>/mcp</code>.</p>
