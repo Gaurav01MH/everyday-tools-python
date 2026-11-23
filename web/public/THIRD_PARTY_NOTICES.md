@@ -1,6 +1,6 @@
 # Third-party notices
 
-FileDesk uses the following direct JavaScript dependencies. Their license texts are distributed with their respective packages; this summary does not replace those texts.
+DocuMosaic uses the following direct JavaScript dependencies. Their license texts are distributed with their respective packages; this summary does not replace those texts.
 
 | Dependency | Version | License | Purpose |
 |---|---:|---|---|
