@@ -16,7 +16,8 @@ function textResult(text) {
   return { content: [{ type: "text", text }] };
 }
 
-function createFilesFormatServer({ requestInfo } = {}) {\n  const SITE_URL = new URL(requestInfo?.url || DEFAULT_SITE_URL).origin;
+function createFilesFormatServer({ requestInfo } = {}) {
+  const SITE_URL = new URL(requestInfo?.url || DEFAULT_SITE_URL).origin;
   const server = new McpServer({
     name: "files-format",
     version: "1.0.0"
