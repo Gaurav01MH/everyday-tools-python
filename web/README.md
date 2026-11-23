@@ -53,4 +53,4 @@ Password-protected PDFs are rejected. Rewriting PDFs can lose bookmarks, attachm
 
 ## Hosting
 
-The Pages workflow supports repository variables `PUBLIC_SITE_ORIGIN` and `PUBLIC_BASE_PATH`. A clean hostname must be connected through a custom domain or a separate organisation/hosting account; source-code changes alone cannot remove the current personal GitHub Pages hostname.
+The GitHub Pages workflow remains a fallback. The optional combined Cloudflare Worker is configured with the free hostname slug `too-broke-for-a-custom-domain`; Cloudflare appends the account's `workers.dev` subdomain after the Worker is deployed. See `mcp-server/README.md` for the free deployment instructions. The exact public hostname does not exist until it is deployed in the connected Cloudflare account.
