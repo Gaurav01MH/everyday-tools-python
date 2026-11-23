@@ -55,7 +55,7 @@ jobs:
           test -s dist/tools/merge-pdf/index.html
           test -s dist/tools/resize-image/index.html
           test -s dist/tools/validate-json/index.html
-          grep -q "FileDesk" dist/index.html
+          grep -q "DocuMosaic" dist/index.html
           grep -q "merge-pdf" dist/sitemap.xml
           grep -q "PDF tools" dist/tools/merge-pdf/index.html
           grep -q "/everyday-tools-python/" dist/index.html
