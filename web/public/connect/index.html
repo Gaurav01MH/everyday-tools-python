@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Connect AI tools — Files Format</title>
-  <meta name="description" content="Connect compatible AI clients to Files Format using its remote MCP server.">
+  <meta name="description" content="Connect compatible AI clients to Files Format using its remote Model Context Protocol service.">
   <meta name="robots" content="index,follow">
   <link rel="canonical" href="https://too-broke-for-a-custom-domain.pages.dev/connect/">
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
@@ -13,36 +13,29 @@
 <body>
 <main class="document-page">
   <a class="back-link" href="../">← Files Format home</a>
-  <p class="eyebrow">AI integration</p>
-  <h1>Connect Files Format to AI tools</h1>
-  <p class="summary">Files Format provides a remote Model Context Protocol (MCP) connector for compatible AI clients. Tool discovery and QR Tool hand-off are available through MCP; file uploads still use the website's Turnstile-protected flow.</p>
+  <p class="eyebrow">Integrations</p>
+  <h1>Connect Files Format to compatible AI tools</h1>
+  <p class="summary">Files Format includes a remote Model Context Protocol (MCP) service for compatible AI clients. It lets an AI client discover utilities, retrieve their instructions and run supported text transformations.</p>
 
-  <h2>What the connector exposes</h2>
+  <h2>Available connector actions</h2>
   <ul>
-    <li>Search and list the 29 Files Format utilities.</li>
-    <li>Read descriptions and direct links for individual tools.</li>
-    <li>Run supported text/data transformations on text explicitly sent by an AI client.</li>
-    <li>Prepare a QR Tool link with short text prefilled so the visitor can complete the share upload.</li>
+    <li>Search and list the Files Format utilities.</li>
+    <li>Read descriptions, input requirements and direct links for individual tools.</li>
+    <li>Run supported text and data transformations on text explicitly provided by the client.</li>
+    <li>Prepare a link to open the QR Tool with content prefilled.</li>
   </ul>
 
-  <h2>Free website address</h2>
-  <p>The requested free Cloudflare Pages project name is <code>too-broke-for-a-custom-domain</code>. Once you claim that project name and deploy it, the website address will be:</p>
-  <p><code>https://too-broke-for-a-custom-domain.pages.dev/</code></p>
-  <p>This is a free platform-provided hostname, not a purchased custom domain. Cloudflare confirms availability when you create the Pages project. The address is not live until that account step and first deployment are complete.</p>
+  <h2>Connection address</h2>
+  <p>The MCP service is deployed separately from the website. Use the public HTTPS endpoint ending in <code>/mcp</code> supplied by its hosting provider. The endpoint is available only after the connector service has been deployed.</p>
 
-  <h2>Optional MCP endpoint</h2>
-  <p>The MCP connector is a separate Cloudflare Worker. Its configured free project name is <code>too-broke-for-a-custom-domain-mcp</code>; after deployment its endpoint will look like:</p>
-  <p><code>https://too-broke-for-a-custom-domain-mcp.YOUR-ACCOUNT.workers.dev/mcp</code></p>
-  <p>Cloudflare assigns the account-specific part of that hostname. The website remains on the Pages address above; these are two different deployments.</p>
+  <h2>Connect a client</h2>
+  <p>In an MCP-compatible application, add a remote Streamable HTTP server and enter the connector's full HTTPS <code>/mcp</code> address. The exact connection steps depend on the client. Consult that application's documentation for support and permission requirements.</p>
+  <p><a href="https://developers.cloudflare.com/agents/model-context-protocol/guides/remote-mcp-server/">MCP hosting and connection guide</a></p>
 
-  <h2>Connect an AI client</h2>
-  <p>In an MCP-compatible client, add a remote Streamable HTTP server using the deployed Worker URL ending in <code>/mcp</code>. ChatGPT documents custom MCP connections for eligible Business and Enterprise/Edu workspaces; Pro access is limited to read/fetch permissions. Custom MCP connections are not listed for ChatGPT Free. Other compatible AI clients may use the same endpoint.</p>
-  <p><a href="https://help.openai.com/en/articles/12584461-connecting-custom-mcp-servers-in-chatgpt">OpenAI MCP requirements</a> · <a href="https://developers.cloudflare.com/agents/model-context-protocol/guides/remote-mcp-server/">Cloudflare remote MCP guide</a></p>
-
-  <h2>File sharing and privacy</h2>
-  <p>Link Tool and QR Tool accept either pasted text or one file up to 10 MB. They upload only the content the visitor explicitly chooses after a Turnstile security check. The resulting URL is public to anyone who has it and expires after seven days. R2 lifecycle cleanup removes expired objects. Do not upload confidential or personal material.</p>
-  <p>PDF and image editing tools remain browser-local. The MCP service does not accept file uploads and cannot bypass the website's security check.</p>
-  <p><a href="../tools/">Browse all 29 tools</a>.</p>
+  <h2>Privacy and file processing</h2>
+  <p>PDF and image editing remain in the browser. The connector does not receive PDF or image files. Text explicitly sent to a remote transformation action is processed by the connector service; do not submit confidential content unless you accept that transfer.</p>
+  <p>Link Tool and QR Tool are separate optional sharing features. They upload only the file or text the visitor chooses, after a security check. The resulting URL is public to anyone who has it and expires after seven days. Do not upload confidential or personal material.</p>
+  <p><a href="../tools/">Browse all tools</a>.</p>
 </main>
 </body>
 </html>
