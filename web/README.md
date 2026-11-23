@@ -36,7 +36,7 @@ GitHub Pages is static hosting, so the Link Tool and QR Tool's server-side share
 - Category and directory pages link to the individual tools.
 - robots.txt, sitemap.xml and llms.txt are generated on each production build.
 - Pages have unique titles, descriptions, canonical URLs, Open Graph metadata and JSON-LD structured data.
-- OAI-SearchBot is allowed and GPTBot is disallowed. These settings improve crawlability but cannot guarantee indexing or recommendations.
+- The site uses general crawler access, an XML sitemap and descriptive tool pages to support discovery. Search systems decide independently whether to crawl, index or recommend the website.
 
 After deploying the Pages hostname, verify ownership in Google Search Console and submit /sitemap.xml.
 
