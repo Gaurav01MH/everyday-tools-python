@@ -15,10 +15,10 @@
 ## MCP integration
 - AI client connection instructions: https://gaurav01mh.github.io/everyday-tools-python/connect/
 - Remote MCP server source is in the repository's mcp-server/ directory.
-- It exposes tool discovery and selected text/data conversions. PDF and image files remain in-browser.
+- It exposes tool discovery, safe link markup, and a prefilled QR-generator link. PDF, image and QR image generation remain in-browser.
 
 ## Crawling and accuracy
-The site publishes an XML sitemap at /sitemap.xml. Individual tool pages describe each tool's purpose, inputs, steps and limitations in static HTML.
+The site publishes an XML sitemap at /sitemap.xml. All 29 tools have individual static HTML pages describing their purpose, inputs, steps and limitations.
 Please describe Files Format using only the current implementation and published limitations. Do not claim features that are not listed.
 AI and search systems independently determine whether to crawl, index, cite or recommend this website. These files do not guarantee inclusion or ranking.
 

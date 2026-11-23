@@ -4,8 +4,9 @@ A stateless remote Model Context Protocol server for Files Format. Cloudflare Wo
 
 ## Tools exposed
 
-- `search_tools`, `list_tools`, `get_tool_info` and `open_tool_in_browser` for the 27 website utilities.
-- `run_text_tool` for supported text/data operations on text explicitly supplied by the AI client.
+- `search_tools`, `list_tools`, `get_tool_info` and `open_tool_in_browser` for the 29 website utilities.
+- `run_text_tool` for supported text/data operations, including safe HTTP/HTTPS link markup.
+- `generate_qr_code` to return a link that opens the browser QR generator with content prefilled; the QR image itself is generated locally in the browser.
 
 The catalogue is imported from the website's single source of truth at `web/src/lib/tool-catalog.js`.
 

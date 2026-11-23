@@ -175,6 +175,42 @@ function jsonToCsv(value) {
   throw new Error("JSON to CSV expects an array of rows or an array of objects, not a mixture.");
 }
 
+function escapeHtml(value) {
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function makeLink(input, labelInput = "") {
+  const source = String(input ?? "").trim();
+  if (!source) throw new Error("Enter a website URL.");
+  if (source.length > 2048) throw new Error("The website URL must be 2,048 characters or fewer.");
+  const candidate = /^[a-z][a-z0-9+.-]*:/i.test(source) ? source : "https://" + source;
+  let parsed;
+  try {
+    parsed = new URL(candidate);
+  } catch {
+    throw new Error("Enter a valid website address, such as https://example.com.");
+  }
+  if (!["http:", "https:"].includes(parsed.protocol) || !parsed.hostname) {
+    throw new Error("Only HTTP and HTTPS website addresses are allowed.");
+  }
+  if (parsed.username || parsed.password) {
+    throw new Error("Website links containing embedded usernames or passwords are not allowed.");
+  }
+  const url = parsed.href;
+  const label = String(labelInput ?? "").trim() || parsed.hostname;
+  if (label.length > 300) throw new Error("Link text must be 300 characters or fewer.");
+  const markdownLabel = label.replace(/\\/g, "\\\\").replace(/\]/g, "\\]");
+  const markdownUrl = url.replace(/\)/g, "%29");
+  return [
+    "Markdown link:",
+    "[" + markdownLabel + "](" + markdownUrl + ")",
+    "",
+    "HTML hyperlink:",
+    '<a href="' + escapeHtml(url) + '" rel="noopener noreferrer">' + escapeHtml(label) + "</a>"
+  ].join("\n");
+}
+
 export function runTextTool(operation, input, extra = "", options = {}) {
   const value = String(input ?? "");
   const extraValue = String(extra ?? "");
@@ -183,6 +219,8 @@ export function runTextTool(operation, input, extra = "", options = {}) {
   }
 
   switch (operation) {
+    case "link-make":
+      return makeLink(value, extraValue);
     case "upper":
     case "lower":
     case "title":

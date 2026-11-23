@@ -3,6 +3,7 @@ import { mergePdfs, splitPdf, extractPdfPages, rotatePdf, imagesToPdf, renderPdf
 import { processImages } from "./lib/image-tools.js";
 import { runTextTool } from "./lib/text-tools.js";
 import { TOOL_CATALOG } from "./lib/tool-catalog.js";
+import QRCode from "qrcode";
 
 const $ = (selector) => document.querySelector(selector);
 const elements = {
@@ -82,7 +83,9 @@ const definitions = {
       ["base64-decode", "Base64 decode"],
       ["percent-of", "Calculate percentage of a value"],
       ["percent-change", "Percentage change"],
-      ["unit-convert", "Unit conversion"]
+      ["unit-convert", "Unit conversion"],
+      ["link-make", "Link maker"],
+      ["qr-code", "QR code generator"]
     ]
   }
 };
@@ -97,6 +100,7 @@ const units = {
 let mode = "pdf";
 let selectedFiles = [];
 let busy = false;
+let qrSvgObjectUrl = null;
 
 function makeOption(value, text) {
   const option = document.createElement("option");
@@ -244,22 +248,36 @@ function updateOperation() {
       elements.options.append(note);
     }
   } else {
-    const needsExtra = operation === "percent-of" || operation === "percent-change";
+    const needsExtra = ["percent-of", "percent-change", "link-make"].includes(operation);
     elements.textExtraRow.hidden = !needsExtra;
     elements.unitRow.hidden = operation !== "unit-convert";
     const inputLabel = elements.textSection.querySelector('label[for="text-input"]');
-    inputLabel.textContent = operation === "percent-of" ? "Percentage" : operation === "percent-change" ? "Starting value" : operation === "unit-convert" ? "Value" : operation === "stats" ? "Text to analyse" : "Input";
-    if (operation === "unit-convert") elements.textInput.placeholder = "Enter a number";
-    if (needsExtra) {
-      elements.textExtraRow.querySelector("label").textContent = operation === "percent-of" ? "Value" : "New value";
-      elements.textInput.placeholder = operation === "percent-of" ? "Percentage" : "Starting value";
-      elements.textExtraInput.placeholder = operation === "percent-of" ? "Number to calculate from" : "New value";
-    } else {
-      elements.textInput.placeholder = operation.startsWith("json") ? "Paste JSON here" : operation === "csv-json" ? "Paste CSV here" : "Paste or type your text here";
+    inputLabel.textContent = operation === "percent-of" ? "Percentage" :
+      operation === "percent-change" ? "Starting value" :
+      operation === "link-make" ? "Website URL" :
+      operation === "qr-code" ? "Text or URL" :
+      operation === "unit-convert" ? "Value" :
+      operation === "stats" ? "Text to analyse" : "Input";
+    elements.textExtraRow.querySelector("label").textContent = operation === "percent-of" ? "Value" :
+      operation === "link-make" ? "Link text (optional)" : "New value";
+    elements.textExtraInput.placeholder = operation === "percent-of" ? "Number to calculate from" :
+      operation === "link-make" ? "Example: Open Files Format" : "New value";
+    elements.textInput.placeholder = operation === "unit-convert" ? "Enter a number" :
+      operation === "link-make" ? "https://example.com" :
+      operation === "qr-code" ? "Paste a URL or short text" :
+      operation === "percent-of" ? "Percentage" :
+      operation === "percent-change" ? "Starting value" :
+      operation.startsWith("json") ? "Paste JSON here" :
+      operation === "csv-json" ? "Paste CSV here" : "Paste or type your text here";
+    if (operation === "qr-code") {
+      const note = document.createElement("p");
+      note.className = "inline-note";
+      note.textContent = "QR codes are generated on this device. The encoded text is not uploaded.";
+      elements.options.append(note);
     }
     if (operation === "unit-convert") updateUnitOptions();
   }
-  elements.runButton.textContent = isText ? "Process text" : "Run tool";
+  elements.runButton.textContent = isText ? (operation === "qr-code" ? "Generate QR code" : "Process text") : "Run tool";
 }
 
 function updateUnitOptions() {
@@ -276,19 +294,28 @@ function updateUnitOptions() {
 function updateTextControls() {
   if (mode !== "text") return;
   const operation = currentOperation();
-  const needsExtra = operation === "percent-of" || operation === "percent-change";
+  const needsExtra = ["percent-of", "percent-change", "link-make"].includes(operation);
   elements.textExtraRow.hidden = !needsExtra;
   elements.unitRow.hidden = operation !== "unit-convert";
   const inputLabel = elements.textSection.querySelector('label[for="text-input"]');
   inputLabel.textContent = operation === "percent-of" ? "Percentage" :
     operation === "percent-change" ? "Starting value" :
+    operation === "link-make" ? "Website URL" :
+    operation === "qr-code" ? "Text or URL" :
     operation === "unit-convert" ? "Value" :
     operation === "stats" ? "Text to analyse" : "Input";
+  elements.textExtraRow.querySelector("label").textContent = operation === "percent-of" ? "Value" :
+    operation === "link-make" ? "Link text (optional)" : "New value";
+  elements.textExtraInput.placeholder = operation === "percent-of" ? "Number to calculate from" :
+    operation === "link-make" ? "Example: Open Files Format" : "New value";
   elements.textInput.placeholder = operation === "unit-convert" ? "Enter a number" :
+    operation === "link-make" ? "https://example.com" :
+    operation === "qr-code" ? "Paste a URL or short text" :
     operation === "percent-of" ? "Enter a percentage" :
     operation === "percent-change" ? "Enter the starting value" :
     operation.startsWith("json") ? "Paste JSON here" :
     operation === "csv-json" ? "Paste CSV here" : "Paste or type your text here";
+  elements.runButton.textContent = operation === "qr-code" ? "Generate QR code" : "Process text";
   if (operation === "unit-convert") updateUnitOptions();
 }
 
@@ -376,6 +403,10 @@ function addFiles(files) {
 }
 
 function clearResult() {
+  if (qrSvgObjectUrl) {
+    URL.revokeObjectURL(qrSvgObjectUrl);
+    qrSvgObjectUrl = null;
+  }
   elements.result.hidden = true;
   elements.resultTitle.textContent = "Ready";
   elements.resultStatus.textContent = "";
@@ -502,13 +533,54 @@ async function runText(operation) {
   showMessage("Your result is ready. Nothing was sent to a server.", "success");
 }
 
+async function runQrCode() {
+  const value = elements.textInput.value.trim();
+  if (!value) throw new Error("Enter a URL or text to encode.");
+  if (new TextEncoder().encode(value).length > 1000) {
+    throw new Error("Keep QR content to 1,000 UTF-8 bytes or fewer for reliable scanning.");
+  }
+  const options = {
+    errorCorrectionLevel: "M",
+    margin: 4,
+    width: 320,
+    color: { dark: "#000000", light: "#ffffff" }
+  };
+  const [pngDataUrl, svgMarkup] = await Promise.all([
+    QRCode.toDataURL(value, options),
+    QRCode.toString(value, { ...options, type: "svg" })
+  ]);
+  if (qrSvgObjectUrl) URL.revokeObjectURL(qrSvgObjectUrl);
+  qrSvgObjectUrl = URL.createObjectURL(new Blob([svgMarkup], { type: "image/svg+xml;charset=utf-8" }));
+
+  const preview = document.createElement("img");
+  preview.className = "qr-preview";
+  preview.src = pngDataUrl;
+  preview.alt = "Generated QR code preview";
+
+  const pngLink = document.createElement("a");
+  pngLink.className = "secondary-button";
+  pngLink.href = pngDataUrl;
+  pngLink.download = "files-format-qr-code.png";
+  pngLink.textContent = "Download PNG";
+
+  const svgLink = document.createElement("a");
+  svgLink.className = "secondary-button";
+  svgLink.href = qrSvgObjectUrl;
+  svgLink.download = "files-format-qr-code.svg";
+  svgLink.textContent = "Download SVG";
+
+  elements.resultActions.replaceChildren(preview, pngLink, svgLink);
+  showMessage("QR code generated in your browser. The encoded text was not sent to a server.", "success");
+}
+
 async function handleSubmit(event) {
   event.preventDefault();
   if (busy) return;
   clearResult();
   if (mode === "text") {
     try {
-      await runText(currentOperation());
+      if (currentOperation() === "qr-code") await runQrCode();
+      else await runText(currentOperation());
     } catch (error) {
       showMessage(error.message || "The text could not be processed.", "error");
     }
@@ -584,6 +656,15 @@ if (requestedToolSlug) {
     elements.operation.value = requestedTool.operation;
     updateOperation();
     updateTextControls();
+    if (requestedTool.operation === "qr-code") {
+      const fragmentParams = new URLSearchParams(location.hash.slice(1).split("&").slice(1).join("&"));
+      const prefill = fragmentParams.get("qr");
+      if (prefill !== null) {
+        elements.textInput.value = prefill;
+        document.querySelector("#workspace").scrollIntoView({ block: "start" });
+        history.replaceState(null, "", location.pathname + location.search + "#workspace");
+      }
+    }
   } else {
     const cleanedUrl = new URL(location.href);
     cleanedUrl.searchParams.delete("tool");

@@ -2,11 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { TOOL_CATALOG, findToolBySlug } from "./tool-catalog.js";
 
-test("FileDesk catalog has the expected PDF, image and text tools", () => {
-  assert.equal(TOOL_CATALOG.length, 27);
+test("Files Format catalog has the expected PDF, image and text tools", () => {
+  assert.equal(TOOL_CATALOG.length, 29);
   assert.equal(TOOL_CATALOG.filter((tool) => tool.mode === "pdf").length, 6);
   assert.equal(TOOL_CATALOG.filter((tool) => tool.mode === "images").length, 3);
-  assert.equal(TOOL_CATALOG.filter((tool) => tool.mode === "text").length, 18);
+  assert.equal(TOOL_CATALOG.filter((tool) => tool.mode === "text").length, 20);
 });
 
 test("every catalogue entry has a unique slug and mode-operation pair", () => {
@@ -33,6 +33,8 @@ test("every tool has enough factual detail to render its SEO page", () => {
 test("tool slug lookup is safe for existing and unknown slugs", () => {
   assert.equal(findToolBySlug("merge-pdf")?.operation, "merge");
   assert.equal(findToolBySlug("validate-json")?.operation, "json-validate");
+  assert.equal(findToolBySlug("link-maker")?.operation, "link-make");
+  assert.equal(findToolBySlug("qr-code-generator")?.operation, "qr-code");
   assert.equal(findToolBySlug("../admin"), null);
   assert.equal(findToolBySlug("does-not-exist"), null);
 });

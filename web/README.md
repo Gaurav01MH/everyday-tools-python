@@ -34,7 +34,7 @@ The file-processing functions read browser File objects and use client-side libr
 
 ## UI and accessibility
 
-The original layout remains in place: simple PDF, image and text/data tabs, a task selector, file drop zone, options and result panel. Individual SEO pages are separate from the app interface. The logo and favicon are code-based SVG assets.
+The original layout remains in place: simple PDF, image and text/data tabs, a task selector, file drop zone, options and result panel. Text & data now includes a Link maker for Markdown/HTML and a browser-local QR generator with PNG and SVG downloads. Individual SEO pages are separate from the app interface. The logo and favicon are code-based SVG assets.
 
 ## Limits
 

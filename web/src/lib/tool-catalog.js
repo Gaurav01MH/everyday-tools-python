@@ -323,6 +323,30 @@ export const TOOL_CATALOG = [
     steps: ["Enter the value.", "Choose the unit category and source unit.", "Choose the destination unit and process the conversion."],
     limitation: "Only the units listed in the tool are supported. Temperature below absolute zero is rejected."
   }
+  {
+    slug: "link-maker",
+    mode: "text",
+    operation: "link-make",
+    name: "Link maker",
+    title: "Create Markdown and HTML hyperlinks",
+    description: "Turn a website address into a reusable Markdown link and safe HTML hyperlink with your own link text. Processing stays in your browser.",
+    keywords: ["link maker", "create hyperlink", "HTML link generator", "Markdown link generator", "clickable link"],
+    inputs: "An HTTP or HTTPS website address and optional link text.",
+    steps: ["Enter a website address. A missing scheme defaults to HTTPS.", "Optionally enter the text people should click.", "Generate and copy the Markdown or HTML link."],
+    limitation: "Only HTTP and HTTPS website addresses are supported. This creates a hyperlink; it does not shorten or host the destination URL."
+  },
+  {
+    slug: "qr-code-generator",
+    mode: "text",
+    operation: "qr-code",
+    name: "QR code generator",
+    title: "Create and download a QR code",
+    description: "Generate a scannable QR code from a website URL or short text and download it as PNG or SVG. Content is encoded locally in your browser.",
+    keywords: ["QR code generator", "create QR code", "URL to QR", "text to QR code", "download QR"],
+    inputs: "A URL or text value up to 1,000 UTF-8 bytes.",
+    steps: ["Paste a website address or short text.", "Choose Generate QR code.", "Preview and download the PNG or SVG QR code."],
+    limitation: "Longer content creates denser QR codes that may be harder to scan. Test the downloaded code before printing."
+  }
 ];
 
 export function findToolBySlug(slug) {

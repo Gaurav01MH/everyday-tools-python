@@ -9,7 +9,7 @@ const TEXT_OPERATIONS = [
   "stats", "upper", "lower", "title", "sentence", "clean", "unique",
   "json-format", "json-validate", "csv-json", "json-csv",
   "url-encode", "url-decode", "base64-encode", "base64-decode",
-  "percent-of", "percent-change", "unit-convert"
+  "percent-of", "percent-change", "unit-convert", "link-make"
 ];
 
 function textResult(text) {
@@ -49,7 +49,7 @@ function createFilesFormatServer({ requestInfo } = {}) {
     "list_tools",
     {
       title: "List Files Format tools",
-      description: "List the 27 available Files Format utilities, optionally filtered by category: pdf, images or text.",
+      description: "List the 29 available Files Format utilities, optionally filtered by category: pdf, images or text.",
       inputSchema: {
         category: z.enum(["pdf", "images", "text"]).optional()
       }
@@ -71,9 +71,11 @@ function createFilesFormatServer({ requestInfo } = {}) {
       const tool = findTool(slug);
       if (!tool) return textResult("No Files Format tool exists with slug: " + slug);
 
-      const processing = tool.category === "pdf" || tool.category === "images"
-        ? "This file task runs locally in the visitor's browser. The MCP server does not receive the file."
-        : "The website version runs locally in the browser. The MCP server also has a separate text/data action for client-supplied text.";
+      const processing = tool.operation === "qr-code"
+        ? "QR image generation runs locally in the visitor's browser. The MCP server can return a prefilled page link but does not render or store QR images."
+        : tool.category === "pdf" || tool.category === "images"
+          ? "This file task runs locally in the visitor's browser. The MCP server does not receive the file."
+          : "The website version runs locally in the browser. The MCP server also has a separate text/data action for client-supplied text.";
 
       return textResult(JSON.stringify({
         ...tool,
@@ -102,7 +104,7 @@ function createFilesFormatServer({ requestInfo } = {}) {
     "run_text_tool",
     {
       title: "Run a Files Format text or data tool",
-      description: "Run one supported text/data transformation on text explicitly supplied by the AI client. Supports statistics, case conversion, line cleanup, JSON/CSV conversion, URL/Base64, percentage calculations and unit conversion. Each input field is limited to 32,000 characters. Text is sent to this remote Worker for processing; do not send confidential content. PDF and image files are not accepted.",
+      description: "Run one supported text/data transformation on text explicitly supplied by the AI client. Supports statistics, case conversion, line cleanup, JSON/CSV conversion, URL/Base64, percentage calculations, unit conversion and safe HTTP/HTTPS link markup. Each input field is limited to 32,000 characters. Text is sent to this remote Worker for processing; do not send confidential content. PDF and image files are not accepted.",
       inputSchema: {
         operation: z.enum(TEXT_OPERATIONS),
         input: z.string().max(32_000),
@@ -124,6 +126,32 @@ function createFilesFormatServer({ requestInfo } = {}) {
     }
   );
 
+  server.registerTool(
+    "generate_qr_code",
+    {
+      title: "Prepare a QR code in Files Format",
+      description: "Create a direct link to the Files Format QR generator with short text or a URL prefilled. The QR graphic itself is generated in the visitor's browser and can be downloaded as PNG or SVG; this MCP server does not render or store images.",
+      inputSchema: {
+        text: z.string().min(1).max(1000)
+      }
+    },
+    async ({ text }) => {
+      const byteLength = new TextEncoder().encode(text).length;
+      if (byteLength > 1000) {
+        return { ...textResult("QR content must be 1,000 UTF-8 bytes or fewer."), isError: true };
+      }
+      const pageUrl = new URL(SITE_URL + "/");
+      pageUrl.searchParams.set("tool", "qr-code-generator");
+      pageUrl.hash = "workspace&qr=" + encodeURIComponent(text);
+      return textResult(JSON.stringify({
+        message: "Open the prefilled QR generator in Files Format, then choose Generate QR code and download PNG or SVG.",
+        url: pageUrl.href,
+        textBytes: byteLength,
+        processing: "The payload is in the URL fragment. The browser generates the QR locally; the fragment is not sent in the website page request."
+      }, null, 2));
+    }
+  );
+
   return server;
 }
 
@@ -139,7 +167,7 @@ export default {
         service: "Files Format MCP",
         status: "ok",
         endpoint: "/mcp",
-        mcpTools: 5,
+        mcpTools: 6,
         catalogueTools: TOOL_CATALOG.length,
         site: url.origin
       }, { headers: { "Cache-Control": "no-store" } });

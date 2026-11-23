@@ -28,6 +28,8 @@ Selected files are processed locally in the browser. The application does not up
 - URL and Base64 encoding/decoding.
 - Percentage calculations.
 - Length, weight, time and temperature conversion.
+- Markdown and HTML link creation with HTTP/HTTPS validation.
+- Browser-local QR generation with PNG and SVG downloads.
 
 ## Search and AI discovery
 
@@ -58,7 +60,7 @@ A hostname without the repository owner's name requires a custom domain or movin
 
 ## MCP integration
 
-A Cloudflare Worker in `mcp-server/` serves both the website and MCP endpoint from one free `workers.dev` hostname. See [MCP setup](mcp-server/README.md). The Cloudflare account owner must authorize the first deployment; GitHub Pages remains a fallback. PDF and image processing remains local in the browser; only text explicitly supplied by an AI client is sent to the Worker.
+A Cloudflare Worker in `mcp-server/` serves both the website and MCP endpoint from one free `workers.dev` hostname. See [MCP setup](mcp-server/README.md). The Cloudflare account owner must authorize the first deployment; GitHub Pages remains a fallback. PDF, image and QR image generation stays in the browser. MCP provides tool discovery, safe link markup and prefilled QR-generator links; only text explicitly sent to its text action is processed by the Worker.
 
 ## Privacy and limits
 

@@ -222,3 +222,38 @@ test("a directory link opens its matching operation in the original workspace", 
   await expect(page.getByRole("button", { name: "Text & data" })).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByLabel("Choose a task")).toHaveValue("json-format");
 });
+
+
+test("link maker creates safe Markdown and HTML hyperlinks", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Text & data" }).click();
+  await page.getByLabel("Choose a task").selectOption("link-make");
+  await page.getByLabel("Website URL").fill("example.com/guide?q=1&x=2");
+  await page.getByLabel("Link text (optional)").fill("Files & Format");
+  await page.getByRole("button", { name: "Process text" }).click();
+  await expect(page.getByLabel("Processed output")).toHaveValue(/Markdown link:[\s\S]*https:\/\/example.com\/guide\?q=1&x=2[\s\S]*Files &amp; Format/);
+});
+
+test("QR generator creates local PNG and SVG downloads", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Text & data" }).click();
+  await page.getByLabel("Choose a task").selectOption("qr-code");
+  await page.getByLabel("Text or URL").fill("https://example.com");
+  await page.getByRole("button", { name: "Generate QR code" }).click();
+  await expect(page.getByRole("img", { name: "Generated QR code preview" })).toBeVisible();
+
+  const pngPromise = page.waitForEvent("download");
+  await page.getByRole("link", { name: "Download PNG" }).click();
+  const pngDownload = await pngPromise;
+  expect(pngDownload.suggestedFilename()).toBe("files-format-qr-code.png");
+  const png = await readFile(await pngDownload.path());
+  expect([...png.subarray(0, 8)]).toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
+
+  const svgPromise = page.waitForEvent("download");
+  await page.getByRole("link", { name: "Download SVG" }).click();
+  const svgDownload = await svgPromise;
+  const svg = await readFile(await svgDownload.path(), "utf8");
+  expect(svgDownload.suggestedFilename()).toBe("files-format-qr-code.svg");
+  expect(svg).toContain("<svg");
+  expect(svg).toContain("<path");
+});

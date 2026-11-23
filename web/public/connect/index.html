@@ -19,11 +19,11 @@
 
   <h2>What the connector exposes</h2>
   <ul>
-    <li>Search and list all 27 Files Format utilities.</li>
+    <li>Search and list all 29 Files Format utilities.</li>
     <li>Read tool descriptions and return direct links that open the matching utility in the website.</li>
-    <li>Run 18 text and data operations, including JSON, CSV, case conversion, URL/Base64, percentage calculations and unit conversion.</li>
+    <li>Run text/data operations, including JSON, CSV, case conversion, URL/Base64, percentage calculations, unit conversion and safe HTTP/HTTPS link markup; prepare prefilled QR-generator links.</li>
   </ul>
-  <p>PDF and image operations remain in your browser. The MCP service does not accept PDF or image uploads.</p>
+  <p>PDF, image and QR image generation remain in your browser. The MCP service does not accept PDF or image uploads.</p>
 
   <h2>One free website and MCP address</h2>
   <p>The combined site is designed for Cloudflare Workers Free. The website and MCP API share one included <code>workers.dev</code> hostname. After deployment, the addresses look like:</p>
@@ -43,10 +43,10 @@
   </ol>
 
   <h2>Check the MCP endpoint</h2>
-  <p>Open <code>https://files-format-mcp.YOUR-SUBDOMAIN.workers.dev/health</code>. It should return <code>status: ok</code>, five MCP actions and 27 catalogue tools. Connect an MCP-compatible AI client to the same hostname followed by <code>/mcp</code>.</p>
+  <p>Open <code>https://files-format-mcp.YOUR-SUBDOMAIN.workers.dev/health</code>. It should return <code>status: ok</code>, six MCP actions and 29 catalogue tools. Connect an MCP-compatible AI client to the same hostname followed by <code>/mcp</code>.</p>
 
   <h2>Test it</h2>
-  <p>Open the deployed Worker's <code>/health</code> address. It should return a JSON response showing <code>status: ok</code>, five MCP actions and 27 catalogue tools. The connection URL to enter in an MCP client is the same hostname followed by <code>/mcp</code>.</p>
+  <p>Open the deployed Worker's <code>/health</code> address. It should return a JSON response showing <code>status: ok</code>, six MCP actions and 29 catalogue tools. The connection URL to enter in an MCP client is the same hostname followed by <code>/mcp</code>.</p>
 
   <h2>Connect an AI client</h2>
   <p>In an MCP-compatible client, add a remote Streamable HTTP server using the public HTTPS <code>/mcp</code> address. The endpoint does not exist until the Worker is deployed in a Cloudflare account.</p>
@@ -58,7 +58,7 @@
   <h2>Privacy and limits</h2>
   <p>Tool discovery requests contain only search terms and tool slugs. When an AI client calls a text transformation, the text supplied by that client is sent to Cloudflare for processing. The Worker does not store the input in a database or file store, but Cloudflare processes the network request under its service terms. Do not send confidential information unless you are comfortable with that transfer.</p>
   <p>Text input is limited to 32,000 characters per field. The connector does not expose file upload, account access, storage, delete or other write actions.</p>
-  <p><a href="../tools/">Browse all 27 tools</a>.</p>
+  <p><a href="../tools/">Browse all 29 tools</a>.</p>
 </main>
 </body>
 </html>

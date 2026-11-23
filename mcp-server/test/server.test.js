@@ -18,7 +18,7 @@ test("the catalogue has all three expected categories", () => {
     ["images", "pdf", "text"]
   );
   assert.equal(new Set(TOOL_CATALOG.map((tool) => tool.slug)).size, TOOL_CATALOG.length);
-  assert.equal(TOOL_CATALOG.length, 27);
+  assert.equal(TOOL_CATALOG.length, 29);
 });
 
 test("text transforms run correctly", () => {
@@ -78,4 +78,13 @@ test("percentage and unit conversions", () => {
 test("remote text input fields are capped", () => {
   assert.throws(() => runTextTool("upper", "x".repeat(32_001)), /32,000/);
   assert.throws(() => runTextTool("percent-of", "12", "x".repeat(32_001)), /32,000/);
+});
+
+test("MCP link maker creates escaped Markdown and HTML links", () => {
+  const output = runTextTool("link-make", "example.com/guide?q=1&x=2", "Files & Format");
+  assert.ok(output.includes("[Files & Format](https://example.com/guide?q=1&x=2)"));
+  assert.ok(output.includes('href="https://example.com/guide?q=1&amp;x=2"'));
+  assert.ok(output.includes("Files &amp; Format"));
+  assert.throws(() => runTextTool("link-make", "javascript:alert(1)", "bad"), /Only HTTP and HTTPS/);
+  assert.throws(() => runTextTool("link-make", "https://user:pass@example.com"), /usernames or passwords/);
 });
