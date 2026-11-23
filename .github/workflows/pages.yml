@@ -40,8 +40,8 @@ jobs:
         working-directory: web
         env:
           GITHUB_PAGES: "true"
-          PUBLIC_SITE_ORIGIN: ${{ vars.PUBLIC_SITE_ORIGIN || 'https://gaurav01mh.github.io' }}
-          PUBLIC_BASE_PATH: ${{ vars.PUBLIC_BASE_PATH || '/everyday-tools-python/' }}
+          PUBLIC_SITE_ORIGIN: ${{ vars.PUBLIC_SITE_ORIGIN || format('https://{0}.github.io', github.repository_owner) }}
+          PUBLIC_BASE_PATH: ${{ vars.PUBLIC_BASE_PATH || format('/{0}/', github.event.repository.name) }}
           VITE_SHARE_API_ENABLED: "false"
         run: npm run build
       - name: Upload GitHub Pages artifact
