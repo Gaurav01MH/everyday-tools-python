@@ -69,7 +69,19 @@ for (const policy of ["privacy", "terms", "licensing"]) {
   await writeFile(policyFile, policyHtml, "utf8");
 }
 
-const robotsText = "User-agent: *\nAllow: /\n\nSitemap: " + urlFor("sitemap.xml") + "\n";
+const robotsText = [
+  "User-agent: *",
+  "Allow: /",
+  "",
+  "User-agent: OAI-SearchBot",
+  "Allow: /",
+  "",
+  "User-agent: GPTBot",
+  "Disallow: /",
+  "",
+  "Sitemap: " + urlFor("sitemap.xml"),
+  ""
+].join("\n");
 await writeFile(join(DIST, "robots.txt"), robotsText, "utf8");
 
 for (const tool of tools) {
