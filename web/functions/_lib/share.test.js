@@ -28,7 +28,7 @@ test("share identifiers are 192-bit random hexadecimal tokens", () => {
 
 test("filenames cannot escape a path or inject response headers", () => {
   assert.equal(sanitizeFilename("../../folder\\\\report.pdf"), "_.._folder__report.pdf");
-  assert.equal(sanitizeFilename("safe\\r\\nContent-Type: text/html.txt"), "safeContent-Type: text_html.txt");
+  assert.equal(sanitizeFilename("safe\r\nContent-Type: text/html.txt"), "safeContent-Type: text_html.txt");
   assert.equal(sanitizeFilename(""), "shared-file");
 });
 
