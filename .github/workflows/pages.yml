@@ -3,8 +3,6 @@ name: Publish browser app to GitHub Pages
 on:
   push:
     branches:
-      - app/browser-tools-website
-      - app/brand-ux-seo
       - main
     paths:
       - "web/**"
