@@ -1,7 +1,10 @@
 import { defineConfig } from "vite";
 
+const repositoryName = process.env.GITHUB_REPOSITORY?.split("/").pop() || "files-format";
+const githubPagesBase = process.env.GITHUB_PAGES === "true" ? `/${repositoryName}/` : "/";
+
 export default defineConfig({
-  base: process.env.PUBLIC_BASE_PATH || (process.env.GITHUB_PAGES === "true" ? "/everyday-tools-python/" : "/"),
+  base: process.env.PUBLIC_BASE_PATH || githubPagesBase,
   publicDir: "public",
   build: {
     target: "es2022",
