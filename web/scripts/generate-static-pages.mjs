@@ -55,6 +55,23 @@ const sitemapUrls = new Set([BASE_URL]);
 const addUrl = (path) => sitemapUrls.add(urlFor(path));
 for (const policy of ["policies/privacy/", "policies/terms/", "policies/licensing/"]) addUrl(policy);
 
+// Keep the homepage and policy canonicals aligned with the configured public URL.
+const homepagePath = join(DIST, "index.html");
+let homepageHtml = await (await import("node:fs/promises")).readFile(homepagePath, "utf8");
+homepageHtml = homepageHtml.replaceAll("https://gaurav01mh.github.io/everyday-tools-python/", BASE_URL);
+await writeFile(homepagePath, homepageHtml, "utf8");
+
+for (const policy of ["privacy", "terms", "licensing"]) {
+  const policyFile = join(DIST, "policies", policy, "index.html");
+  const policyUrl = urlFor("policies/" + policy + "/");
+  let policyHtml = await (await import("node:fs/promises")).readFile(policyFile, "utf8");
+  policyHtml = policyHtml.replace(/<link rel="canonical" href="[^"]+">/, '<link rel="canonical" href="' + policyUrl + '">');
+  await writeFile(policyFile, policyHtml, "utf8");
+}
+
+const robotsText = "User-agent: *\\nAllow: /\\n\\nSitemap: " + urlFor("sitemap.xml") + "\\n";
+await writeFile(join(DIST, "robots.txt"), robotsText, "utf8");
+
 for (const tool of tools) {
   const canonical = urlFor("tools/" + tool.slug + "/");
   const body = `
