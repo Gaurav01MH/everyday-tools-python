@@ -239,8 +239,10 @@ async function mockShareSecurity(page) {
 
 test("Link Tool turns pasted text into a seven-day share link", async ({ page }) => {
   await mockShareSecurity(page);
+  let expectedShareUrl = "";
   await page.route("**/api/upload", async (route) => {
     const request = route.request();
+    expectedShareUrl = new URL("/s/" + "a".repeat(48), request.url()).href;
     expect(request.method()).toBe("POST");
     expect(request.headers()["x-share-kind"]).toBe("text");
     expect(request.headers()["x-turnstile-token"]).toBe("test-turnstile-token");
@@ -250,7 +252,7 @@ test("Link Tool turns pasted text into a seven-day share link", async ({ page })
       contentType: "application/json",
       body: JSON.stringify({
         id: "a".repeat(48),
-        url: "https://too-broke-for-a-custom-domain.pages.dev/s/" + "a".repeat(48),
+        url: expectedShareUrl,
         filename: "shared-text.txt",
         size: 15,
         expiresAt: new Date(Date.now() + 7 * 86400000).toISOString(),
@@ -266,15 +268,17 @@ test("Link Tool turns pasted text into a seven-day share link", async ({ page })
   await expect(page.getByText("Security check complete.")).toBeVisible();
   await page.getByRole("button", { name: "Create share link" }).click();
   await expect(page.getByRole("link", { name: "Shareable download link" })).toHaveAttribute(
-    "href", "https://too-broke-for-a-custom-domain.pages.dev/s/" + "a".repeat(48)
+    "href", expectedShareUrl
   );
   await expect(page.getByText(/expires in 7 days/i)).toBeVisible();
 });
 
 test("QR Tool turns an uploaded file into a QR for its share URL", async ({ page }) => {
   await mockShareSecurity(page);
+  let expectedShareUrl = "";
   await page.route("**/api/upload", async (route) => {
     const request = route.request();
+    expectedShareUrl = new URL("/s/" + "b".repeat(48), request.url()).href;
     expect(request.headers()["x-share-kind"]).toBe("file");
     expect(request.headers()["x-share-filename"]).toBe(encodeURIComponent("notes.txt"));
     expect(request.postDataBuffer()?.toString("utf8")).toBe("uploaded text file");
@@ -283,7 +287,7 @@ test("QR Tool turns an uploaded file into a QR for its share URL", async ({ page
       contentType: "application/json",
       body: JSON.stringify({
         id: "b".repeat(48),
-        url: "https://too-broke-for-a-custom-domain.pages.dev/s/" + "b".repeat(48),
+        url: expectedShareUrl,
         filename: "notes.txt",
         size: 18,
         expiresAt: new Date(Date.now() + 7 * 86400000).toISOString(),
@@ -304,7 +308,7 @@ test("QR Tool turns an uploaded file into a QR for its share URL", async ({ page
   await page.getByRole("button", { name: "Create share link and QR" }).click();
   await expect(page.getByRole("img", { name: "QR code for the shareable download link" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Shareable download link" })).toHaveAttribute(
-    "href", "https://too-broke-for-a-custom-domain.pages.dev/s/" + "b".repeat(48)
+    "href", expectedShareUrl
   );
   const pngPromise = page.waitForEvent("download");
   await page.getByRole("link", { name: "Download QR (PNG)" }).click();
