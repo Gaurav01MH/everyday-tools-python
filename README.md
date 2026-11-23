@@ -58,7 +58,7 @@ A hostname without the repository owner's name requires a custom domain or movin
 
 ## MCP integration
 
-A separate Cloudflare Worker in `mcp-server/` exposes Files Format utilities to compatible AI clients using the Model Context Protocol. See [MCP setup](mcp-server/README.md). The Worker must be deployed to a Cloudflare account before a public endpoint exists. PDF and image processing remains local in the browser; only text explicitly supplied by an AI client is sent to the Worker.
+A Cloudflare Worker in `mcp-server/` serves both the website and MCP endpoint from one free `workers.dev` hostname. See [MCP setup](mcp-server/README.md). The Cloudflare account owner must authorize the first deployment; GitHub Pages remains a fallback. PDF and image processing remains local in the browser; only text explicitly supplied by an AI client is sent to the Worker.
 
 ## Privacy and limits
 

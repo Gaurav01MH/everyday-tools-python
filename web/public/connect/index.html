@@ -25,20 +25,25 @@
   </ul>
   <p>PDF and image operations remain in your browser. The MCP service does not accept PDF or image uploads.</p>
 
-  <h2>Free MCP address</h2>
-  <p>The connector is designed for Cloudflare Workers Free and uses the account's included <code>workers.dev</code> subdomain. No purchased domain is needed for the MCP endpoint. Cloudflare assigns your account subdomain; the final address will look like this:</p>
-  <p><code>https://files-format-mcp.YOUR-SUBDOMAIN.workers.dev/mcp</code></p>
-  <p>This is a separate free subdomain. It cannot be placed under this GitHub Pages hostname without moving the website behind a host that can route both the website and the Worker.</p>
+  <h2>One free website and MCP address</h2>
+  <p>The combined site is designed for Cloudflare Workers Free. The website and MCP API share one included <code>workers.dev</code> hostname. After deployment, the addresses look like:</p>
+  <p><code>https://files-format-mcp.YOUR-SUBDOMAIN.workers.dev/</code> — website</p>
+  <p><code>https://files-format-mcp.YOUR-SUBDOMAIN.workers.dev/mcp</code> — MCP endpoint</p>
+  <p>No paid custom domain is needed. Cloudflare assigns the account subdomain when you deploy.</p>
 
-  <h2>Deploy the MCP server</h2>
-  <p>The source is stored in this repository under <code>mcp-server/</code>. A Cloudflare account is needed to create the free <code>workers.dev</code> address and deploy the Worker.</p>
+  <h2>Deploy the combined website and MCP server</h2>
+  <p>The Worker source is in this repository's <code>mcp-server/</code> folder. A Cloudflare account is required to create the free hostname and deploy it.</p>
   <ol>
     <li>Open <a href="https://dash.cloudflare.com/">Cloudflare Dashboard</a> and create or sign in to an account.</li>
-    <li>Open <strong>Workers &amp; Pages</strong> and connect this GitHub repository, or deploy through Wrangler from a terminal.</li>
-    <li>For Git integration, set the project root directory to <code>mcp-server</code>. Keep the Worker name as <code>files-format-mcp</code>.</li>
-    <li>Use <code>npm install</code> and <code>npm run deploy</code> as the install and deploy commands, or follow the CLI steps in the repository's <code>mcp-server/README.md</code>.</li>
-    <li>After deployment, Cloudflare will show the final <code>workers.dev</code> hostname. Add <code>/mcp</code> to it for the MCP URL.</li>
+    <li>Open <strong>Workers &amp; Pages → Create application → GitHub</strong> and connect this repository.</li>
+    <li>Set the repository root directory to the <strong>repository root</strong>, not <code>mcp-server</code>.</li>
+    <li>Set the build command to <code>npm --prefix web install --no-audit --no-fund &amp;&amp; PUBLIC_BASE_PATH=/ npm --prefix web run build &amp;&amp; npm --prefix mcp-server install --no-audit --no-fund</code>.</li>
+    <li>Set the deploy command to <code>cd mcp-server &amp;&amp; npx wrangler deploy</code>. Keep the Worker name <code>files-format-mcp</code>.</li>
+    <li>Deploy and copy the assigned <code>workers.dev</code> hostname. In the Cloudflare build environment variables, set <code>PUBLIC_SITE_ORIGIN</code> to that exact origin and <code>PUBLIC_BASE_PATH</code> to <code>/</code>, then redeploy. This sets canonical URLs and the sitemap to the new hostname.</li>
   </ol>
+
+  <h2>Check the MCP endpoint</h2>
+  <p>Open <code>https://files-format-mcp.YOUR-SUBDOMAIN.workers.dev/health</code>. It should return <code>status: ok</code>, five MCP actions and 27 catalogue tools. Connect an MCP-compatible AI client to the same hostname followed by <code>/mcp</code>.</p>
 
   <h2>Test it</h2>
   <p>Open the deployed Worker's <code>/health</code> address. It should return a JSON response showing <code>status: ok</code>, five MCP actions and 27 catalogue tools. The connection URL to enter in an MCP client is the same hostname followed by <code>/mcp</code>.</p>

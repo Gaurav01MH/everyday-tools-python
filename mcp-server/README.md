@@ -1,70 +1,67 @@
-# Files Format MCP server
+# Files Format — free website + MCP server
 
-A stateless remote Model Context Protocol server for Files Format, built with the official MCP TypeScript server SDK v2 and Cloudflare's Agents MCP handler.
+A stateless remote Model Context Protocol server for Files Format. Cloudflare Workers serves the website and MCP endpoint from **one free `workers.dev` hostname**.
 
 ## Tools exposed
 
-- `search_tools` — search the 27-tool catalogue.
-- `list_tools` — list tools by category.
-- `get_tool_info` — read a tool's description and direct browser link.
-- `open_tool_in_browser` — return a link that opens the selected website tool.
-- `run_text_tool` — run supported text/data operations on text explicitly supplied by the AI client.
+- `search_tools`, `list_tools`, `get_tool_info` and `open_tool_in_browser` for the 27 website utilities.
+- `run_text_tool` for supported text/data operations on text explicitly supplied by the AI client.
 
-The catalogue is imported from the website's single source of truth at `web/src/lib/tool-catalog.js`; it is not maintained as a second hard-coded list.
+The catalogue is imported from the website's single source of truth at `web/src/lib/tool-catalog.js`.
 
-## File handling and privacy
+## Privacy and file handling
 
-PDF and image processing deliberately stays in the browser app. The MCP server does not accept file uploads, file URLs or file storage requests. Text sent to `run_text_tool` is processed by the Worker; the code does not save input to a database or file store. Cloudflare still receives the network request and may process standard request metadata under its service terms. Do not pass confidential content unless you accept that transfer.
+PDF and image processing stays in the browser. The MCP server does not accept files, file URLs or file-storage actions. Text sent to `run_text_tool` is processed by the Worker; the code does not persist it in a database or file store. Cloudflare receives the network request and may process request metadata under its service terms. Do not send confidential content unless you accept that transfer.
 
-The server is stateless, has no account access, no credentials and no write/delete actions. There is no application database.
+The server is stateless, has no account access, no credentials, no database and no write/delete actions.
 
-## Free endpoint
+## Free hostname
 
-Cloudflare's Workers Free plan includes a free `workers.dev` hostname. The Worker name in `wrangler.jsonc` is `files-format-mcp`. After deployment, the endpoint has this form:
+Cloudflare Workers Free includes a `workers.dev` hostname. After deployment, the same Worker serves:
 
-`https://files-format-mcp.<your-workers-dev-subdomain>.workers.dev/mcp`
+- Website: `https://files-format-mcp.<your-workers-dev-subdomain>.workers.dev/`
+- MCP endpoint: `https://files-format-mcp.<your-workers-dev-subdomain>.workers.dev/mcp`
+- Health: `https://files-format-mcp.<your-workers-dev-subdomain>.workers.dev/health`
 
-The health check uses the same hostname followed by `/health`. No paid custom domain is required. Cloudflare assigns the account subdomain; it cannot be pre-guessed or reserved by committing code.
+No paid custom domain is required. Cloudflare assigns the account subdomain. GitHub Pages remains available as a fallback.
 
-## Deploy from a local terminal
+## Deploy through Cloudflare Git integration
 
-Requirements: Node.js 22.12 or newer and a Cloudflare account.
+1. Create or sign in to Cloudflare.
+2. Open **Workers & Pages → Create application → GitHub** and connect this repository.
+3. Set the repository root directory to the repository root, not `mcp-server`.
+4. Build command:
+
+   ```bash
+   npm --prefix web install --no-audit --no-fund && PUBLIC_BASE_PATH=/ npm --prefix web run build && npm --prefix mcp-server install --no-audit --no-fund
+   ```
+
+5. Deploy command:
+
+   ```bash
+   cd mcp-server && npx wrangler deploy
+   ```
+
+6. Keep the Worker name `files-format-mcp`.
+7. After first deploy, set build environment variables `PUBLIC_SITE_ORIGIN` to the assigned origin (for example `https://files-format-mcp.your-subdomain.workers.dev`) and `PUBLIC_BASE_PATH` to `/`, then redeploy. This aligns canonical URLs and the sitemap with the new hostname.
+
+Wrangler serves static assets from `../web/dist`; the script runs first only for `/mcp*` and `/health`.
+
+## Local development
 
 ```bash
-cd mcp-server
+cd web
+npm install
+PUBLIC_BASE_PATH=/ npm run build
+cd ../mcp-server
 npm install
 npx wrangler login
 npm test
 npm run dev
 ```
 
-The local MCP endpoint is `http://localhost:8787/mcp`. You can test it with MCP Inspector:
-
-```bash
-npx @modelcontextprotocol/inspector@latest
-```
-
-When ready to publish:
-
-```bash
-npm run deploy
-```
-
-Wrangler will prompt you to authenticate if you have not already. It then publishes to the `workers.dev` subdomain enabled in your Cloudflare account.
-
-## Deploy through Cloudflare Git integration
-
-1. Create or sign in to a Cloudflare account.
-2. Open **Workers & Pages** and connect this GitHub repository.
-3. Set the root directory to `mcp-server`.
-4. Keep the Worker name `files-format-mcp`.
-5. Use `npm install` as the install command and `npm run deploy` as the deploy command.
-6. Deploy and copy the assigned `workers.dev` URL.
+The website is at `http://localhost:8787/`; MCP is at `http://localhost:8787/mcp`. Publish with `npm run deploy`.
 
 ## Free-tier constraints
 
-Cloudflare Workers Free currently includes 100,000 requests per day and 10 ms CPU time per invocation. Text inputs are therefore limited to 32,000 characters per field. PDF and image tasks remain local in the web app. Check Cloudflare's current limits before relying on the service for higher-volume use.
-
-## Local tests
-
-Run `npm test` from this directory. The tests check all 27 catalogue entries against the website and validate the text/data operations.
+Cloudflare Workers Free currently includes 100,000 requests/day and 10 ms CPU per invocation. Remote text fields are limited to 32,000 characters. PDF/image tasks remain browser-local; confirm current Cloudflare limits if you expect higher traffic.

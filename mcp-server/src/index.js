@@ -4,7 +4,7 @@ import { z } from "zod";
 import { TOOL_CATALOG, findTool, searchTools } from "./catalog.js";
 import { runTextTool } from "./text-tools.js";
 
-const SITE_URL = "https://gaurav01mh.github.io/everyday-tools-python";
+const DEFAULT_SITE_URL = "https://gaurav01mh.github.io/everyday-tools-python";
 const TEXT_OPERATIONS = [
   "stats", "upper", "lower", "title", "sentence", "clean", "unique",
   "json-format", "json-validate", "csv-json", "json-csv",
@@ -16,7 +16,7 @@ function textResult(text) {
   return { content: [{ type: "text", text }] };
 }
 
-function createFilesFormatServer() {
+function createFilesFormatServer({ requestInfo } = {}) {\n  const SITE_URL = new URL(requestInfo?.url || DEFAULT_SITE_URL).origin;
   const server = new McpServer({
     name: "files-format",
     version: "1.0.0"
@@ -133,15 +133,6 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
-    if (url.pathname === "/" && request.method === "GET") {
-      return Response.json({
-        name: "Files Format MCP",
-        endpoint: "/mcp",
-        health: "/health",
-        description: "MCP tools for discovering Files Format utilities and processing client-supplied text/data."
-      }, { headers: { "Cache-Control": "no-store" } });
-    }
-
     if (url.pathname === "/health" && request.method === "GET") {
       return Response.json({
         service: "Files Format MCP",
@@ -149,12 +140,12 @@ export default {
         endpoint: "/mcp",
         mcpTools: 5,
         catalogueTools: TOOL_CATALOG.length,
-        site: SITE_URL
+        site: url.origin
       }, { headers: { "Cache-Control": "no-store" } });
     }
 
     if (url.pathname !== "/mcp") {
-      return new Response("Not found", { status: 404 });
+      return env.ASSETS.fetch(request);
     }
 
     if (!["GET", "POST", "OPTIONS"].includes(request.method)) {

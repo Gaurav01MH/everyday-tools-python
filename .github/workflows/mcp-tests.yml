@@ -6,12 +6,12 @@ on:
       - main
     paths:
       - "mcp-server/**"
-      - "web/src/lib/tool-catalog.js"
+      - "web/**"
       - ".github/workflows/mcp-tests.yml"
   pull_request:
     paths:
       - "mcp-server/**"
-      - "web/src/lib/tool-catalog.js"
+      - "web/**"
       - ".github/workflows/mcp-tests.yml"
   workflow_dispatch:
 
@@ -28,6 +28,16 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: "24"
+      - name: Build website assets for the Worker
+        working-directory: web
+        env:
+          PUBLIC_BASE_PATH: "/"
+        run: npm install --no-audit --no-fund && npm run build
+      - name: Check generated website pages
+        working-directory: web
+        env:
+          PUBLIC_BASE_PATH: "/"
+        run: node scripts/check-seo-output.mjs
       - name: Install MCP dependencies
         working-directory: mcp-server
         run: npm install --no-audit --no-fund
@@ -37,6 +47,6 @@ jobs:
       - name: Run MCP unit tests
         working-directory: mcp-server
         run: npm test
-      - name: Validate Cloudflare Worker bundle
+      - name: Validate Cloudflare Worker and static assets
         working-directory: mcp-server
         run: npx wrangler deploy --dry-run

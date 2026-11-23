@@ -102,6 +102,12 @@ for (const policy of ["privacy", "terms", "licensing"]) {
   await writeFile(policyFile, policyHtml, "utf8");
 }
 
+const connectFile = join(DIST, "connect", "index.html");
+let connectHtml = await (await import("node:fs/promises")).readFile(connectFile, "utf8");
+connectHtml = connectHtml.replace(/<link rel="canonical" href="[^"]+">/, '<link rel="canonical" href="' + urlFor("connect/") + '">');
+await writeFile(connectFile, connectHtml, "utf8");
+
+
 const robotsText = [
   "User-agent: *",
   "Allow: /",
