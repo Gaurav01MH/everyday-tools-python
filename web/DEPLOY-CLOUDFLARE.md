@@ -11,7 +11,7 @@ This is a free Cloudflare Pages subdomain, not a purchased custom domain. The na
 
 1. Open https://dash.cloudflare.com/ and sign in.
 2. Go to Workers & Pages → Create application → Pages → Connect to Git.
-3. Connect GitHub and select Gaurav01MH/everyday-tools-python.
+3. Connect GitHub and select the Files Format source repository.
 4. Set the project name to exactly: too-broke-for-a-custom-domain.
 5. Set production branch to main.
 6. Set root directory to web.
