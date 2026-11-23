@@ -53,7 +53,7 @@ The optional MCP server is a separate Cloudflare Worker in mcp-server/. It disco
 
 ## Search and AI discovery
 
-The production build generates static HTML pages for every tool, category pages, a complete directory, robots.txt, sitemap.xml, llms.txt, canonical URLs, Open Graph metadata and JSON-LD structured data. OAI-SearchBot is allowed and GPTBot is disallowed. Crawlability does not guarantee indexing or recommendations.
+The production build generates static HTML pages for every tool, category pages, a complete directory, robots.txt, sitemap.xml, llms.txt, canonical URLs, Open Graph metadata and JSON-LD structured data. The site uses general crawler access, an XML sitemap and descriptive tool pages to support discovery. Search systems decide independently whether to crawl, index, cite or recommend the website.
 
 After deploying the final Pages URL, verify ownership in Google Search Console and submit /sitemap.xml.
 
