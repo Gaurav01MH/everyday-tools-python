@@ -125,12 +125,6 @@ const robotsText = [
   "User-agent: *",
   "Allow: /",
   "",
-  "User-agent: OAI-SearchBot",
-  "Allow: /",
-  "",
-  "User-agent: GPTBot",
-  "Disallow: /",
-  "",
   "Sitemap: " + urlFor("sitemap.xml"),
   ""
 ].join("\n");
