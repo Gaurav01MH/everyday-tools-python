@@ -12,11 +12,14 @@ const sitemap = await readFile(join(dist, "sitemap.xml"), "utf8");
 const robots = await readFile(join(dist, "robots.txt"), "utf8");
 const llms = await readFile(join(dist, "llms.txt"), "utf8");
 const home = await readFile(join(dist, "index.html"), "utf8");
+const brandedAlias = await readFile(join(dist, "too-broke-for-a-custom-domain", "index.html"), "utf8");
 
 assert.match(home, /<title>Files Format/);
 assert.match(home, /name="description"/);
 assert.match(home, /application\/ld\+json/);
 assert.match(home, /logo\.svg/);
+// Verify the branded free GitHub Pages alias is an exact copy of the homepage.
+assert.equal(brandedAlias, home, "Branded GitHub Pages alias should match the homepage");
 assert.match(robots, /User-agent: \*/);
 assert.match(robots, /User-agent: OAI-SearchBot\s+Allow: \//);
 assert.match(robots, /User-agent: GPTBot\s+Disallow: \//);
