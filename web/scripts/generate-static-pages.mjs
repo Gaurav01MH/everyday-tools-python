@@ -15,6 +15,7 @@ const BASE_URL = new URL(BASE_PATH.endsWith("/") ? BASE_PATH : BASE_PATH + "/", 
 const ASSET_CSS = BASE_URL + "assets/site-pages.css";
 const LOGO = BASE_URL + "logo.svg";
 const FAVICON = BASE_URL + "favicon.svg";
+const OG_IMAGE = BASE_URL + "og-files-format.png";
 const tools = TOOL_CATALOG;
 
 const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({
@@ -32,12 +33,12 @@ function shell({title,description,canonical,body,schema,keywords=[]}) {
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)}</title><meta name="description" content="${esc(description)}">
 <meta name="keywords" content="${esc(keywords.join(", "))}"><meta name="robots" content="index,follow,max-image-preview:large">
-<link rel="canonical" href="${esc(canonical)}"><link rel="icon" href="${FAVICON}" type="image/svg+xml">
+<link rel="canonical" href="${esc(canonical)}"><link rel="icon" href="${FAVICON}" type="image/svg+xml"><link rel="icon" href="${BASE_URL}icons/icon-192.png" sizes="192x192" type="image/png"><link rel="icon" href="${BASE_URL}icons/icon-512.png" sizes="512x512" type="image/png"><link rel="apple-touch-icon" href="${BASE_URL}icons/apple-touch-icon.png">
 <link rel="stylesheet" href="${ASSET_CSS}">
 <meta property="og:type" content="website"><meta property="og:site_name" content="Files Format">
 <meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(description)}">
-<meta property="og:url" content="${esc(canonical)}"><meta property="og:image" content="${LOGO}">
-<meta name="twitter:card" content="summary"><meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(description)}">
+<meta property="og:url" content="${esc(canonical)}"><meta property="og:image" content="${OG_IMAGE}"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(description)}">
 ${graph}</head><body><main class="document-page">
 <div class="brand-row"><a href="${BASE_URL}" aria-label="Files Format home"><img src="${LOGO}" alt="Files Format — PDF, Image and File Tools"></a></div>
 ${body}
@@ -46,7 +47,7 @@ ${body}
 }
 
 function toolCard(tool) {
-  return `<a class="tool-link" href="${urlFor("tools/" + tool.slug + "/")}"><strong>${esc(tool.name)}</strong><span>${esc(tool.description)}</span></a>`;
+  return `<a class="tool-link" href="${urlFor(tool.slug + "/")}"><strong>${esc(tool.name)}</strong><span>${esc(tool.description)}</span></a>`;
 }
 
 async function writePage(relativePath, html) {
@@ -63,7 +64,7 @@ addUrl("connect/");
 // Add crawlable metadata to the original homepage without changing its layout or app UI.
 const homepagePath = join(DIST, "index.html");
 let homepageHtml = await (await import("node:fs/promises")).readFile(homepagePath, "utf8");
-const homeDescription = "Files Format provides free browser-based PDF, image, text and data utilities. Merge, split, extract and rotate PDFs; resize, convert and compress images; format JSON, convert CSV and process text.";
+const homeDescription = "PDF and image tools that never upload your files. Merge, split, convert, resize and organise files locally in your browser, with clearly labelled optional file sharing.";
 const homeSchema = {
   "@context": "https://schema.org",
   "@graph": [
@@ -90,7 +91,7 @@ const homepageMetadata = [
   '<meta property="og:description" content="' + esc(homeDescription) + '">',
   '<meta property="og:url" content="' + BASE_URL + '">',
   '<meta property="og:image" content="' + LOGO + '">',
-  '<meta name="twitter:card" content="summary">',
+  '<meta name="twitter:card" content="summary_large_image">',
   '<meta name="twitter:title" content="Files Format — PDF, Image &amp; File Tools">',
   '<meta name="twitter:description" content="' + esc(homeDescription) + '">',
   '<script type="application/ld+json">' + json(homeSchema) + '</script>'
@@ -109,6 +110,30 @@ await writeFile(homepagePath, homepageHtml, "utf8");
 const brandedAliasPath = join(DIST, "too-broke-for-a-custom-domain", "index.html");
 await mkdir(join(DIST, "too-broke-for-a-custom-domain"), { recursive: true });
 await writeFile(brandedAliasPath, homepageHtml, "utf8");
+for (const tool of tools) {
+  const canonical = urlFor(tool.slug + "/");
+  const pageTitle = tool.title + " | Files Format";
+  const description = tool.description;
+  const isShare = tool.mode === "text" && ["link-tool","qr-tool"].includes(tool.operation);
+  const uploadAnswer = isShare ? "Yes. The content you choose is uploaded to create a share link. Anyone with the URL can download it until it expires." : "No. This tool processes the file in your browser and does not upload it to a Files Format processing server.";
+  const faq = '<section class="tool-faq" aria-labelledby="tool-faq-title"><h2 id="tool-faq-title">Frequently asked questions</h2><h3>Does this tool upload my file?</h3><p>' + esc(uploadAnswer) + '</p><h3>What can I use?</h3><p>' + esc(tool.inputs) + '</p><h3>What are the limits?</h3><p>' + esc(tool.limitation) + '</p></section>';
+  const faqSchema = {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+    {"@type":"Question","name":"Does this tool upload my file?","acceptedAnswer":{"@type":"Answer","text":uploadAnswer}},
+    {"@type":"Question","name":"What can I use?","acceptedAnswer":{"@type":"Answer","text":tool.inputs}},
+    {"@type":"Question","name":"What are the limits?","acceptedAnswer":{"@type":"Answer","text":tool.limitation}}
+  ]};
+  let page = homepageHtml;
+  page = page.replace("<title>Files Format — Free PDF, Image &amp; File Tools</title>", "<title>" + esc(pageTitle) + "</title>");
+  page = page.replace('content="PDF and image tools that never upload your files. Merge, convert, resize and organise files locally in your browser. Free, no account and no ads."', 'content="' + esc(description) + '"');
+  page = page.replace('content="Files Format — Free PDF, Image &amp; File Tools"', 'content="' + esc(pageTitle) + '"');
+  page = page.replace('href="' + BASE_URL + '">', 'href="' + canonical + '">');
+  page = page.replace('<h1>PDF and image tools that never upload your files</h1>', '<h1>' + esc(tool.title) + '</h1>');
+  page = page.replace('<p class="intro-copy">Merge, convert, resize and organise files locally in your browser. Link Tool and QR Tool are optional upload features that are clearly labelled before use.</p>', '<p class="intro-copy">' + esc(description) + '</p>');
+  page = page.replace('<footer class="site-footer">', faq + '<footer class="site-footer">');
+  page = page.replace("</head>", '<script type="application/ld+json">' + json(faqSchema) + '</script>\n</head>');
+  await writePage(tool.slug + "/index.html", page);
+}
+
 
 
 for (const policy of ["privacy", "terms", "licensing"]) {
@@ -135,13 +160,13 @@ const robotsText = [
 await writeFile(join(DIST, "robots.txt"), robotsText, "utf8");
 
 for (const tool of tools) {
-  const canonical = urlFor("tools/" + tool.slug + "/");
+  const canonical = urlFor(tool.slug + "/");
   const body = `
 <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="${BASE_URL}">Home</a><span>›</span><a href="${urlFor(categoryPath(tool.mode))}">${categoryFor(tool.mode)}</a><span>›</span><span>${esc(tool.name)}</span></nav>
 <p class="eyebrow">${esc(categoryFor(tool.mode))}</p>
 <h1>${esc(tool.title)}</h1>
 <p class="summary">${esc(tool.description)}</p>
-<div class="actions"><a class="button" href="${urlFor("?tool=" + tool.slug + "#workspace")}">Open ${esc(tool.name)}</a><a class="button secondary" href="${urlFor(categoryPath(tool.mode))}">More ${esc(categoryFor(tool.mode).toLowerCase())}</a></div>
+<div class="actions"><a class="button" href="${urlFor(tool.slug + "/")}">Open ${esc(tool.name)}</a><a class="button secondary" href="${urlFor(categoryPath(tool.mode))}">More ${esc(categoryFor(tool.mode).toLowerCase())}</a></div>
 <h2>How to use ${esc(tool.name)}</h2><ol>${tool.steps.map((step) => `<li>${esc(step)}</li>`).join("")}</ol>
 <h2>Input requirements</h2><p>${esc(tool.inputs)}</p>
 <h2>Privacy and processing</h2><p>Files Format processes the input in your browser. The selected source file is not uploaded to a Files Format processing server. The browser downloads the result when the job finishes.</p>
@@ -161,7 +186,7 @@ for (const tool of tools) {
     ]
   };
   await writePage("tools/" + tool.slug + "/index.html", shell({title:tool.title + " | Files Format",description:tool.description,canonical,body,schema,keywords:[tool.name,...tool.keywords]}));
-  addUrl("tools/" + tool.slug + "/");
+  addUrl(tool.slug + "/");
 }
 
 for (const mode of ["pdf","images","text"]) {
@@ -204,6 +229,7 @@ for (const mode of ["pdf","images","text"]) {
   const canonical = urlFor("about/");
   const body = `<nav class="breadcrumbs"><a href="${BASE_URL}">Home</a><span>›</span><span>About</span></nav><p class="eyebrow">About the project</p><h1>Files Format</h1><p class="summary">A straightforward collection of free tools for everyday PDFs, images, text and files.</p>
 <h2>What Files Format does</h2><p>Files Format brings common file utilities into one small browser-based website. Choose a task, select a file or enter text, run the tool and download or copy the result.</p>
+<h2>Who made it</h2><p>Files Format is an independent project made by Gaurav Naitam. The source is public on <a href="https://github.com/Gaurav01MH/everyday-tools-python">GitHub</a>, where you can inspect the implementation, report bugs or suggest improvements. For contact and feedback, use the <a href="https://github.com/Gaurav01MH/everyday-tools-python/issues/new/choose">project issue tracker</a>.</p>
 <h2>Local processing</h2><p>PDF, image and ordinary text/data tools run inside your browser. Selected documents for those local tools are not uploaded to a Files Format processing server.</p><h2>Temporary sharing</h2><p>Link Tool and QR Tool are optional upload features. They send the one file or pasted text you choose to Cloudflare R2 and create a public-by-link download URL. Each upload is limited to 10 MB, protected by Cloudflare Turnstile, and expires after seven days. Anyone with the URL can download it. Do not use these tools for confidential or personal content.</p>
 <h2>Current tool categories</h2><ul><li>PDF: merge, split, extract pages, rotate, images to PDF and PDF to PNG.</li><li>Images: resize, convert and compress common still image formats.</li><li>Text and data: formatting, JSON, CSV, URL and Base64 conversion, percentage calculations and unit conversion.</li></ul>
 <h2>What is not supported</h2><p>Encrypted PDFs, OCR, editing text inside existing PDFs, digital signatures, form filling, annotation editing and animated image processing are not supported. See each tool's page for more exact limits.</p><p><a href="${urlFor("tools/")}">Browse all tools</a>.</p>`;
@@ -212,6 +238,20 @@ for (const mode of ["pdf","images","text"]) {
 }
 
 {
+
+{
+  const title = "Merge PDF Files Without Uploading | Files Format Guide";
+  const description = "A practical guide to merging PDF files locally in your browser and checking that source files are not uploaded.";
+  const canonical = urlFor("guides/merge-pdf-without-uploading/");
+  const body = '<nav class="breadcrumbs"><a href="' + BASE_URL + '">Home</a><span>›</span><a href="' + urlFor("guides/") + '">Guides</a><span>›</span><span>Merge PDF privately</span></nav><p class="eyebrow">Files Format guide</p><h1>Merge PDF files without uploading</h1><p class="summary">Combine documents locally in your browser. Your selected PDF files stay in this tab while the browser creates the merged result.</p><ol><li>Open <a href="' + urlFor("merge-pdf/") + '">Merge PDF</a>.</li><li>Select at least two PDF files.</li><li>Drag files into the right order, or use the up/down controls.</li><li>Run the merge and save the downloaded PDF.</li><li>Open DevTools → Network before running a local tool to check that the source file is not sent to a processing server.</li></ol><h2>Privacy limits</h2><p>PDF files are limited to 50 MB each, 100 MB total input and 250 pages per document. Password-protected PDFs are not supported. Browser memory may impose a lower practical limit.</p><p>Files Format’s <a href="' + urlFor("about/") + '">About page</a> explains local processing and the separate Link/QR upload exceptions. <a href="' + urlFor("tools/") + '">Browse all tools</a>.</p>';
+  await writePage("guides/merge-pdf-without-uploading/index.html", shell({title,description,canonical,body}));
+  const indexTitle = "Files Format Guides — Private PDF and Image Workflows";
+  const indexDescription = "Short guides for processing PDFs and images locally in your browser.";
+  const indexBody = '<nav class="breadcrumbs"><a href="' + BASE_URL + '">Home</a><span>›</span><span>Guides</span></nav><p class="eyebrow">Guides</p><h1>Files Format guides</h1><p class="summary">' + esc(indexDescription) + '</p><div class="tool-grid"><a class="tool-link" href="' + canonical + '"><strong>Merge PDF without uploading</strong><span>Step-by-step instructions for combining PDFs locally.</span></a></div>';
+  await writePage("guides/index.html", shell({title:indexTitle,description:indexDescription,canonical:urlFor("guides/"),body:indexBody}));
+  addUrl("guides/");
+  addUrl("guides/merge-pdf-without-uploading/");
+}
   const title="Free PDF, Image, Text and File Tools | Files Format";
   const lines=[
     "# Files Format",
