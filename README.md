@@ -1,10 +1,10 @@
-# FileDesk — PDF, Image & File Tools
+# DocuMosaic — PDF, Image & File Tools
 
-FileDesk is a free, browser-based collection of everyday PDF, image, text and data utilities.
+DocuMosaic is a free, browser-based collection of everyday PDF, image, text and data utilities.
 
 **Live website:** https://gaurav01mh.github.io/everyday-tools-python/
 
-Selected files are processed in the visitor's browser. FileDesk does not upload selected documents to a FileDesk processing server. The static site is delivered by GitHub Pages, which may receive normal website request metadata.
+Selected files are processed in the visitor's browser. DocuMosaic does not upload selected documents to a DocuMosaic processing server. The static site is delivered by GitHub Pages, which may receive normal website request metadata.
 
 ## Tool categories
 
@@ -75,11 +75,11 @@ Encrypted PDFs, OCR, editing existing PDF text, digital signatures, annotations,
 
 ## Policies and licenses
 
-- [About FileDesk](web/public/about/index.html)
+- [About DocuMosaic](web/public/about/index.html)
 - [Privacy policy](web/public/policies/privacy/index.html)
 - [Terms of use](web/public/policies/terms/index.html)
 - [Licensing](web/public/policies/licensing/index.html)
 - [Third-party notices](web/public/THIRD_PARTY_NOTICES.md)
 - [MIT License](LICENSE.md)
 
-The original FileDesk source code is under the MIT License. Third-party dependencies remain under their respective licenses.
+The original DocuMosaic source code is under the MIT License. Third-party dependencies remain under their respective licenses.
