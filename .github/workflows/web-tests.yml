@@ -58,6 +58,13 @@ jobs:
           grep -q "merge-pdf" dist/sitemap.xml
           grep -q "PDF tools" dist/tools/merge-pdf/index.html
           grep -q "/everyday-tools-python/" dist/index.html
+      - name: Verify all generated crawlable pages and SEO metadata
+        working-directory: web
+        env:
+          GITHUB_PAGES: "true"
+          PUBLIC_SITE_ORIGIN: "https://gaurav01mh.github.io"
+          PUBLIC_BASE_PATH: "/everyday-tools-python/"
+        run: node scripts/check-seo-output.mjs
       - name: Install Chromium for browser checks
         working-directory: web
         run: npx playwright install --with-deps chromium
