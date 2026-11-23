@@ -1,3 +1,14 @@
+// Remove external tracking tags from the address bar without disturbing tool links.
+{
+  const currentUrl = new URL(window.location.href);
+  const trackingSource = currentUrl.searchParams.get("utm_source") ?? currentUrl.searchParams.get("source") ?? "";
+  if (/^chatgpt(?:\.com)?$/i.test(trackingSource)) {
+    currentUrl.searchParams.delete("utm_source");
+    currentUrl.searchParams.delete("source");
+    window.history.replaceState(window.history.state, "", currentUrl.pathname + currentUrl.search + currentUrl.hash);
+  }
+}
+
 import { assertInputFiles, formatBytes, MAX_TOTAL_BYTES } from "./lib/core.js";
 import { mergePdfs, splitPdf, extractPdfPages, rotatePdf, imagesToPdf, renderPdf } from "./lib/pdf-tools.js";
 import { processImages } from "./lib/image-tools.js";
