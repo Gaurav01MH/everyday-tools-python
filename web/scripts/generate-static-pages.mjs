@@ -67,7 +67,7 @@ addUrl("feedback/");
 // Add crawlable metadata to the original homepage without changing its layout or app UI.
 const homepagePath = join(DIST, "index.html");
 let homepageHtml = await (await import("node:fs/promises")).readFile(homepagePath, "utf8");
-const homeDescription = "PDF and image tools that never upload your files. Merge, split, convert, resize and organise files locally in your browser, with clearly labelled optional file sharing.";
+const homeDescription = "PDF and image tools that never upload your files. Process PDFs, images, text and data locally in your browser. Link Tool and QR sharing are disabled on this GitHub Pages version.";
 const homeSchema = {
   "@context": "https://schema.org",
   "@graph": [
@@ -86,14 +86,20 @@ const homeSchema = {
 };
 const homepageMetadata = [
   '<meta name="application-name" content="Files Format">',
+  '<meta name="description" content="' + esc(homeDescription) + '">',
   '<meta name="robots" content="index,follow,max-image-preview:large">',
   '<link rel="canonical" href="' + BASE_URL + '">',
+  '<link rel="icon" href="' + BASE_URL + 'icons/icon-192.png" sizes="192x192" type="image/png">',
+  '<link rel="icon" href="' + BASE_URL + 'icons/icon-512.png" sizes="512x512" type="image/png">',
+  '<link rel="apple-touch-icon" href="' + BASE_URL + 'icons/apple-touch-icon.png">',
   '<meta property="og:type" content="website">',
   '<meta property="og:site_name" content="Files Format">',
   '<meta property="og:title" content="Files Format — Free PDF, Image &amp; File Tools">',
   '<meta property="og:description" content="' + esc(homeDescription) + '">',
   '<meta property="og:url" content="' + BASE_URL + '">',
   '<meta property="og:image" content="' + OG_IMAGE + '">',
+  '<meta property="og:image:width" content="1200">',
+  '<meta property="og:image:height" content="630">',
   '<meta name="twitter:card" content="summary_large_image">',
   '<meta name="twitter:title" content="Files Format — PDF, Image &amp; File Tools">',
   '<meta name="twitter:description" content="' + esc(homeDescription) + '">',
@@ -267,7 +273,7 @@ for (const mode of ["pdf","images","text"]) {
   const title="Free PDF, Image, Text and File Tools | Files Format";
   const lines=[
     "# Files Format",
-    "> Free browser-based PDF, image and data tools, plus optional temporary file/text sharing. Local processing tools keep selected files in the browser; Link Tool and QR Tool upload only content the visitor explicitly chooses to share.",
+    "> Free browser-based PDF, image and data tools. Local processing keeps selected files in the browser. Link Tool and QR sharing are currently disabled on the GitHub Pages deployment.",
     "",
     "## Main website",
     "- " + BASE_URL,
