@@ -134,6 +134,45 @@ function makeOption(value, text) {
   return option;
 }
 
+function renderToolDirectory() {
+  const container = $("#tool-card-grid");
+  if (!container) return;
+  const base = new URL(import.meta.env.BASE_URL, location.origin);
+  const fragment = document.createDocumentFragment();
+  const icons = { pdf: "PDF", images: "IMG", text: "TXT" };
+  for (const tool of TOOL_CATALOG) {
+    const sharing = tool.mode === "text" && ["link-tool", "qr-tool"].includes(tool.operation);
+    const link = document.createElement("a");
+    link.className = "tool-card";
+    link.href = new URL(tool.slug + "/", base).href;
+    link.setAttribute("aria-label", tool.name + ": " + tool.title);
+    const icon = document.createElement("span");
+    icon.className = "tool-icon";
+    icon.setAttribute("aria-hidden", "true");
+    icon.textContent = icons[tool.mode];
+    const copy = document.createElement("span");
+    copy.className = "tool-card-copy";
+    const title = document.createElement("strong");
+    title.textContent = tool.name;
+    const description = document.createElement("small");
+    description.textContent = tool.description;
+    copy.append(title, description);
+    const badge = document.createElement("span");
+    badge.className = "tool-card-badge" + (sharing ? " is-upload" : "");
+    badge.textContent = sharing ? "Uploads to create a link" : "Stays on your device";
+    link.append(icon, copy, badge);
+    fragment.append(link);
+  }
+  container.replaceChildren(fragment);
+}
+
+function updatePrivacyBadge() {
+  if (!elements.privacyBadge) return;
+  const sharing = mode === "text" && ["link-tool", "qr-tool"].includes(currentOperation());
+  elements.privacyBadge.textContent = sharing ? "Uploads to create a link" : "Stays on your device";
+  elements.privacyBadge.dataset.upload = String(sharing);
+}
+
 function setMode(nextMode) {
   if (!definitions[nextMode]) return;
   mode = nextMode;
@@ -144,7 +183,7 @@ function setMode(nextMode) {
   }
   elements.workspaceTitle.textContent = definitions[mode].title;
   elements.workspaceDescription.textContent = definitions[mode].description;
-  if (elements.privacyBadge) elements.privacyBadge.textContent = mode === "text" && ["link-tool", "qr-tool"].includes(currentOperation()) ? "Uploads to create a link" : "Stays on your device";
+  updatePrivacyBadge();
   elements.operation.replaceChildren(...definitions[mode].operations.map(([value, label]) => makeOption(value, label)));
   selectedFiles = [];
   renderFileList();
@@ -383,6 +422,7 @@ function updateOperation() {
     }
   }
   elements.runButton.textContent = isText ? (operation === "link-tool" ? "Create share link" : operation === "qr-tool" ? "Create share link and QR" : operation === "qr-code" ? "Generate QR code" : "Process text") : "Run tool";
+  updatePrivacyBadge();
 }
 
 async function renderPagePreviews(file) {
@@ -773,7 +813,7 @@ async function ensureTurnstileScript() {
 async function prepareTurnstileWidget() {
   if (!elements.shareSecurity || elements.shareSecurity.hidden) return;
   if (!SHARE_API_ENABLED || !TURNSTILE_SITE_KEY) {
-    elements.shareSecurityMessage.textContent = "Sharing is disabled on this fallback address. The free Cloudflare Pages version will enable it after the storage and security settings are connected.";
+    elements.shareSecurityMessage.textContent = "Sharing is disabled on this GitHub Pages version. Nothing will be uploaded here; local tools continue to work normally.";
     elements.turnstileContainer.hidden = true;
     return;
   }
@@ -804,7 +844,7 @@ async function prepareTurnstileWidget() {
 
 async function runShareTool(kind) {
   if (!SHARE_API_ENABLED) {
-    throw new Error("The share-link service is available on the free Cloudflare Pages address after its storage and security setup. This GitHub Pages fallback cannot host uploaded files.");
+    throw new Error("Sharing is not enabled on this GitHub Pages version, so nothing was uploaded. Use the local tools to process files on this device.");
   }
   if (!TURNSTILE_SITE_KEY || !turnstileToken) {
     throw new Error("Complete the security check before creating a share link.");
@@ -1008,6 +1048,7 @@ elements.privacyDialog.addEventListener("click", (event) => {
   if (event.target === elements.privacyDialog) elements.privacyDialog.close();
 });
 
+renderToolDirectory();
 setMode("pdf");
 const pathSlug = location.pathname.split("/").filter(Boolean).at(-1);
 const requestedToolSlug = new URLSearchParams(location.search).get("tool") || (TOOL_CATALOG.some((tool) => tool.slug === pathSlug) ? pathSlug : null);
