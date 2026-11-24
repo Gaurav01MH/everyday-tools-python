@@ -1,74 +1,79 @@
 # Files Format
 
-Files Format is a free collection of PDF, image, text and data tools, plus two optional temporary sharing tools.
+Files Format is a free, open-source collection of PDF, image, text and data utilities. Ordinary file processing stays in your browser: local tools do not send selected files to a Files Format processing server.
 
-The original simple three-tab interface is preserved. PDF and image editing and ordinary text/data utilities process locally in the browser. Link Tool and QR Tool are deliberate exceptions: they upload only the file or text the visitor chooses to share and create a public-by-link download URL.
+Live website: https://gaurav01mh.github.io/everyday-tools-python/
+Source code: https://github.com/Gaurav01MH/everyday-tools-python
+
+## PDF merge preview
+
+![Illustrative PDF merge workflow](web/public/merge-demo.svg)
+
+The graphic is an illustration of the workflow, not a screenshot of the live interface.
 
 ## Tools
 
 ### PDF
-- Merge PDFs in a chosen order.
-- Split PDFs into separate page files.
-- Extract selected pages and ranges.
-- Rotate all or selected pages.
-- Convert still images into a PDF.
-- Render PDF pages as PNG images.
+- Merge, split, extract and rotate pages; render PDF pages to PNG.
+- Compress PDF structure and metadata. Embedded images are not recompressed.
+- Reorder or remove pages from thumbnail previews.
+- Convert images to PDF; add page numbers and text watermarks.
 
 ### Images
-- Resize still images.
-- Convert JPG, PNG, WEBP and BMP formats.
-- Compress JPG and WEBP images.
-- Process image batches.
+- Resize and convert JPG, PNG, WEBP and BMP.
+- Compress toward a target size such as 100 KB. The target is best-effort.
+- Remove common EXIF/image metadata by re-exporting.
+- Fit photos to common passport/ID print presets.
 
 ### Text and data
-- Text statistics, case conversion, blank-line cleanup and duplicate-line removal.
-- JSON formatting and validation.
-- CSV/JSON conversion.
-- URL and Base64 encoding/decoding.
-- Percentage and unit calculations.
-- Link Tool: paste text or upload one file (maximum 10 MB) to create a shareable download URL.
-- QR Tool: paste text or upload one file to create the same kind of share URL, then download a QR code for that URL as PNG or SVG.
+- Text statistics, case conversion and line cleanup.
+- JSON formatting/validation; CSV/JSON conversion.
+- URL/Base64 encoding and decoding; percentage and unit conversion.
+- Generate QR codes locally from text or URLs.
 
-Share links expire after seven days. Anyone with the URL can download the contents. Uploads require a Cloudflare Turnstile check. Do not use the share tools for confidential or personal files or content you lack permission to share.
+The catalogue contains 35 tools. Each tool has a direct route such as /merge-pdf/ with its own title, description, H1, FAQ, canonical URL and social metadata.
 
-## Free website hostname
+## Privacy and file handling
 
-The requested Cloudflare Pages project name is exactly: too-broke-for-a-custom-domain
+- Local tools process files in the browser and do not send selected files to a Files Format processing server.
+- Link Tool and QR Tool are designed as upload-based sharing options, but are disabled on the current GitHub Pages deployment. Nothing is uploaded by them on this version.
+- No account or advertising is required.
+- Verify local processing in browser DevTools → Network while running a local tool.
 
-Intended public URL, available only after the project name is claimed and deployed:
+## Current limits
 
-https://too-broke-for-a-custom-domain.pages.dev/
+- 100 MB total selected input; 50 MB per PDF.
+- Images up to 20 MB and 16 megapixels each.
+- Up to 20 files per batch; 250 PDF pages.
+- PDF previews and PDF-to-image rendering are capped at 100 pages.
+- Generated PDF or ZIP output is limited to 100 MB.
+- Password-protected PDFs, OCR, PDF text editing, digital signatures, form filling, annotation editing and animated image processing are not supported.
 
-No paid custom domain is required. Cloudflare must confirm the project name is available during account setup. The previous GitHub Pages hostname remains a fallback with share uploads disabled.
+PDF compression optimises structure and selected metadata; it does not recompress embedded images. Image target-size compression is best-effort and may not reach the requested size without changing quality or dimensions.
 
-## Hosting and storage setup
+## Development
 
-See web/DEPLOY-CLOUDFLARE.md. The setup uses Pages Functions under web/functions/, an R2 bucket named files-format-shares, the SHARES binding, Turnstile and an R2 lifecycle rule for the shared/ prefix. Application caps: one file or text per share, 10 MB per upload, 300 active objects, 3 GB active content and a seven-day link lifetime.
+Requirements: Node.js 22.12 or newer and npm.
 
-R2 free usage is limited, not unlimited; usage above free allowances may be billed. Anyone with a share URL can download it.
+From web/, run:
 
-## MCP integration
+```sh
+npm install
+npm run dev
+npm test
+npm run build
+node scripts/check-seo-output.mjs
+npm run test:e2e
+```
 
-The optional MCP server is a separate Cloudflare Worker in mcp-server/. It discovers the 29 website tools and can prepare a QR Tool link with text prefilled. It does not accept file uploads or bypass Turnstile. The Worker has its own phrase-branded free workers.dev hostname, separate from the Pages hostname. See mcp-server/README.md.
+The production build generates direct tool pages, category/directory pages, guide pages, robots.txt, sitemap.xml, llms.txt, PNG app icons, a 1200×630 Open Graph image and an offline service-worker precache.
 
-## Search and AI discovery
+## Search indexing and launch
 
-The production build generates static HTML pages for every tool, category pages, a complete directory, robots.txt, sitemap.xml, llms.txt, canonical URLs, Open Graph metadata and JSON-LD structured data. The site uses general crawler access, an XML sitemap and descriptive tool pages to support discovery. Search systems decide independently whether to crawl, index, cite or recommend the website.
+After deployment, the site owner must verify the property in Google Search Console and submit /sitemap.xml. Search engines decide independently whether to crawl and index the pages.
 
-After deploying the final Pages URL, verify ownership in Google Search Console and submit /sitemap.xml.
+Public launch posts on Product Hunt, Hacker News and Reddit should be reviewed and published by the project owner; no account action or public post is made automatically.
 
-## Tests and local development
+## License
 
-From web/ run npm install, npm run dev, npm test, npm run build, node scripts/check-seo-output.mjs and npm run test:e2e.
-
-## Privacy and limitations
-
-- The application does not require a user account and contains no advertising integration or analytics.
-- PDF/image editing uses browser APIs and local libraries.
-- Share content is sent to Cloudflare R2 only when the user selects Link Tool or QR Tool and completes Turnstile.
-- Shared content is downloadable by anyone with its URL; avoid confidential and personal data.
-- R2 quotas are finite and overages may be billed.
-- Encrypted PDFs, OCR, editing existing PDF text, signatures, form filling, annotations and animated image processing are not supported.
-- Keep originals and verify output before relying on it.
-
-The application source is under the MIT License. Third-party notices and licences remain applicable.
+Original Files Format source is MIT licensed. Third-party dependencies and assets retain their own licences.
