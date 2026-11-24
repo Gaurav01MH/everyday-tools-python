@@ -47,7 +47,9 @@ ${body}
 }
 
 function toolCard(tool) {
-  return `<a class="tool-link" href="${urlFor(tool.slug + "/")}"><strong>${esc(tool.name)}</strong><span>${esc(tool.description)}</span></a>`;
+  const sharing = tool.mode === "text" && ["link-tool", "qr-tool"].includes(tool.operation);
+  const badge = sharing ? "Uploads to create a link" : "Stays on your device";
+  return `<a class="tool-link" href="${urlFor(tool.slug + "/")}"><strong>${esc(tool.name)}</strong><span>${esc(tool.description)}</span><small class="directory-privacy">${badge}</small></a>`;
 }
 
 async function writePage(relativePath, html) {
@@ -167,6 +169,10 @@ await writeFile(join(DIST, "robots.txt"), robotsText, "utf8");
 
 for (const tool of tools) {
   const canonical = urlFor(tool.slug + "/");
+  const sharingDisabled = tool.mode === "text" && ["link-tool", "qr-tool"].includes(tool.operation);
+  const privacyText = sharingDisabled
+    ? "This is an upload-based sharing tool, but it is disabled on the current GitHub Pages version. No file or text is uploaded here."
+    : "Files Format processes the input in your browser. The selected source file is not uploaded to a Files Format processing server. The browser downloads the result when the job finishes.";
   const body = `
 <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="${BASE_URL}">Home</a><span>›</span><a href="${urlFor(categoryPath(tool.mode))}">${categoryFor(tool.mode)}</a><span>›</span><span>${esc(tool.name)}</span></nav>
 <p class="eyebrow">${esc(categoryFor(tool.mode))}</p>
@@ -175,7 +181,7 @@ for (const tool of tools) {
 <div class="actions"><a class="button" href="${urlFor(tool.slug + "/")}">Open ${esc(tool.name)}</a><a class="button secondary" href="${urlFor(categoryPath(tool.mode))}">More ${esc(categoryFor(tool.mode).toLowerCase())}</a></div>
 <h2>How to use ${esc(tool.name)}</h2><ol>${tool.steps.map((step) => `<li>${esc(step)}</li>`).join("")}</ol>
 <h2>Input requirements</h2><p>${esc(tool.inputs)}</p>
-<h2>Privacy and processing</h2><p>Files Format processes the input in your browser. The selected source file is not uploaded to a Files Format processing server. The browser downloads the result when the job finishes.</p>
+<h2>Privacy and processing</h2><p>${esc(privacyText)}</p>
 <h2>Limits and known limitations</h2><div class="notice"><p>${esc(tool.limitation)}</p><p>General browser safety limits also apply: 100 MB total selected input, 50 MB per PDF, 20 MB and 16 megapixels per image, and 100 MB for generated PDF or ZIP output. Your device's available memory may impose a lower practical limit.</p></div>
 <h2>Related tools</h2><div class="tool-grid">${tools.filter((item) => item.mode === tool.mode && item.slug !== tool.slug).slice(0,6).map(toolCard).join("")}</div>
 <p><a href="${BASE_URL}">Files Format</a> is a free browser-based collection of PDF, image, text and file utilities. See <a href="${urlFor("policies/privacy/")}">the privacy policy</a> for details about browser processing and website hosting.</p>`;
