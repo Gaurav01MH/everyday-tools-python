@@ -12,52 +12,68 @@ const defaultSiteOrigin = process.env.GITHUB_REPOSITORY_OWNER
   : "https://files-format.example";
 const origin = (process.env.PUBLIC_SITE_ORIGIN || defaultSiteOrigin).replace(/\/$/, "");
 const baseUrl = new URL(basePath.endsWith("/") ? basePath : basePath + "/", origin).href;
-const sitemap = await readFile(join(dist, "sitemap.xml"), "utf8");
-const robots = await readFile(join(dist, "robots.txt"), "utf8");
-const llms = await readFile(join(dist, "llms.txt"), "utf8");
-const home = await readFile(join(dist, "index.html"), "utf8");
-const brandedAlias = await readFile(join(dist, "too-broke-for-a-custom-domain", "index.html"), "utf8");
+const read = (path) => readFile(join(dist, path), "utf8");
+const sitemap = await read("sitemap.xml");
+const robots = await read("robots.txt");
+const llms = await read("llms.txt");
+const home = await read("index.html");
+const brandedAlias = await read("too-broke-for-a-custom-domain/index.html");
 
 assert.match(home, /<title>Files Format/);
 assert.match(home, /name="description"/);
 assert.match(home, /application\/ld\+json/);
-assert.match(home, /logo\.svg/);
-// Verify the branded free GitHub Pages alias is an exact copy of the homepage.
+assert.match(home, /PDF and image tools that never upload your files/);
+assert.match(home, /DevTools/);
+assert.match(home, /tool-card-grid/);
+assert.match(home, /og-files-format\.png/);
 assert.equal(brandedAlias, home, "Branded GitHub Pages alias should match the homepage");
 assert.match(robots, /User-agent: \*/);
-assert.match(robots, /User-agent: \*\s+Allow: \//);
-assert.equal(robots.trim(), ["User-agent: *", "Allow: /", "", "Sitemap: " + baseUrl + "sitemap.xml"].join("\n"));
 assert.ok(robots.includes("Sitemap: " + baseUrl + "sitemap.xml"));
 assert.ok(llms.includes("Files Format"));
 assert.ok(llms.includes("Individual tools"));
 
 const requiredPages = [
-  "tools/",
-  "about/",
-  "pdf-tools/",
-  "image-tools/",
-  "text-tools/",
-  "policies/privacy/",
-  "policies/terms/",
-  "policies/licensing/",
-  "connect/"
+  "tools/","about/","pdf-tools/","image-tools/","text-tools/","guides/",
+  "guides/merge-pdf-without-uploading/","policies/privacy/","policies/terms/",
+  "policies/licensing/","feedback/"
 ];
-
-for (const page of requiredPages) {
-  await access(join(dist, page, "index.html"));
-  assert.ok(sitemap.includes("<loc>" + baseUrl + page + "</loc>"), "Missing sitemap URL for " + page);
+for (const path of requiredPages) {
+  await access(join(dist,path,"index.html"));
+  assert.ok(sitemap.includes("<loc>" + baseUrl + path + "</loc>"), "Missing sitemap entry: " + path);
 }
+assert.ok(!sitemap.includes(baseUrl + "connect/"), "Unavailable AI connector must not be indexed");
+assert.match(await read("connect/index.html"), /noindex/);
 
 for (const tool of TOOL_CATALOG) {
-  const relativePath = "tools/" + tool.slug + "/index.html";
-  const html = await readFile(join(dist, relativePath), "utf8");
-  const canonical = baseUrl + "tools/" + tool.slug + "/";
-  assert.ok(html.includes("<title>" + tool.title + " | Files Format</title>"), "Missing title for " + tool.slug);
-  assert.ok(html.includes('rel="canonical" href="' + canonical + '"'), "Missing canonical for " + tool.slug);
-  assert.ok(html.includes('type="application/ld+json"'), "Missing structured data for " + tool.slug);
-  assert.ok(html.includes(tool.description), "Missing tool description for " + tool.slug);
-  assert.ok(html.includes("?tool=" + tool.slug), "Missing launch link for " + tool.slug);
-  assert.ok(sitemap.includes("<loc>" + canonical + "</loc>"), "Missing sitemap entry for " + tool.slug);
+  const direct = await read(tool.slug + "/index.html");
+  const canonical = baseUrl + tool.slug + "/";
+  const title = tool.title + " | Files Format";
+  assert.ok(direct.includes("<title>" + title + "</title>"), "Missing unique title: " + tool.slug);
+  assert.ok(direct.includes('name="description" content="' + tool.description + '"'), "Missing unique meta description: " + tool.slug);
+  assert.ok(direct.includes("<h1>" + tool.title + "</h1>"), "Missing unique H1: " + tool.slug);
+  assert.ok(direct.includes('rel="canonical" href="' + canonical + '"'), "Wrong canonical: " + tool.slug);
+  assert.ok(direct.includes('property="og:title" content="' + title + '"'), "Missing OG title: " + tool.slug);
+  assert.ok(direct.includes('property="og:description" content="' + tool.description + '"'), "Missing OG description: " + tool.slug);
+  assert.ok(direct.includes('property="og:url" content="' + canonical + '"'), "Missing OG URL: " + tool.slug);
+  assert.ok(direct.includes('property="og:image" content="' + baseUrl + 'og-files-format.png"'), "Missing OG PNG: " + tool.slug);
+  assert.ok(direct.includes('name="twitter:card" content="summary_large_image"'), "Missing Twitter large card: " + tool.slug);
+  assert.ok(direct.includes("Frequently asked questions"), "Missing FAQ: " + tool.slug);
+  assert.ok(direct.includes('type="application/ld+json"'), "Missing FAQ structured data: " + tool.slug);
+  assert.ok(sitemap.includes("<loc>" + canonical + "</loc>"), "Missing direct sitemap route: " + tool.slug);
+
+  const detail = await read("tools/" + tool.slug + "/index.html");
+  assert.ok(detail.includes('rel="canonical" href="' + canonical + '"'), "Secondary detail path must canonicalise to direct route: " + tool.slug);
 }
 
-console.log("SEO checks passed for " + TOOL_CATALOG.length + " tool pages and " + requiredPages.length + " supporting pages.");
+for (const [path,width,height] of [
+  ["og-files-format.png",1200,630],
+  ["icons/icon-192.png",192,192],
+  ["icons/icon-512.png",512,512],
+  ["icons/apple-touch-icon.png",180,180]
+]) {
+  const bytes = await readFile(join(dist,path));
+  assert.deepEqual([...bytes.subarray(0,8)],[137,80,78,71,13,10,26,10],"Invalid PNG signature: " + path);
+  assert.equal(bytes.readUInt32BE(16),width,"Incorrect PNG width: " + path);
+  assert.equal(bytes.readUInt32BE(20),height,"Incorrect PNG height: " + path);
+}
+console.log("SEO checks passed for " + TOOL_CATALOG.length + " direct tool routes and " + requiredPages.length + " supporting pages.");
