@@ -59,7 +59,7 @@ async function writePage(relativePath, html) {
 const sitemapUrls = new Set([BASE_URL]);
 const addUrl = (path) => sitemapUrls.add(urlFor(path));
 for (const policy of ["policies/privacy/", "policies/terms/", "policies/licensing/"]) addUrl(policy);
-addUrl("connect/");
+// The AI connector page is informational and noindex, so it is not in the sitemap.
 
 // Add crawlable metadata to the original homepage without changing its layout or app UI.
 const homepagePath = join(DIST, "index.html");
@@ -90,7 +90,7 @@ const homepageMetadata = [
   '<meta property="og:title" content="Files Format — Free PDF, Image &amp; File Tools">',
   '<meta property="og:description" content="' + esc(homeDescription) + '">',
   '<meta property="og:url" content="' + BASE_URL + '">',
-  '<meta property="og:image" content="' + LOGO + '">',
+  '<meta property="og:image" content="' + OG_IMAGE + '">',
   '<meta name="twitter:card" content="summary_large_image">',
   '<meta name="twitter:title" content="Files Format — PDF, Image &amp; File Tools">',
   '<meta name="twitter:description" content="' + esc(homeDescription) + '">',
@@ -115,7 +115,7 @@ for (const tool of tools) {
   const pageTitle = tool.title + " | Files Format";
   const description = tool.description;
   const isShare = tool.mode === "text" && ["link-tool","qr-tool"].includes(tool.operation);
-  const uploadAnswer = isShare ? "Yes. The content you choose is uploaded to create a share link. Anyone with the URL can download it until it expires." : "No. This tool processes the file in your browser and does not upload it to a Files Format processing server.";
+  const uploadAnswer = isShare ? "Link Tool and QR Tool are designed to upload content to create a share link, but sharing is disabled on this GitHub Pages version. Nothing is uploaded here." : "No. This tool processes the file in your browser and does not upload it to a Files Format processing server.";
   const faq = '<section class="tool-faq" aria-labelledby="tool-faq-title"><h2 id="tool-faq-title">Frequently asked questions</h2><h3>Does this tool upload my file?</h3><p>' + esc(uploadAnswer) + '</p><h3>What can I use?</h3><p>' + esc(tool.inputs) + '</p><h3>What are the limits?</h3><p>' + esc(tool.limitation) + '</p></section>';
   const faqSchema = {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
     {"@type":"Question","name":"Does this tool upload my file?","acceptedAnswer":{"@type":"Answer","text":uploadAnswer}},
@@ -124,9 +124,14 @@ for (const tool of tools) {
   ]};
   let page = homepageHtml;
   page = page.replace("<title>Files Format — Free PDF, Image &amp; File Tools</title>", "<title>" + esc(pageTitle) + "</title>");
-  page = page.replace('content="PDF and image tools that never upload your files. Merge, convert, resize and organise files locally in your browser. Free, no account and no ads."', 'content="' + esc(description) + '"');
-  page = page.replace('content="Files Format — Free PDF, Image &amp; File Tools"', 'content="' + esc(pageTitle) + '"');
-  page = page.replace('href="' + BASE_URL + '">', 'href="' + canonical + '">');
+  page = page.replace(/<meta name="description" content="[^"]*">/, '<meta name="description" content="' + esc(description) + '">');
+  page = page.replace(/<link rel="canonical" href="[^"]*">/, '<link rel="canonical" href="' + canonical + '">');
+  page = page.replace(/<meta property="og:title" content="[^"]*">/, '<meta property="og:title" content="' + esc(pageTitle) + '">');
+  page = page.replace(/<meta property="og:description" content="[^"]*">/, '<meta property="og:description" content="' + esc(description) + '">');
+  page = page.replace(/<meta property="og:url" content="[^"]*">/, '<meta property="og:url" content="' + canonical + '">');
+  page = page.replace(/<meta property="og:image" content="[^"]*">/, '<meta property="og:image" content="' + OG_IMAGE + '">');
+  page = page.replace(/<meta name="twitter:title" content="[^"]*">/, '<meta name="twitter:title" content="' + esc(pageTitle) + '">');
+  page = page.replace(/<meta name="twitter:description" content="[^"]*">/, '<meta name="twitter:description" content="' + esc(description) + '">');
   page = page.replace('<h1>PDF and image tools that never upload your files</h1>', '<h1>' + esc(tool.title) + '</h1>');
   page = page.replace('<p class="intro-copy">Merge, convert, resize and organise files locally in your browser. Link Tool and QR Tool are optional upload features that are clearly labelled before use.</p>', '<p class="intro-copy">' + esc(description) + '</p>');
   page = page.replace('<footer class="site-footer">', faq + '<footer class="site-footer">');
@@ -206,7 +211,7 @@ for (const mode of ["pdf","images","text"]) {
   const body = `<nav class="breadcrumbs"><a href="${BASE_URL}">Home</a><span>›</span><span>${esc(categoryFor(mode))}</span></nav>
 <p class="eyebrow">Files Format tool collection</p><h1>${esc(categoryFor(mode))}</h1><p class="summary">${esc(description)}</p>
 <div class="tool-grid">${relevant.map(toolCard).join("")}</div>
-<p class="notice">PDF, image and ordinary text tools process locally. Link Tool and QR Tool upload only the file or text you choose to share, using seven-day expiring links. Read the <a href="${urlFor("policies/privacy/")}">privacy policy</a> before sharing.</p>`;
+<p class="notice">PDF, image and ordinary text tools process locally. Link Tool and QR Tool are designed as upload-based sharing options but are disabled on this GitHub Pages version. Nothing is uploaded here. Read the <a href="${urlFor("policies/privacy/")}">privacy policy</a> for details.</p>`;
   await writePage(path + "index.html", shell({title,description,canonical,body,schema}));
   addUrl(path);
 }
@@ -230,8 +235,8 @@ for (const mode of ["pdf","images","text"]) {
   const body = `<nav class="breadcrumbs"><a href="${BASE_URL}">Home</a><span>›</span><span>About</span></nav><p class="eyebrow">About the project</p><h1>Files Format</h1><p class="summary">A straightforward collection of free tools for everyday PDFs, images, text and files.</p>
 <h2>What Files Format does</h2><p>Files Format brings common file utilities into one small browser-based website. Choose a task, select a file or enter text, run the tool and download or copy the result.</p>
 <h2>Who made it</h2><p>Files Format is an independent project made by Gaurav Naitam. The source is public on <a href="https://github.com/Gaurav01MH/everyday-tools-python">GitHub</a>, where you can inspect the implementation, report bugs or suggest improvements. For contact and feedback, use the <a href="https://github.com/Gaurav01MH/everyday-tools-python/issues/new/choose">project issue tracker</a>.</p>
-<h2>Local processing</h2><p>PDF, image and ordinary text/data tools run inside your browser. Selected documents for those local tools are not uploaded to a Files Format processing server.</p><h2>Temporary sharing</h2><p>Link Tool and QR Tool are optional upload features. They send the one file or pasted text you choose to Cloudflare R2 and create a public-by-link download URL. Each upload is limited to 10 MB, protected by Cloudflare Turnstile, and expires after seven days. Anyone with the URL can download it. Do not use these tools for confidential or personal content.</p>
-<h2>Current tool categories</h2><ul><li>PDF: merge, split, extract pages, rotate, images to PDF and PDF to PNG.</li><li>Images: resize, convert and compress common still image formats.</li><li>Text and data: formatting, JSON, CSV, URL and Base64 conversion, percentage calculations and unit conversion.</li></ul>
+<h2>Local processing</h2><p>PDF, image and ordinary text/data tools run inside your browser. Selected documents for those local tools are not uploaded to a Files Format processing server.</p><h2>Temporary sharing</h2><p>Link Tool and QR Tool are designed as optional upload features. They are currently disabled on this GitHub Pages version, so no file or text is uploaded and no temporary share link can be created.</p>
+<h2>Current tool categories</h2><ul><li>PDF: merge, compress, reorder/delete pages, split, extract, rotate, images to PDF, PDF to PNG, page numbers and watermarks.</li><li>Images: resize, target-size compression, convert, metadata removal and passport/ID presets.</li><li>Text and data: formatting, JSON, CSV, URL and Base64 conversion, percentage calculations, unit conversion, and local QR generation.</li></ul>
 <h2>What is not supported</h2><p>Encrypted PDFs, OCR, editing text inside existing PDFs, digital signatures, form filling, annotation editing and animated image processing are not supported. See each tool's page for more exact limits.</p><p><a href="${urlFor("tools/")}">Browse all tools</a>.</p>`;
   await writePage("about/index.html",shell({title,description,canonical,body,schema:{"@context":"https://schema.org","@type":"AboutPage","name":title,"description":description,"url":canonical}}));
   addUrl("about/");
