@@ -13,6 +13,9 @@ const defaultSiteOrigin = process.env.GITHUB_REPOSITORY_OWNER
 const origin = (process.env.PUBLIC_SITE_ORIGIN || defaultSiteOrigin).replace(/\/$/, "");
 const baseUrl = new URL(basePath.endsWith("/") ? basePath : basePath + "/", origin).href;
 const read = (path) => readFile(join(dist, path), "utf8");
+const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+}[c]));
 const sitemap = await read("sitemap.xml");
 const robots = await read("robots.txt");
 const llms = await read("llms.txt");
@@ -49,11 +52,11 @@ for (const tool of TOOL_CATALOG) {
   const canonical = baseUrl + tool.slug + "/";
   const title = tool.title + " | Files Format";
   assert.ok(direct.includes("<title>" + title + "</title>"), "Missing unique title: " + tool.slug);
-  assert.ok(direct.includes('name="description" content="' + tool.description + '"'), "Missing unique meta description: " + tool.slug);
-  assert.ok(direct.includes("<h1>" + tool.title + "</h1>"), "Missing unique H1: " + tool.slug);
+  assert.ok(direct.includes('name="description" content="' + escapeHtml(tool.description) + '"'), "Missing unique meta description: " + tool.slug);
+  assert.ok(direct.includes("<h1>" + escapeHtml(tool.title) + "</h1>"), "Missing unique H1: " + tool.slug);
   assert.ok(direct.includes('rel="canonical" href="' + canonical + '"'), "Wrong canonical: " + tool.slug);
-  assert.ok(direct.includes('property="og:title" content="' + title + '"'), "Missing OG title: " + tool.slug);
-  assert.ok(direct.includes('property="og:description" content="' + tool.description + '"'), "Missing OG description: " + tool.slug);
+  assert.ok(direct.includes('property="og:title" content="' + escapeHtml(title) + '"'), "Missing OG title: " + tool.slug);
+  assert.ok(direct.includes('property="og:description" content="' + escapeHtml(tool.description) + '"'), "Missing OG description: " + tool.slug);
   assert.ok(direct.includes('property="og:url" content="' + canonical + '"'), "Missing OG URL: " + tool.slug);
   assert.ok(direct.includes('property="og:image" content="' + baseUrl + 'og-files-format.png"'), "Missing OG PNG: " + tool.slug);
   assert.ok(direct.includes('name="twitter:card" content="summary_large_image"'), "Missing Twitter large card: " + tool.slug);
