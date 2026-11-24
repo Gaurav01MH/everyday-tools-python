@@ -1,56 +1,52 @@
-# Files Format website
+# Files Format web application
 
-A browser-based utility site for PDF, image, text and data tasks, with separate Link Tool and QR Tool sharing options. The original simple three-tab interface is preserved.
+A browser-based toolkit with 35 PDF, image, text and data utilities.
 
-## Requirements and commands
+Live GitHub Pages site: https://gaurav01mh.github.io/everyday-tools-python/
+
+## Requirements
 
 - Node.js 22.12 or newer
 - npm
 
-From this directory, run npm install, npm run dev, npm test, npm run build, node scripts/check-seo-output.mjs, npm run preview and npm run test:e2e as needed.
+## Development
 
-The production build generates the Vite app, PDF.js support resources, individual tool and category HTML pages, the sitemap, llms.txt and a service worker. The service worker deliberately bypasses /api/* and /s/*, so uploads and downloads are not cached.
+From this directory:
 
-## Tools and upload behavior
+```sh
+npm install
+npm run dev
+npm test
+npm run build
+node scripts/check-seo-output.mjs
+npm run preview
+npm run test:e2e
+```
 
-- PDF and image editing run locally in the browser. These selected source files are not uploaded.
-- Ordinary text/data tools run locally in the browser.
-- Link Tool accepts one file or pasted text (not both), uploads it to Cloudflare R2 after Turnstile verification, and returns a shareable download URL.
-- QR Tool accepts one file or pasted text, creates the same temporary share URL, then generates a downloadable PNG and SVG QR code for that URL.
+## Routes and SEO
 
-Share limits: one item per link, 10 MB maximum per upload, 300 active share objects and 3 GB active storage. Links expire after seven days. R2 lifecycle cleanup removes expired objects. Anyone with the share URL can download it, so do not share confidential or personal documents.
+Every tool has a direct route such as /merge-pdf/ or /compress-image/. Each route has its own title, meta description, H1, FAQ, canonical URL, Open Graph title/description and Twitter large-image card. The /tools/<slug>/ detail pages canonicalise to the direct routes.
 
-## Free GitHub Pages URL
+The build generates robots.txt and sitemap.xml. The site owner must verify the site in Google Search Console and submit /sitemap.xml.
 
-The existing GitHub Pages deployment remains on the free GitHub-hosted address. A branded alias is generated inside the existing project without changing the repository or breaking the original URL:
+## File processing and privacy
 
-/<repository-slug>/too-broke-for-a-custom-domain/
+- PDF, image, text and data transformations run locally in the browser.
+- Link Tool and QR Tool are designed as upload-based sharing options, but are currently disabled on GitHub Pages. They do not upload files or text on this deployment.
+- No third-party analytics or advertising scripts are included.
+- Use browser DevTools → Network to verify that a local tool does not send the selected file to a processing server.
 
-The application name remains **Files Format**. GitHub Pages serves project sites beneath a repository-derived path; the phrase-branded directory is a nested path, not a separate subdomain. The GitHub Pages workflow publishes this alias automatically on pushes to main.
+The service worker caches static app assets for offline use and bypasses /api/* and /s/* routes. PDF.js, PDF processing, image processing and QR modules are dynamically loaded only when needed. PDF.js page rendering uses its worker; other transformations still run on the browser main thread.
 
-GitHub Pages is static hosting, so the Link Tool and QR Tool's server-side share upload feature is unavailable at this fallback address. The local PDF, image and text tools remain available.
+## Current limits
 
-## Search and AI discovery
+- 100 MB total selected input; 50 MB per PDF; 20 MB and 16 megapixels per image.
+- 20 files per batch; 250 pages per PDF; previews and PDF-to-image rendering up to 100 pages.
+- 100 MB generated PDF/ZIP output.
+- PDF compression optimises structure and metadata but does not recompress embedded images.
+- Target-size image compression is best-effort.
+- Password-protected PDFs, OCR, PDF text editing, digital signatures, forms, annotations and animated image processing are not supported.
 
-- Every tool has an individual static page under /tools/.
-- Category and directory pages link to the individual tools.
-- robots.txt, sitemap.xml and llms.txt are generated on each production build.
-- Pages have unique titles, descriptions, canonical URLs, Open Graph metadata and JSON-LD structured data.
-- The site uses general crawler access, an XML sitemap and descriptive tool pages to support discovery. Search systems decide independently whether to crawl, index or recommend the website.
+CI checks browser functionality, a mobile viewport and axe accessibility rules. A physical-phone check and measured Lighthouse scores require separate real-device/performance testing.
 
-After deploying the Pages hostname, verify ownership in Google Search Console and submit /sitemap.xml.
-
-## MCP integration
-
-The optional MCP connector is a separate Cloudflare Worker under ../mcp-server/. It uses the Pages site as its tool-link destination. Its own free workers.dev endpoint uses the same phrase in a separate hostname. See ../mcp-server/README.md.
-
-## Privacy and limits
-
-- No user account, advertising integration or analytics is required.
-- Turnstile checks every share upload; its secret is a server-side Pages Function secret, never a Vite build variable.
-- Uploaded share content is stored in the R2 bucket files-format-shares, bound as SHARES.
-- Files are served as downloads with attachment, no-sniff, no-index and restrictive CSP headers.
-- Do not upload content you do not own or have permission to share.
-- R2 free quotas are finite; usage above the included monthly allowances may be billed. The active-share cap is conservative but this is not unlimited free hosting.
-
-Local PDF limits remain 100 MB total input, 50 MB per PDF, 20 MB per image, 16 megapixels per image, 20 files per batch, 250 pages per PDF and 100 MB generated PDF/ZIP output.
+Third-party analytics has deliberately not been added; preserving a no-third-party-request design is intentional.
