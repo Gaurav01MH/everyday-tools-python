@@ -27,10 +27,35 @@ async function choosePdf(page, operation, name, bytes) {
 
 test("page loads with a simple default workspace and local-processing notice", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Get your file work done." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "PDF and image tools that never upload your files" })).toBeVisible();
+  await expect(page.locator("#tool-card-grid .tool-card")).toHaveCount(35);
+  await expect(page.locator("#tool-card-grid .tool-card").first()).toHaveAttribute("href", /merge-pdf\//);
   await expect(page.locator(".brand")).toContainText("Files Format");
   await expect(page.getByText("Files stay on this device")).toBeVisible();
   await expect(page.getByRole("button", { name: "PDF tools" })).toHaveAttribute("aria-pressed", "true");
+});
+
+test("opens a tool at its direct URL", async ({ page }) => {
+  await page.goto("/merge-pdf/");
+  await expect(page.getByRole("heading", { name: "Merge PDF files online" })).toBeVisible();
+  await expect(page.getByLabel("Choose a task")).toHaveValue("merge");
+});
+
+test("PDF page thumbnails can reorder and remove pages", async ({ page }) => {
+  await page.goto("/");
+  const source = await makePdf([[200, 300], [400, 500], [600, 700]]);
+  await choosePdf(page, "organise-pdf", "ordered.pdf", source);
+  await expect(page.locator(".page-thumbnail")).toHaveCount(3);
+  await page.getByRole("button", { name: "Move earlier page 3" }).click();
+  await expect(page.getByLabel("Page order to keep")).toHaveValue("1, 3, 2");
+  await page.getByRole("button", { name: "Remove page 2" }).click();
+  await expect(page.getByLabel("Page order to keep")).toHaveValue("1, 3");
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Run tool" }).click();
+  const download = await downloadPromise;
+  const result = await PDFDocument.load(await readFile(await download.path()));
+  expect(result.getPageCount()).toBe(2);
+  expect(result.getPage(1).getWidth()).toBe(600);
 });
 
 test("switches tool categories and transforms text", async ({ page }) => {
