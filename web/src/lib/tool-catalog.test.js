@@ -3,9 +3,9 @@ import assert from "node:assert/strict";
 import { TOOL_CATALOG, findToolBySlug } from "./tool-catalog.js";
 
 test("Files Format catalog has the expected PDF, image and text tools", () => {
-  assert.equal(TOOL_CATALOG.length, 29);
-  assert.equal(TOOL_CATALOG.filter((tool) => tool.mode === "pdf").length, 6);
-  assert.equal(TOOL_CATALOG.filter((tool) => tool.mode === "images").length, 3);
+  assert.equal(TOOL_CATALOG.length, 35);
+  assert.equal(TOOL_CATALOG.filter((tool) => tool.mode === "pdf").length, 10);
+  assert.equal(TOOL_CATALOG.filter((tool) => tool.mode === "images").length, 5);
   assert.equal(TOOL_CATALOG.filter((tool) => tool.mode === "text").length, 20);
 });
 
