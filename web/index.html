@@ -146,18 +146,17 @@
         <button id="close-dialog" class="icon-button" type="button" aria-label="Close">×</button>
       </div>
       <div class="dialog-body">
-        <p><strong>Local tools:</strong> PDF, image and text files are processed in your browser. They are not uploaded to a Files Format processing server.</p>
-        <p><strong>Link Tool and QR Tool:</strong> these are the exceptions. The file or text you select is uploaded to create a public-by-link download. Anyone with the URL can download it. Links expire after 7 days. Do not share sensitive content.</p>
-        <h3>Current limits</h3>
+        <p><strong>Local by default:</strong> PDF, image and text tools process data in this browser. Your selected files are not sent to a Files Format processing server.</p>
+        <p><strong>Sharing is different:</strong> Link Tool and QR Tool are designed to upload one chosen item to create a public-by-link download. Sharing is currently disabled on this GitHub Pages version, so nothing is uploaded here.</p>
+        <h3>File and processing limits</h3>
         <ul>
-          <li>100 MB total input; 50 MB per PDF.</li>
-          <li>20 MB and 16 megapixels per image.</li>
-          <li>20 files per batch; 250 PDF pages (100 for PDF previews/rendering).</li>
-          <li>100 MB maximum generated PDF or ZIP file.</li>
-          <li>Share uploads: one item, up to 10 MB, 7-day expiry (only on a configured share host).</li>
+          <li>PDF: 50 MB each, 250 pages; 100 MB total input.</li>
+          <li>Images: 20 MB and 16 megapixels each.</li>
+          <li>Batch: up to 20 files; output up to 100 MB.</li>
+          <li>PDF previews and PDF-to-image rendering: up to 100 pages.</li>
+          <li>Sharing (when enabled): one item up to 10 MB; public link expires after 7 days.</li>
         </ul>
-        <p>Encrypted PDFs, OCR, editing existing PDF text, signatures, forms and animated images are not supported. PDF edits may not preserve bookmarks, form fields, annotations or digital signatures. Always check your exported file.</p>
-        <p>QR Tool for private text/URLs generates a QR code locally. The sharing QR option first uploads the selected content to create its link.</p>
+        <p>Password-protected PDFs, OCR, PDF text editing, signatures, forms, annotations and animated image processing are not supported. Keep your original and check every exported file.</p>
       </div>
     </dialog>
 
