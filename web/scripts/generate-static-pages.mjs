@@ -131,6 +131,10 @@ for (const tool of tools) {
     {"@type":"Question","name":"What can I use?","acceptedAnswer":{"@type":"Answer","text":tool.inputs}},
     {"@type":"Question","name":"What are the limits?","acceptedAnswer":{"@type":"Answer","text":tool.limitation}}
   ]};
+  const relatedTools = tools.filter((other) => other.mode === tool.mode && other.slug !== tool.slug).slice(0, 3);
+  const relatedSection = '<section class="related-tools" aria-label="Related tools"><h2>Related tools</h2><ul>' +
+    relatedTools.map((other) => '<li><a href="' + urlFor(other.slug + "/") + '">' + esc(other.title) + '</a><span>' + esc(other.description) + '</span></li>').join("") +
+    '</ul></section>';
   let page = homepageHtml;
   page = page.replace("<title>Files Format — Free PDF, Image &amp; File Tools</title>", "<title>" + esc(pageTitle) + "</title>");
   page = page.replace(/<meta name="description" content="[^"]*">/, '<meta name="description" content="' + esc(description) + '">');
@@ -143,7 +147,7 @@ for (const tool of tools) {
   page = page.replace(/<meta name="twitter:description" content="[^"]*">/, '<meta name="twitter:description" content="' + esc(description) + '">');
   page = page.replace('<h1>PDF and image tools that never upload your files</h1>', '<h1>' + esc(tool.title) + '</h1>');
   page = page.replace('<p class="intro-copy">Merge, convert, resize and organise files locally in your browser. Link Tool and QR Tool are optional upload features that are clearly labelled before use.</p>', '<p class="intro-copy">' + esc(description) + '</p>');
-  page = page.replace('<footer class="site-footer">', faq + '<footer class="site-footer">');
+  page = page.replace('<footer class="site-footer">', relatedSection + faq + '<footer class="site-footer">');
   page = page.replace("</head>", '<script type="application/ld+json">' + json(faqSchema) + '</script>\n</head>');
   await writePage(tool.slug + "/index.html", page);
 }
