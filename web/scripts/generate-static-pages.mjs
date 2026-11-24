@@ -59,6 +59,7 @@ async function writePage(relativePath, html) {
 const sitemapUrls = new Set([BASE_URL]);
 const addUrl = (path) => sitemapUrls.add(urlFor(path));
 for (const policy of ["policies/privacy/", "policies/terms/", "policies/licensing/"]) addUrl(policy);
+addUrl("feedback/");
 // The AI connector page is informational and noindex, so it is not in the sitemap.
 
 // Add crawlable metadata to the original homepage without changing its layout or app UI.
@@ -234,7 +235,7 @@ for (const mode of ["pdf","images","text"]) {
   const canonical = urlFor("about/");
   const body = `<nav class="breadcrumbs"><a href="${BASE_URL}">Home</a><span>›</span><span>About</span></nav><p class="eyebrow">About the project</p><h1>Files Format</h1><p class="summary">A straightforward collection of free tools for everyday PDFs, images, text and files.</p>
 <h2>What Files Format does</h2><p>Files Format brings common file utilities into one small browser-based website. Choose a task, select a file or enter text, run the tool and download or copy the result.</p>
-<h2>Who made it</h2><p>Files Format is an independent project made by Gaurav Naitam. The source is public on <a href="https://github.com/Gaurav01MH/everyday-tools-python">GitHub</a>, where you can inspect the implementation, report bugs or suggest improvements. For contact and feedback, use the <a href="https://github.com/Gaurav01MH/everyday-tools-python/issues/new/choose">project issue tracker</a>.</p>
+<h2>Who made it</h2><p>Files Format is an independent project made by Gaurav Naitam. The source is public on <a href="https://github.com/Gaurav01MH/everyday-tools-python">GitHub</a>, where you can inspect the implementation, report bugs or suggest improvements. For contact and feedback, use the <a href="${urlFor("feedback/")}">feedback form</a> or <a href="https://github.com/Gaurav01MH/everyday-tools-python/issues">GitHub Issues</a>.</p>
 <h2>Local processing</h2><p>PDF, image and ordinary text/data tools run inside your browser. Selected documents for those local tools are not uploaded to a Files Format processing server.</p><h2>Temporary sharing</h2><p>Link Tool and QR Tool are designed as optional upload features. They are currently disabled on this GitHub Pages version, so no file or text is uploaded and no temporary share link can be created.</p>
 <h2>Current tool categories</h2><ul><li>PDF: merge, compress, reorder/delete pages, split, extract, rotate, images to PDF, PDF to PNG, page numbers and watermarks.</li><li>Images: resize, target-size compression, convert, metadata removal and passport/ID presets.</li><li>Text and data: formatting, JSON, CSV, URL and Base64 conversion, percentage calculations, unit conversion, and local QR generation.</li></ul>
 <h2>What is not supported</h2><p>Encrypted PDFs, OCR, editing text inside existing PDFs, digital signatures, form filling, annotation editing and animated image processing are not supported. See each tool's page for more exact limits.</p><p><a href="${urlFor("tools/")}">Browse all tools</a>.</p>`;
