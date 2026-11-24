@@ -50,10 +50,10 @@ assert.match(await read("connect/index.html"), /noindex/);
 for (const tool of TOOL_CATALOG) {
   const direct = await read(tool.slug + "/index.html");
   const canonical = baseUrl + tool.slug + "/";
-  const title = tool.title + " | Files Format";
+  const title = escapeHtml(tool.title + " | Files Format");
   assert.ok(direct.includes("<title>" + title + "</title>"), "Missing unique title: " + tool.slug);
   assert.ok(direct.includes('name="description" content="' + escapeHtml(tool.description) + '"'), "Missing unique meta description: " + tool.slug);
-  assert.ok(direct.includes("<h1>" + escapeHtml(tool.title) + "</h1>"), "Missing unique H1: " + tool.slug);
+  assert.ok(direct.includes(">" + escapeHtml(tool.title) + "</h1>"), "Missing unique H1: " + tool.slug);
   assert.ok(direct.includes('rel="canonical" href="' + canonical + '"'), "Wrong canonical: " + tool.slug);
   assert.ok(direct.includes('property="og:title" content="' + escapeHtml(title) + '"'), "Missing OG title: " + tool.slug);
   assert.ok(direct.includes('property="og:description" content="' + escapeHtml(tool.description) + '"'), "Missing OG description: " + tool.slug);
