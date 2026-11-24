@@ -369,3 +369,20 @@ progress { width: 100%; height: 7px; margin-top: 12px; accent-color: var(--accen
   .tool-card-grid { grid-template-columns:1fr; }
   .tool-card { padding:10px; }
 }
+
+.tool-card-copy { display:block; min-width:0; flex:1 1 auto; }
+.tool-card-badge { display:inline-flex; flex:0 0 auto; align-self:flex-start; padding:3px 6px; border:1px solid #d7e8dd; border-radius:5px; color:#236a48; background:#f4faf6; font-size:9px; line-height:1.25; font-weight:650; }
+.tool-card-badge.is-upload { border-color:#eadab8; color:#825a16; background:#fff9ed; }
+.page-thumbnail.is-moving { opacity:.55; }
+.page-thumbnail-controls { display:flex; justify-content:center; flex-wrap:wrap; gap:4px; margin-top:6px; }
+.page-thumbnail-control { min-height:28px; padding:3px 6px; border:1px solid var(--line); border-radius:4px; background:var(--surface); color:var(--ink); font-size:10px; cursor:pointer; }
+.page-thumbnail-control:disabled { opacity:.45; cursor:not-allowed; }
+@media (prefers-color-scheme: dark) {
+  .tool-card-badge { background:#1c352a; color:#9de0b6; border-color:#385e49; }
+  .tool-card-badge.is-upload { background:#40331d; color:#f1c97d; border-color:#6a542b; }
+  .page-thumbnail-control { background:var(--surface); color:var(--ink); }
+}
+@media (max-width:680px) {
+  .tool-card { flex-wrap:wrap; }
+  .tool-card-badge { margin-left:41px; }
+}
